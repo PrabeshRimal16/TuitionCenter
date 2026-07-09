@@ -65,30 +65,6 @@ This project is designed to simplify the daily operations of a tuition center by
 - ASP.NET Core Identity
 - Role-Based Authorization
 
----
-
-## 📂 Project Structure
-
-```
-TuitionCenter/
-│
-├── Controllers/
-├── Models/
-├── Views/
-├── wwwroot/
-│   ├── css/
-│   ├── js/
-│   └── images/
-├── Data/
-├── Security/
-├── Properties/
-├── appsettings.json
-├── Program.cs
-└── README.md
-```
-
----
-
 ## 👥 User Roles
 
 | Role | Permissions |
@@ -96,76 +72,6 @@ TuitionCenter/
 | Admin | Full system control |
 | Teacher | Manage assigned classes, attendance, materials, and online classes |
 | Student | Register, enroll, view schedules, attend online classes |
-
----
-
-## 💾 Database
-
-- SQL Server
-- Entity Framework Core
-- Database-First Approach
-- Scaffolded Models
-
----
-
-## 🔑 Main Modules
-
-- Authentication & Authorization
-- Student Management
-- Teacher Management
-- Course Management
-- Subject Management
-- Class Management
-- Timetable Management
-- Attendance Management
-- Online Class Management
-- Dashboard & Reports
-
----
-
-## ⚙️ Installation
-
-### Clone Repository
-
-```bash
-git clone https://github.com/yourusername/TuitionCenter.git
-```
-
-### Navigate to Project
-
-```bash
-cd TuitionCenter
-```
-
-### Restore Packages
-
-```bash
-dotnet restore
-```
-
-### Update Connection String
-
-Modify the `appsettings.json` file:
-
-```json
-"ConnectionStrings": {
-    "DbConn": "Your SQL Server Connection String"
-}
-```
-
-### Run the Project
-
-```bash
-dotnet run
-```
-
----
-
-## 📸 Screenshots
-
-Coming Soon...
-
----
 
 ## 🔮 Future Enhancements
 
