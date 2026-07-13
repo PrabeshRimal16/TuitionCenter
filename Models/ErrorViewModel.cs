@@ -1,4 +1,4 @@
-namespace TuitionCenter.Models
+﻿namespace TuitionCenter.Models
 {
     public class ErrorViewModel
     {
