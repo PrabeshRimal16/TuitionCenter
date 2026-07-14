@@ -3,23 +3,22 @@ using Microsoft.EntityFrameworkCore;
 using TuitionCenter.Security;
 using TuitionCenter.Models;
 
-
-
-
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//Register DataSecurityProvider
+// Register DataSecurityProvider
 builder.Services.AddSingleton<DataSecurityProvider>();
 
-
-
-
-//Add authenticator and session services
+// Add authentication and session services
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(o => o.LoginPath = "/Login/Login");
+    .AddCookie(o =>
+    {
+        o.LoginPath = "/Account/Login";
+        o.AccessDeniedPath = "/Account/AccessDenied";
+    });
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
@@ -30,34 +29,14 @@ builder.Services.AddSession(options =>
 builder.Services.AddDbContext<TuitionCenterDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-
-
-
-
-/*builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/Account/Login";
-        options.AccessDeniedPath = "/Account/AccessDenied"; // optional, see below
-    });*/
-
-
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-
-
-
-
-
-
 
 app.UseHttpsRedirection();
 app.UseRouting();
@@ -65,10 +44,10 @@ app.UseSession();
 app.MapStaticAssets();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Static}/{action=Static}/{id?}")
+    pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

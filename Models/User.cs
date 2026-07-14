@@ -5,7 +5,7 @@ namespace TuitionCenter.Models;
 
 public partial class User
 {
-    public int Id { get; set; }
+    public int UserId { get; set; }
 
     public string FullName { get; set; } = null!;
 
@@ -13,31 +13,27 @@ public partial class User
 
     public string PasswordHash { get; set; } = null!;
 
-    public string? PhoneNumber { get; set; }
+    public string? Phone { get; set; }
 
-    public int RoleId { get; set; }
+    public string Role { get; set; } = null!;
 
-    public string? ProfilePicturePath { get; set; }
+    public bool? IsActive { get; set; }
 
-    public bool IsActive { get; set; }
+    public DateTime? CreatedDate { get; set; }
 
-    public DateTime CreatedDate { get; set; }
+    public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
 
-    public int? CreatedByAdminId { get; set; }
+    public virtual ICollection<Batch> Batches { get; set; } = new List<Batch>();
 
-    public virtual ICollection<ClassSchedule> ClassSchedules { get; set; } = new List<ClassSchedule>();
+    public virtual ICollection<ClassSession> ClassSessions { get; set; } = new List<ClassSession>();
 
-    public virtual User? CreatedByAdmin { get; set; }
+    public virtual ICollection<Enrollment> EnrollmentApprovedByNavigations { get; set; } = new List<Enrollment>();
 
-    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+    public virtual ICollection<Enrollment> EnrollmentStudents { get; set; } = new List<Enrollment>();
 
-    public virtual ICollection<User> InverseCreatedByAdmin { get; set; } = new List<User>();
-
-    public virtual ICollection<OnlineClassLink> OnlineClassLinks { get; set; } = new List<OnlineClassLink>();
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
-    public virtual Role Role { get; set; } = null!;
-
-    public virtual ICollection<TeacherSubject> TeacherSubjects { get; set; } = new List<TeacherSubject>();
+    public virtual StudentProfile? StudentProfile { get; set; }
 }

@@ -3,21 +3,19 @@ using System.Collections.Generic;
 
 namespace TuitionCenter.Models;
 
-public partial class Subject
+public partial class Class
 {
-    public int SubjectId { get; set; }
-
     public int ClassId { get; set; }
 
-    public string SubjectName { get; set; } = null!;
+    public string ClassName { get; set; } = null!;
 
     public bool IsActive { get; set; }
 
     public virtual ICollection<Batch> Batches { get; set; } = new List<Batch>();
 
-    public virtual Class Class { get; set; } = null!;
-
     public virtual ICollection<CourseFee> CourseFees { get; set; } = new List<CourseFee>();
 
-    public virtual ICollection<EnrollmentSubject> EnrollmentSubjects { get; set; } = new List<EnrollmentSubject>();
+    public virtual ICollection<Enrollment> Enrollments { get; set; } = new List<Enrollment>();
+
+    public virtual ICollection<Subject> Subjects { get; set; } = new List<Subject>();
 }
