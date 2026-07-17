@@ -6,7 +6,6 @@ namespace TuitionCenter.Controllers
 {
     public class AdminController : Controller
     {
-        // TODO: rename to match your actual DbContext class/namespace if different
         private readonly TuitionCenterDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
 
@@ -21,5 +20,19 @@ namespace TuitionCenter.Controllers
         {
             return View();
         }
+
+        [HttpGet]
+        public IActionResult Student()
+        {
+            return View();
+        }
+
+        [HttpGet]
+        public IActionResult Teacher()
+        {
+            return View();
+        }
+
+
     }
 }

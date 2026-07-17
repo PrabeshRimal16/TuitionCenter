@@ -1,0 +1,305 @@
+﻿@{
+    ViewData["Title"] = "Teacher";
+    Layout = "_AdminLayout";
+}
+
+<div class="teacher-page">          
+
+<div class="container-fluid mt-4">
+
+    <!-- ====================== Header ====================== -->
+
+    <div class="d-flex justify-content-between align-items-start mb-4">
+
+        <div>
+            <h1 class="fw-bold text-primary">Teacher Management</h1>
+
+            <p class="text-muted fs-5">
+                Overview of active faculty and pending applications
+            </p>
+
+            <div class="d-flex align-items-center">
+
+                <h3 class="fw-bold mb-0">Pending Approvals</h3>
+
+                <span class="badge bg-danger-subtle text-danger ms-3 px-3 py-2 rounded-pill">
+                    4 NEW
+                </span>
+
+            </div>
+
+        </div>
+
+        <a href="#" class="btn btn-link text-decoration-none fs-5">
+            View All Applications
+        </a>
+
+    </div>
+
+
+    <!-- ====================== Pending Cards ====================== -->
+
+    <div class="row g-4 mb-5">
+
+        <!-- Card 1 -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card shadow-sm border-0 rounded-4 h-100">
+
+                <div class="card-body">
+
+                    <div class="d-flex">
+
+                        <img src="https://i.pravatar.cc/60?img=12"
+                             class="rounded-circle me-3"
+                             width="60">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Dr. Anil Shrestha
+                            </h5>
+
+                            <p class="text-muted mb-3">
+                                Advanced Physics
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="text-muted">
+                        Applied: 2 hours ago
+                    </p>
+
+                    <div class="d-flex gap-2">
+
+                        <button class="btn btn-primary flex-fill rounded-3">
+                            Approve
+                        </button>
+
+                        <button class="btn btn-outline-danger rounded-3 px-3">
+
+                            <i class="bi bi-x-lg"></i>
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Card 2 -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card shadow-sm border-0 rounded-4">
+
+                <div class="card-body">
+
+                    <div class="d-flex">
+
+                        <img src="https://i.pravatar.cc/60?img=22"
+                             class="rounded-circle me-3"
+                             width="60">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Marcus Thorne
+                            </h5>
+
+                            <p class="text-muted mb-3">
+                                Creative Writing
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="text-muted">
+                        Applied: 5 hours ago
+                    </p>
+
+                    <div class="d-flex gap-2">
+
+                        <button class="btn btn-primary flex-fill rounded-3">
+                            Approve
+                        </button>
+
+                        <button class="btn btn-outline-danger px-3">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Card 3 -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card shadow-sm border-0 rounded-4">
+
+                <div class="card-body">
+
+                    <div class="d-flex">
+
+                        <img src="https://i.pravatar.cc/60?img=25"
+                             class="rounded-circle me-3"
+                             width="60">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Sophia Liang
+                            </h5>
+
+                            <p class="text-muted mb-3">
+                                Macroeconomics
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="text-muted">
+                        Applied: Yesterday
+                    </p>
+
+                    <div class="d-flex gap-2">
+
+                        <button class="btn btn-primary flex-fill rounded-3">
+                            Approve
+                        </button>
+
+                        <button class="btn btn-outline-danger px-3">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Card 4 -->
+
+        <div class="col-lg-3 col-md-6">
+
+            <div class="card shadow-sm border-0 rounded-4">
+
+                <div class="card-body">
+
+                    <div class="d-flex">
+
+                        <img src="https://i.pravatar.cc/60?img=33"
+                             class="rounded-circle me-3"
+                             width="60">
+
+                        <div>
+
+                            <h5 class="fw-bold mb-1">
+                                Prof. Arthur Wells
+                            </h5>
+
+                            <p class="text-muted mb-3">
+                                Pure Mathematics
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <p class="text-muted">
+                        Applied: Yesterday
+                    </p>
+
+                    <div class="d-flex gap-2">
+
+                        <button class="btn btn-primary flex-fill rounded-3">
+                            Approve
+                        </button>
+
+                        <button class="btn btn-outline-danger px-3">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ====================== Directory Header ====================== -->
+
+    <div class="card border-0 shadow-sm rounded-4">
+
+        <div class="card-header bg-white border-0 p-4">
+
+            <div class="d-flex justify-content-between align-items-center">
+
+                <div class="d-flex align-items-center">
+
+                    <h2 class="fw-bold me-4 mb-0">
+
+                        Active Teacher Directory
+
+                    </h2>
+
+                    <span class="badge rounded-pill bg-light text-dark px-3 py-2">
+
+                        <i class="bi bi-circle-fill text-primary me-2"
+                           style="font-size:10px;"></i>
+
+                        128 TEACHERS ACTIVE
+
+                    </span>
+
+                </div>
+
+                <div>
+
+                    <button class="btn btn-outline-secondary rounded-3 me-2">
+
+                        <i class="bi bi-funnel"></i>
+
+                        Filters
+
+                    </button>
+
+                    <button class="btn btn-outline-secondary rounded-3">
+
+                        <i class="bi bi-download"></i>
+
+                        Export CSV
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Teacher Table will start here -->
+
+    </div>
+
+</div>
+</div>

@@ -1,0 +1,167 @@
+﻿* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #f6f8fc;
+    font-family: 'Segoe UI',sans-serif;
+}
+
+/* Sidebar */
+
+.sidebar {
+    width: 270px;
+    height: 100vh;
+    background: #fff;
+    border-right: 1px solid #e8e8e8;
+    position: fixed;
+    top: 0;
+    left: 0;
+    padding: 25px;
+}
+
+.logo h2 {
+    color: #2563eb;
+    font-size: 38px;
+    font-weight: 700;
+}
+
+.logo span {
+    color: #1d4ed8;
+}
+
+.logo small {
+    display: block;
+    color: #777;
+    letter-spacing: 2px;
+    margin-top: 5px;
+    font-size: 11px;
+}
+
+.menu {
+    list-style: none;
+    padding: 0;
+    margin-top: 45px;
+}
+
+    .menu li {
+        margin-bottom: 12px;
+    }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            text-decoration: none;
+            color: #555;
+            padding: 15px 18px;
+            border-radius: 12px;
+            font-size: 17px;
+            transition: .3s;
+        }
+
+        .menu li.active a {
+            background: #2563eb;
+            color: white;
+        }
+
+        .menu li a:hover {
+            background: #eef4ff;
+            color: #2563eb;
+        }
+
+    .menu i {
+        font-size: 20px;
+    }
+
+/* Main */
+
+.main-content {
+    margin-left: 270px;
+    min-height: 100vh;
+}
+
+/* Navbar */
+
+.topbar {
+    height: 80px;
+    background: white;
+    border-bottom: 1px solid #e8e8e8;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 35px;
+}
+
+.search-box {
+    width: 550px;
+    height: 48px;
+    background: #f3f4f6;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+
+    .search-box input {
+        border: none;
+        outline: none;
+        background: none;
+        width: 100%;
+        margin-left: 12px;
+    }
+
+    .search-box i {
+        color: #666;
+    }
+
+.right-menu {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.icon-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    background: white;
+    border-radius: 50%;
+    transition: .3s;
+}
+
+    .icon-btn:hover {
+        background: #f3f4f6;
+    }
+
+    .icon-btn i {
+        font-size: 20px;
+    }
+
+.profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 15px;
+}
+
+    .profile h6 {
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .profile small {
+        color: #777;
+    }
+
+.profile-img {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+}
+
+.page-content {
+    padding: 35px;
+}
