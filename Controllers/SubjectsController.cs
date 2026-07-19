@@ -1,5 +1,5 @@
-
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TuitionCenter.Models;
 
@@ -13,9 +13,10 @@ public class SubjectsController : Controller
     }
 
     // GET: SUBJECTS
-    public async Task<IActionResult> Index()    
+    public async Task<IActionResult> Index()
     {
-        return View(await _context.Subjects.ToListAsync());
+        var subjects = _context.Subjects.Include(s => s.Class);
+        return View(await subjects.ToListAsync());
     }
 
     // GET: SUBJECTS/Details/5
@@ -27,7 +28,8 @@ public class SubjectsController : Controller
         }
 
         var subject = await _context.Subjects
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(s => s.Class)
+            .FirstOrDefaultAsync(m => m.SubjectId == id);
         if (subject == null)
         {
             return NotFound();
@@ -39,15 +41,13 @@ public class SubjectsController : Controller
     // GET: SUBJECTS/Create
     public IActionResult Create()
     {
+        ViewData["ClassId"] = new SelectList(_context.Classes, "ClassId", "ClassName");
         return View();
     }
 
-    // POST: SUBJECTS/Create
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create([Bind("Id,Name,Description,IsActive,CreatedDate,ClassSchedules,Courses,TeacherSubjects")] Subject subject)
+    public async Task<IActionResult> Create([Bind("SubjectId,ClassId,SubjectName,IsActive")] Subject subject)
     {
         if (ModelState.IsValid)
         {
@@ -55,6 +55,7 @@ public class SubjectsController : Controller
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+        ViewData["ClassId"] = new SelectList(_context.Classes, "ClassId", "ClassName", subject.ClassId);
         return View(subject);
     }
 
@@ -71,17 +72,16 @@ public class SubjectsController : Controller
         {
             return NotFound();
         }
+        ViewData["ClassId"] = new SelectList(_context.Classes, "ClassId", "ClassName", subject.ClassId);
         return View(subject);
     }
 
-    // POST: SUBJECTS/Edit/5
-    // To protect from overposting attacks, enable the specific properties you want to bind to.
-    // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(int? id, [Bind("Id,Name,Description,IsActive,CreatedDate,ClassSchedules,Courses,TeacherSubjects")] Subject subject)
+    public async Task<IActionResult> Edit(int? id, [Bind("SubjectId,ClassId,SubjectName,IsActive")] Subject subject)
     {
-        if (id != subject.Id)
+        if (id != subject.SubjectId)
         {
             return NotFound();
         }
@@ -95,7 +95,7 @@ public class SubjectsController : Controller
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!SubjectExists(subject.Id))
+                if (!SubjectExists(subject.SubjectId))
                 {
                     return NotFound();
                 }
@@ -106,6 +106,7 @@ public class SubjectsController : Controller
             }
             return RedirectToAction(nameof(Index));
         }
+        ViewData["ClassId"] = new SelectList(_context.Classes, "ClassId", "ClassName", subject.ClassId);
         return View(subject);
     }
 
@@ -118,7 +119,8 @@ public class SubjectsController : Controller
         }
 
         var subject = await _context.Subjects
-            .FirstOrDefaultAsync(m => m.Id == id);
+            .Include(s => s.Class)
+            .FirstOrDefaultAsync(m => m.SubjectId == id);
         if (subject == null)
         {
             return NotFound();
@@ -127,10 +129,9 @@ public class SubjectsController : Controller
         return View(subject);
     }
 
-    // POST: SUBJECTS/Delete/5
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> DeleteConfirmed(int? id)
+    public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var subject = await _context.Subjects.FindAsync(id);
         if (subject != null)
@@ -142,8 +143,8 @@ public class SubjectsController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private bool SubjectExists(int? id)
+    private bool SubjectExists(int id)
     {
-        return _context.Subjects.Any(e => e.Id == id);
+        return _context.Subjects.Any(e => e.SubjectId == id);
     }
 }
