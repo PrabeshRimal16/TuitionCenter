@@ -1,0 +1,273 @@
+﻿/* =========================
+   RESET
+========================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f7f8fc;
+    color: #1f2937;
+}
+
+
+/* =========================
+   SIDEBAR
+========================= */
+
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100vh;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 28px 18px;
+    z-index: 1000;
+}
+
+
+/* =========================
+   LOGO
+========================= */
+
+.logo {
+    padding: 0 15px;
+    margin-bottom: 40px;
+}
+
+    .logo h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #111827;
+    }
+
+        .logo h2 span {
+            color: #4f46e5;
+        }
+
+    .logo p {
+        margin-top: 5px;
+        font-size: 13px;
+        color: #9ca3af;
+    }
+
+
+/* =========================
+   MENU
+========================= */
+
+.menu {
+    list-style: none;
+}
+
+    .menu li {
+        margin-bottom: 8px;
+    }
+
+        .menu li a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            text-decoration: none;
+            color: #6b7280;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 10px;
+            transition: 0.3s ease;
+        }
+
+            .menu li a i {
+                font-size: 18px;
+            }
+
+            .menu li a:hover {
+                background: #f3f4ff;
+                color: #4f46e5;
+            }
+
+        .menu li.active a {
+            background: #eef2ff;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+
+/* =========================
+   MAIN CONTENT
+========================= */
+
+.main-content {
+    margin-left: 250px;
+    min-height: 100vh;
+}
+
+
+/* =========================
+   TOP NAVBAR
+========================= */
+
+.top-navbar {
+    height: 85px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    padding: 0 35px;
+    gap: 30px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    min-width: 160px;
+}
+
+
+/* =========================
+   SEARCH BOX
+========================= */
+
+.search-box {
+    width: 400px;
+    height: 42px;
+    background: #f3f4f6;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    color: #9ca3af;
+}
+
+    .search-box i {
+        margin-right: 10px;
+    }
+
+    .search-box input {
+        width: 100%;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-size: 13px;
+    }
+
+
+/* =========================
+   RIGHT MENU
+========================= */
+
+.right-menu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon-btn {
+    border: none;
+    background: transparent;
+    font-size: 21px;
+    color: #6b7280;
+    cursor: pointer;
+}
+
+    .icon-btn:hover {
+        color: #4f46e5;
+    }
+
+.profile-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+
+/* =========================
+   CONTENT
+========================= */
+
+.content {
+    padding: 35px;
+}
+
+
+/* =========================
+   RESPONSIVE DESIGN
+========================= */
+
+@media (max-width: 992px) {
+
+    .sidebar {
+        width: 220px;
+    }
+
+    .main-content {
+        margin-left: 220px;
+    }
+
+    .search-box {
+        width: 300px;
+    }
+}
+
+
+@media (max-width: 768px) {
+
+    .sidebar {
+        width: 70px;
+        padding: 20px 10px;
+    }
+
+    .logo h2 {
+        font-size: 0;
+    }
+
+        .logo h2 span {
+            font-size: 20px;
+        }
+
+    .logo p {
+        display: none;
+    }
+
+    .menu li a {
+        justify-content: center;
+        padding: 14px;
+    }
+
+        .menu li a i {
+            font-size: 20px;
+        }
+
+    .menu li a {
+        font-size: 0;
+    }
+
+    .main-content {
+        margin-left: 70px;
+    }
+
+    .top-navbar {
+        padding: 0 20px;
+    }
+
+    .page-title {
+        font-size: 20px;
+    }
+
+    .search-box {
+        width: 250px;
+    }
+
+    .content {
+        padding: 20px;
+    }
+}
