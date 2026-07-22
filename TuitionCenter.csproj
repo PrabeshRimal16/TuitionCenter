@@ -15,4 +15,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\Teacher\" />
+    <Folder Include="Controllers\Student\" />
+    <Folder Include="wwwroot\css\Teacher\" />
+  </ItemGroup>
+
 </Project>
