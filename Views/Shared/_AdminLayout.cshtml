@@ -12,7 +12,7 @@
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="~/css/Admin/admin.css" />
 </head>
 
 <body>
@@ -39,14 +39,14 @@
             </li>
 
             <li>
-                <a asp-controller="Admin" asp-action="Student">
+                <a asp-controller="StudentManagement" asp-action="Index">
                     <i class="bi bi-mortarboard"></i>
                     Students
                 </a>
             </li>
 
             <li>
-                <a asp-controller="Admin" asp-action="Teacher">
+                <a asp-controller="TeacherManagement" asp-action="Index">
                     <i class="bi bi-person"></i>
                     Teachers
                 </a>
@@ -139,6 +139,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    @RenderSection("Scripts", required: false)
 
 </body>
 
