@@ -21,17 +21,6 @@ namespace TuitionCenter.Controllers
             return View();
         }
 
-        [HttpGet]
-        public IActionResult Student()
-        {
-            return View();
-        }
-
-        [HttpGet]
-        public IActionResult Teacher()
-        {
-            return View();
-        }
 
 
     }
