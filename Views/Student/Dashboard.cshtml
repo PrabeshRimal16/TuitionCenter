@@ -1,8 +1,103 @@
 ﻿@{
-    ViewData["Title"] = "Student Dashboard";
+    ViewData["Title"] = "Enrollment";
 }
 
-<div class="p-4 bg-light rounded shadow-sm">
-    <h2>Welcome, @User.Identity?.Name!</h2>
-    <p class="text-muted">Role: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+<div class="pricing-page">
+
+    <div class="page-header">
+
+        <h2>Pricing</h2>
+
+        <p>Select your preferred payment plan.</p>
+
+    </div>
+
+    <div class="pricing-cards">
+
+        <!-- Monthly Plan -->
+
+        <div class="price-card">
+
+            <div class="card-icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+
+            <h4>Monthly Plan</h4>
+
+            <p>
+                Flexible learning with monthly subscription.
+            </p>
+
+            <div class="price">
+                Rs. 2,000
+                <span>/month</span>
+            </div>
+
+            <select class="plan-select">
+
+                <option>1 Month</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+
+            </select>
+
+        </div>
+
+        <!-- Complete Course -->
+
+        <div class="price-card active-card">
+
+            <div class="card-icon">
+                <i class="bi bi-book"></i>
+            </div>
+
+            <h4>Complete Course</h4>
+
+            <p>
+                Lifetime access to every lesson.
+            </p>
+
+            <div class="price">
+                Rs. 7,000
+            </div>
+
+            <div class="save-badge">
+
+                Save Rs.5,000
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- Summary -->
+
+    <div class="summary-card">
+
+        <div>
+
+            <small>Estimated Enrollment Fee</small>
+
+            <h2>Rs. 7,000</h2>
+
+        </div>
+
+    </div>
+
+    <div class="page-buttons">
+
+        <button class="btn-outline">
+            Back
+        </button>
+
+        <button class="btn-next">
+
+            Next
+            <i class="bi bi-arrow-right"></i>
+
+        </button>
+
+    </div>
+
 </div>
