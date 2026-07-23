@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "Subject";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Select Your Subject</h2>
+        <p>Choose the subject you want to study.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="option-card">
+            <h4>Computer Science</h4>
+            <p>Programming & Software Development</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Business Studies</h4>
+            <p>Management & Finance</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Science</h4>
+            <p>Physics, Chemistry & Biology</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Humanities</h4>
+            <p>Social Studies & Literature</p>
+        </div>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <a asp-controller="Student"
+           asp-action="Class"
+           class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+
+        <a asp-controller="Student"
+           asp-action="Intake"
+           class="btn-next">
+            Next
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+</div>

@@ -1,98 +1,98 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-<link rel="stylesheet" href="~/css/Student/student.css" asp-append-version="true" />
+
 <head>
 
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Student Portal</title>
 
-    <!-- Bootstrap CSS -->
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1" />
+
+    <title>@ViewData["Title"]</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+          rel="stylesheet" />
 
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet"
           href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
 
-    <!-- Your CSS -->
     <link rel="stylesheet"
           href="~/css/Student/student.css"
           asp-append-version="true" />
-
-    <link rel="stylesheet"
-          href="~/css/Student/pricing.css"
-          asp-append-version="true" />
-
-
 
 </head>
 
 <body>
 
-    <aside class="sidebar">
+    <div class="layout">
 
-        <!-- Logo -->
-        <div class="logo">
-            <h2>Study <span>Point</span></h2>
-        </div>
+        <aside class="sidebar">
 
-        <hr class="sidebar-divider" />
+            <div class="logo">
 
-        <!-- Progress -->
-        <div class="progress-title">
-            Enrollment Progress
-        </div>
+                <h2>
 
-        <ul class="menu">
+                    Study <span>Point</span>
 
-            <li>
-                <a href="#">
-                    <i class="bi bi-mortarboard"></i>
-                    <span>Class</span>
-                </a>
-            </li>
+                </h2>
 
-            <li>
-                <a href="#">
-                    <i class="bi bi-grid-3x3-gap"></i>
-                    <span>Subject</span>
-                </a>
-            </li>
+            </div>
 
-            <li>
-                <a href="#">
-                    <i class="bi bi-card-list"></i>
-                    <span>Intake</span>
-                </a>
-            </li>
+            <hr>
 
-            <li class="active">
-                <a href="#">
-                    <i class="bi bi-credit-card"></i>
-                    <span>Pricing</span>
-                </a>
-            </li>
+            <h6 class="progress-text">
 
-            <li>
-                <a href="#">
-                    <i class="bi bi-clock"></i>
-                    <span>Timing</span>
-                </a>
-            </li>
+                Enrollment Progress
 
-            <li>
-                <a href="#">
-                    <i class="bi bi-bag"></i>
-                    <span>Payments</span>
-                </a>
-            </li>
+            </h6>
 
-        </ul>
+            <ul class="step-menu">
 
-        <div class="back-button">
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Class" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Class">
+                        <i class="bi bi-mortarboard"></i>
+                        <span>Class</span>
+                    </a>
+                </li>
 
-            <button class="btn-back">
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Subject" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Subject">
+                        <i class="bi bi-grid"></i>
+                        <span>Subject</span>
+                    </a>
+                </li>
+
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Intake" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Intake">
+                        <i class="bi bi-card-list"></i>
+                        <span>Intake</span>
+                    </a>
+                </li>
+
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Pricing" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Pricing">
+                        <i class="bi bi-credit-card"></i>
+                        <span>Pricing</span>
+                    </a>
+                </li>
+
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Timing" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Timing">
+                        <i class="bi bi-clock"></i>
+                        <span>Timing</span>
+                    </a>
+                </li>
+
+                <li class="@(ViewContext.RouteData.Values["action"]?.ToString() == "Payments" ? "active" : "")">
+                    <a asp-controller="Student" asp-action="Payments">
+                        <i class="bi bi-wallet2"></i>
+                        <span>Payments</span>
+                    </a>
+                </li>
+
+            </ul>
+
+            <button class="back-btn">
 
                 <i class="bi bi-arrow-left"></i>
 
@@ -100,54 +100,40 @@
 
             </button>
 
+        </aside>
+
+        <div class="right-panel">
+
+            <header class="topbar">
+
+                <div class="brand">
+
+                    Study Point
+
+                </div>
+
+                <div class="icons">
+
+                    <i class="bi bi-question-circle"></i>
+
+                    <i class="bi bi-person-circle"></i>
+
+                </div>
+
+            </header>
+
+            <main>
+
+                @RenderBody()
+
+            </main>
+
         </div>
-
-    </aside>
-
-    <!-- ================= Main ================= -->
-
-    <div class="main-content">
-
-        <!-- ================= Navbar ================= -->
-
-        <nav class="top-navbar">
-
-            <h2 class="page-title">Dashboard</h2>
-
-            <div class="search-box">
-
-                <i class="bi bi-search"></i>
-
-                <input type="text"
-                       placeholder="Search Courses or material..." />
-
-            </div>
-
-            <div class="right-menu">
-
-                <button class="icon-btn">
-                    <i class="bi bi-bell"></i>
-                </button>
-
-                <img src="https://i.pravatar.cc/100?img=15"
-                     class="profile-img"
-                     alt="Student">
-
-            </div>
-
-        </nav>
-
-        <!-- ================= Content ================= -->
-
-        <main class="content">
-
-            @RenderBody()
-
-        </main>
 
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
+
 </html>
