@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Timing";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Select Timing</h2>
+        <p>Choose your preferred class timing.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="option-card">
+            <h4>Morning</h4>
+            <p>6:00 AM - 8:00 AM</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Day</h4>
+            <p>10:00 AM - 12:00 PM</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Evening</h4>
+            <p>4:00 PM - 6:00 PM</p>
+        </div>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <a asp-controller="Student"
+           asp-action="Pricing"
+           class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+
+        <a asp-controller="Student"
+           asp-action="Payments"
+           class="btn-next">
+            Next
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+</div>
