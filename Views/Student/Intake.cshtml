@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "Intake";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Select Intake</h2>
+        <p>Choose your preferred intake.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="option-card">
+            <h4>January</h4>
+        </div>
+
+        <div class="option-card">
+            <h4>April</h4>
+        </div>
+
+        <div class="option-card">
+            <h4>July</h4>
+        </div>
+
+        <div class="option-card">
+            <h4>October</h4>
+        </div>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <a asp-controller="Student"
+           asp-action="Subject"
+           class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+
+        <a asp-controller="Student"
+           asp-action="Pricing"
+           class="btn-next">
+            Next
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+</div>

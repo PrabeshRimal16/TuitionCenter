@@ -1,0 +1,62 @@
+﻿@{
+    ViewData["Title"] = "Pricing";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Pricing</h2>
+        <p>Select your payment plan.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="option-card">
+
+            <h4>Monthly Plan</h4>
+
+            <h2>Rs. 2,000</h2>
+
+            <select class="form-select mt-3">
+
+                <option>1 Month</option>
+                <option>3 Months</option>
+                <option>6 Months</option>
+
+            </select>
+
+        </div>
+
+        <div class="option-card">
+
+            <h4>Complete Course</h4>
+
+            <h2>Rs. 7,000</h2>
+
+            <span class="badge bg-success mt-3">
+                Save Rs.5,000
+            </span>
+
+        </div>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <a asp-controller="Student"
+           asp-action="Intake"
+           class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+
+        <a asp-controller="Student"
+           asp-action="Timing"
+           class="btn-next">
+            Next
+            <i class="bi bi-arrow-right"></i>
+        </a>
+
+    </div>
+
+</div>

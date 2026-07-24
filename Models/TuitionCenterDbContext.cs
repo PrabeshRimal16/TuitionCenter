@@ -160,9 +160,9 @@ public partial class TuitionCenterDbContext : DbContext
 
         modelBuilder.Entity<CourseType>(entity =>
         {
-            entity.HasKey(e => e.CourseTypeId).HasName("PK__CourseTy__8173697234F32148");
-
-            entity.Property(e => e.TypeName).HasMaxLength(50);
+            entity.Property(e => e.CourseTypeName)
+                .HasColumnName("TypeName")
+                .HasMaxLength(50);
         });
 
         modelBuilder.Entity<Enrollment>(entity =>

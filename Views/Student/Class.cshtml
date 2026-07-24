@@ -1,0 +1,53 @@
+﻿@{
+    ViewData["Title"] = "Class";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Select Your Class</h2>
+        <p>Please choose the class you want to enroll in.</p>
+    </div>
+
+    <div class="card-grid">
+
+        <div class="option-card">
+            <h4>Class 11</h4>
+            <p>Science Stream</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Class 12</h4>
+            <p>Science Stream</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Bachelor</h4>
+            <p>Computing</p>
+        </div>
+
+        <div class="option-card">
+            <h4>Bridge Course</h4>
+            <p>Preparation Program</p>
+        </div>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <button class="btn-back" onclick="history.back()">
+            <i class="bi bi-arrow-left"></i> Back
+        </button>
+
+        <a asp-controller="Student"
+           asp-action="Subject"
+           class="btn-next">
+
+            Next
+            <i class="bi bi-arrow-right"></i>
+
+        </a>
+
+    </div>
+
+</div>
