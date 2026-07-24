@@ -1,3 +1,4 @@
+@model TuitionCenter.Models.ViewModels.TeacherDashboardViewModel
 @{
     Layout = null;
     ViewData["Title"] = "Teacher Dashboard";
@@ -59,7 +60,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                    <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
                         <i class="far fa-calendar-alt w-5 h-5 mr-3 text-lg"></i>
                         Schedule
                     </a>
@@ -93,7 +94,24 @@
                     <i class="far fa-bell text-xl"></i>
                     <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
                 </button>
-                <img src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover" />
+                <div class="relative">
+                    <img id="topProfileBtn" src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all" />
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="topProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-3 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">@Model.TeacherName</p>
+                            <p class="text-xs text-gray-500 truncate">@Model.TeacherEmail</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="far fa-user w-4 mr-2"></i> My Profile
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="@Url.Action("Logout", "Account")" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <i class="fas fa-sign-out-alt w-4 mr-2"></i> Logout
+                        </a>
+                    </div>
+                </div>
             </div>
         </header>
 
@@ -102,41 +120,50 @@
             <!-- Greeting Section -->
             <div class="flex justify-between items-end mb-8">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Good Morning, Mr. Kumar</h1>
-                    <p class="text-gray-500">You have 4 classes scheduled for today.</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Good Morning, @Model.TeacherName</h1>
+                    <p class="text-gray-500">You have @(Model.NextClass != null ? Model.UpcomingClasses.Count + 1 : 0) classes scheduled for today.</p>
                 </div>
                 <div class="text-right">
                     <p class="text-xs text-gray-500 font-semibold tracking-wider uppercase mb-1">Academic Year</p>
-                    <p class="text-xl font-bold text-gray-900">2025-2026</p>
+                    <p class="text-xl font-bold text-gray-900">@Model.CurrentAcademicYear</p>
                 </div>
             </div>
 
             <!-- Top Cards Section -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
                 <!-- Main Feature Card -->
-                <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 relative overflow-hidden flex flex-col justify-between" style="min-height: 280px;">
-                    <!-- Decorative Background -->
-                    <div class="absolute right-0 top-0 h-full w-1/2 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M10,10 L50,50 M50,10 L10,50\' stroke=\'%230B4799\' stroke-width=\'2\' fill=\'none\'/%3E%3C/svg%3E'); background-size: cover;"></div>
-                    
-                    <div>
-                        <span class="inline-block bg-[#68E387] text-white text-xs font-bold px-3 py-1 rounded-full mb-4">STARTING IN 12 MINS</span>
-                        <h2 class="text-3xl font-bold text-gray-900 mb-2">Accountancy (Grade 12)</h2>
-                        <p class="text-gray-500 text-sm">Online Session &bull; Batch A &bull; 42 Enrolled Students</p>
-                    </div>
-
-                    <div class="flex items-center gap-6 mt-8">
-                        <div class="flex -space-x-3">
-                            <img src="https://i.pravatar.cc/100?img=1" class="w-10 h-10 rounded-full border-2 border-white" />
-                            <img src="https://i.pravatar.cc/100?img=2" class="w-10 h-10 rounded-full border-2 border-white" />
-                            <img src="https://i.pravatar.cc/100?img=3" class="w-10 h-10 rounded-full border-2 border-white" />
-                            <div class="w-10 h-10 rounded-full border-2 border-white bg-[#EBF3FF] flex items-center justify-center text-primary font-medium text-sm">+39</div>
+                @if (Model.NextClass != null)
+                {
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 relative overflow-hidden flex flex-col justify-between" style="min-height: 280px;">
+                        <!-- Decorative Background -->
+                        <div class="absolute right-0 top-0 h-full w-1/2 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M10,10 L50,50 M50,10 L10,50\' stroke=\'%230B4799\' stroke-width=\'2\' fill=\'none\'/%3E%3C/svg%3E'); background-size: cover;"></div>
+                        
+                        <div>
+                            <span class="inline-block bg-[#68E387] text-white text-xs font-bold px-3 py-1 rounded-full mb-4">NEXT CLASS AT @Model.NextClass.StartTime.ToString("hh:mm tt")</span>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">@Model.NextClass.Title</h2>
+                            <p class="text-gray-500 text-sm">@Model.NextClass.ClassName &bull; @Model.NextClass.SubjectName &bull; @Model.NextClass.BatchName &bull; @Model.NextClass.EnrolledStudents Enrolled Students</p>
                         </div>
-                        <button class="bg-[#0B4799] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center">
-                            Share Class Link <i class="fas fa-arrow-right ml-2"></i>
-                        </button>
-                        <a href="#" class="text-[#0B4799] font-medium hover:underline">View Attendance List</a>
+
+                        <div class="flex items-center gap-6 mt-8">
+                            <button class="bg-[#0B4799] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center">
+                                Share Class Link <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                            @if(!string.IsNullOrEmpty(Model.NextClass.MeetingLink))
+                            {
+                                <a href="@Model.NextClass.MeetingLink" target="_blank" class="text-[#0B4799] font-medium hover:underline">Join Meeting</a>
+                            }
+                        </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex items-center justify-center" style="min-height: 280px;">
+                        <div class="text-center">
+                            <i class="far fa-calendar-check text-4xl text-gray-300 mb-3"></i>
+                            <h2 class="text-xl font-bold text-gray-500">No more classes today!</h2>
+                        </div>
+                    </div>
+                }
 
                 <!-- Stats Cards -->
                 <div class="space-y-4">
@@ -148,9 +175,8 @@
                         <div>
                             <p class="text-xs text-gray-500 font-semibold tracking-wider">TOTAL STUDENTS</p>
                             <div class="flex items-baseline gap-2">
-                                <h3 class="text-2xl font-bold text-gray-900">1,248</h3>
+                                <h3 class="text-2xl font-bold text-gray-900">@Model.TotalStudents</h3>
                             </div>
-                            <p class="text-xs text-[#22C55E] mt-0.5"><i class="fas fa-arrow-up mr-1"></i>4% from last month</p>
                         </div>
                     </div>
 
@@ -161,8 +187,7 @@
                         </div>
                         <div>
                             <p class="text-xs text-gray-500 font-semibold tracking-wider">ACTIVE CLASSES</p>
-                            <h3 class="text-2xl font-bold text-gray-900">8</h3>
-                            <p class="text-xs text-gray-500 mt-0.5">Across 2 Departments</p>
+                            <h3 class="text-2xl font-bold text-gray-900">@Model.ActiveClasses</h3>
                         </div>
                     </div>
 
@@ -187,62 +212,54 @@
             </div>
 
             <div class="space-y-4">
-                <!-- Class 1 -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
-                    <div class="flex items-center gap-6">
-                        <div class="text-center w-20 border-r border-gray-100 pr-4">
-                            <div class="text-[#0B4799] font-semibold text-lg leading-tight">12:30<br>PM</div>
-                            <div class="text-xs text-gray-500 mt-1">60 mins</div>
+                @if (Model.UpcomingClasses.Any())
+                {
+                    foreach (var cls in Model.UpcomingClasses)
+                    {
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+                            <div class="flex items-center gap-6">
+                                <div class="text-center w-20 border-r border-gray-100 pr-4">
+                                    <div class="text-[#0B4799] font-semibold text-lg leading-tight">@cls.StartTime.ToString("hh:mm")<br>@cls.StartTime.ToString("tt")</div>
+                                    <div class="text-xs text-gray-500 mt-1">@cls.DurationMinutes mins</div>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">@cls.Title</h3>
+                                    <p class="text-sm text-gray-500 mt-1">@cls.ClassName &bull; @cls.SubjectName &bull; @cls.BatchName</p>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 p-2">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
                         </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900">Introduction to Econometrics</h3>
-                            <p class="text-sm text-gray-500 mt-1">Lecture Hall A &bull; Year 2 &bull; Course ID: ECO201</p>
-                        </div>
-                    </div>
-                    <button class="text-gray-400 hover:text-gray-600 p-2">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </div>
-
-                <!-- Class 2 -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
-                    <div class="flex items-center gap-6">
-                        <div class="text-center w-20 border-r border-gray-100 pr-4">
-                            <div class="text-[#0B4799] font-semibold text-lg leading-tight">02:00<br>PM</div>
-                            <div class="text-xs text-gray-500 mt-1">90 mins</div>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900">Global Markets Seminar</h3>
-                            <p class="text-sm text-gray-500 mt-1">Room 402 &bull; Post-Graduate &bull; Course ID: ECO550</p>
-                        </div>
-                    </div>
-                    <button class="text-gray-400 hover:text-gray-600 p-2">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </div>
-
-                <!-- Class 3 -->
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
-                    <div class="flex items-center gap-6">
-                        <div class="text-center w-20 border-r border-gray-100 pr-4">
-                            <div class="text-[#0B4799] font-semibold text-lg leading-tight">04:30<br>PM</div>
-                            <div class="text-xs text-gray-500 mt-1">45 mins</div>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-bold text-gray-900">Office Hours - General Consult</h3>
-                            <p class="text-sm text-gray-500 mt-1">Dr. Harrison's Office &bull; Open for all levels</p>
-                        </div>
-                    </div>
-                    <button class="text-gray-400 hover:text-gray-600 p-2">
-                        <i class="fas fa-ellipsis-v"></i>
-                    </button>
-                </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center p-8 text-gray-500">No other upcoming classes today.</div>
+                }
             </div>
         </div>
     </main>
 
     <script>
         // Simple script for interactivity could go here if needed.
+        const topProfileBtn = document.getElementById('topProfileBtn');
+        const topProfileDropdown = document.getElementById('topProfileDropdown');
+
+        if (topProfileBtn) {
+            topProfileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                topProfileDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!topProfileBtn.contains(e.target) && !topProfileDropdown.contains(e.target)) {
+                    topProfileDropdown.classList.add('hidden');
+                }
+            });
+        }
     </script>
 </body>
 </html>
