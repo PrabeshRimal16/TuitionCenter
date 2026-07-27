@@ -1,7 +1,4 @@
-﻿/* =========================
-   RESET
-========================= */
-
+﻿
 * {
     margin: 0;
     padding: 0;
@@ -14,11 +11,6 @@ body {
     color: #1f2937;
 }
 
-
-/* =========================
-   SIDEBAR
-========================= */
-
 .sidebar {
     position: fixed;
     top: 0;
@@ -30,11 +22,6 @@ body {
     padding: 28px 18px;
     z-index: 1000;
 }
-
-
-/* =========================
-   LOGO
-========================= */
 
 .logo {
     padding: 0 15px;
@@ -56,11 +43,6 @@ body {
         font-size: 13px;
         color: #9ca3af;
     }
-
-
-/* =========================
-   MENU
-========================= */
 
 .menu {
     list-style: none;
@@ -98,20 +80,10 @@ body {
             font-weight: 600;
         }
 
-
-/* =========================
-   MAIN CONTENT
-========================= */
-
 .main-content {
     margin-left: 250px;
     min-height: 100vh;
 }
-
-
-/* =========================
-   TOP NAVBAR
-========================= */
 
 .top-navbar {
     height: 85px;
@@ -129,11 +101,6 @@ body {
     color: #111827;
     min-width: 160px;
 }
-
-
-/* =========================
-   SEARCH BOX
-========================= */
 
 .search-box {
     width: 400px;
@@ -157,11 +124,6 @@ body {
         background: transparent;
         font-size: 13px;
     }
-
-
-/* =========================
-   RIGHT MENU
-========================= */
 
 .right-menu {
     margin-left: auto;
@@ -189,19 +151,9 @@ body {
     object-fit: cover;
 }
 
-
-/* =========================
-   CONTENT
-========================= */
-
 .content {
     padding: 35px;
 }
-
-
-/* =========================
-   RESPONSIVE DESIGN
-========================= */
 
 @media (max-width: 992px) {
 

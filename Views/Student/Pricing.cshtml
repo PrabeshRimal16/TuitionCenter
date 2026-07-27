@@ -1,0 +1,65 @@
+﻿@model TuitionCenter.Models.PricingViewModel
+
+@{
+    ViewData["Title"] = "Pricing";
+    Layout = "_EnrollmentLayout";
+    ViewData["ActiveStep"] = "Pricing";
+}
+
+@if (TempData["EnrollError"] != null)
+{
+    <div class="enroll-alert">@TempData["EnrollError"]</div>
+}
+
+<h3 class="intake-section-title">@Model.ClassName — @Model.CourseTypeName Plan</h3>
+
+<div class="pricing-card">
+    <table class="pricing-table">
+        <thead>
+            <tr>
+                <th>Subject</th>
+                <th style="text-align:right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.SubjectName</td>
+                    <td style="text-align:right;">
+                        @if (item.Amount == null)
+                        {
+                            <span style="color:#dc2626;">Not set</span>
+                        }
+                        else
+                        {
+                            @: Rs @item.Amount
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+        <tfoot>
+            <tr>
+                <td><strong>Total</strong></td>
+                <td style="text-align:right;"><strong>Rs @Model.Total</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+
+    @if (Model.HasMissingFees)
+    {
+        <p class="pricing-warning">
+            Pricing hasn't been set for one or more subjects yet. Please contact the office before continuing.
+        </p>
+    }
+</div>
+
+<form asp-action="Pricing" method="post" id="pricingForm">
+    <input type="hidden" name="classId" value="@Model.ClassId" />
+    @section FooterActions {
+        <button type="submit" form="pricingForm" class="btn-next" disabled="@Model.HasMissingFees">
+            Next <i class="bi bi-arrow-right"></i>
+        </button>
+    }
+</form>

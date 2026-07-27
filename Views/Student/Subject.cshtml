@@ -1,0 +1,62 @@
+﻿@model TuitionCenter.Models.SubjectPickerViewModel
+
+@{
+    ViewData["Title"] = "Select Subjects";
+    Layout = "_EnrollmentLayout";
+    ViewData["ActiveStep"] = "Subject";
+}
+
+@if (TempData["EnrollError"] != null)
+{
+    <div class="enroll-alert">@TempData["EnrollError"]</div>
+}
+
+<form asp-action="Subject" method="post" id="subjectForm">
+    <input type="hidden" name="classId" value="@Model.ClassId" />
+
+    @if (!Model.Subjects.Any())
+    {
+        <p style="color:#6b7280;">No subjects are available for @Model.ClassName yet.</p>
+    }
+
+    <div class="subject-picker-grid">
+        @foreach (var s in Model.Subjects)
+        {
+            <label class="subject-card @(s.IsSelected ? "selected" : "")">
+                <input type="checkbox" name="selectedSubjectIds" value="@s.SubjectId" @(s.IsSelected ? "checked" : "") />
+                <div class="subject-card-top">
+                    <div class="subject-icon">@s.IconText</div>
+                    @if (!string.IsNullOrEmpty(s.Badge))
+                    {
+                        <span class="subject-badge @s.BadgeStyle">@s.Badge</span>
+                    }
+                </div>
+                <h4>@s.Name</h4>
+                <p class="rating-line"><i class="bi bi-star-fill"></i> @s.Rating &nbsp;&middot;&nbsp; @s.TeacherName</p>
+                <p class="subject-desc">@s.Description</p>
+                <div class="subject-card-footer">
+                    <div>
+                        <div class="seats-label">Seats Left</div>
+                        <div class="seats-num">@s.SeatsLeft</div>
+                    </div>
+                    <span class="select-pill">@(s.IsSelected ? "Selected" : "Select")</span>
+                </div>
+            </label>
+        }
+    </div>
+
+    @section FooterActions {
+        <button type="submit" form="subjectForm" class="btn-next">Next <i class="bi bi-arrow-right"></i></button>
+    }
+</form>
+
+<script>
+    document.querySelectorAll('.subject-card input[type=checkbox]').forEach(function(cb) {
+        cb.addEventListener('change', function() {
+            var card = cb.closest('.subject-card');
+            card.classList.toggle('selected', cb.checked);
+            var pill = card.querySelector('.select-pill');
+            pill.textContent = cb.checked ? 'Selected' : 'Select';
+        });
+    });
+</script>
