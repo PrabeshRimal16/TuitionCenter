@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Payments";
+}
+
+<div class="page-container">
+
+    <div class="page-header">
+        <h2>Payment</h2>
+        <p>Complete your enrollment payment.</p>
+    </div>
+
+    <div class="option-card">
+
+        <h4>Payment Summary</h4>
+
+        <hr />
+
+        <p><strong>Course Fee:</strong> Rs. 7,000</p>
+        <p><strong>Registration Fee:</strong> Rs. 500</p>
+
+        <hr />
+
+        <h3>Total: Rs. 7,500</h3>
+
+    </div>
+
+    <div class="navigation-buttons">
+
+        <a asp-controller="Student"
+           asp-action="Timing"
+           class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+
+        <button class="btn-next">
+            Confirm Payment
+        </button>
+
+    </div>
+
+</div>

@@ -1,8 +1,265 @@
-﻿@{
+@model TuitionCenter.Models.ViewModels.TeacherDashboardViewModel
+@{
+    Layout = null;
     ViewData["Title"] = "Teacher Dashboard";
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Study Point</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0B4799',
+                        secondary: '#4F81C7',
+                        background: '#F9FAFB',
+                        cardBg: '#F3F6FA',
+                        textMain: '#1F2937',
+                        textMuted: '#6B7280',
+                        accentGreen: '#34D399',
+                        successGreen: '#E6F4EA',
+                        successText: '#1E8E3E'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-primary">Study <span class="text-secondary">Point</span></h1>
+            <p class="text-xs text-gray-500 mt-1">Teacher Portal</p>
+        </div>
+        <nav class="flex-1 mt-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-primary bg-[#EBF3FF] border-l-4 border-primary font-medium">
+                        <i class="fas fa-th-large w-5 h-5 mr-3 text-lg"></i>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="fas fa-users w-5 h-5 mr-3 text-lg"></i>
+                        Class Management
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="far fa-calendar-alt w-5 h-5 mr-3 text-lg"></i>
+                        Schedule
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="fas fa-video w-5 h-5 mr-3 text-lg"></i>
+                        Live Classes
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="far fa-user w-5 h-5 mr-3 text-lg"></i>
+                        Profile
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
 
-<div class="p-4 bg-light rounded shadow-sm">
-    <h2>Welcome, @User.Identity?.Name!</h2>
-    <p class="text-muted">Role: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
-</div>
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <!-- Top Navbar -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">Dashboard</h2>
+                <p class="text-sm text-gray-500">Here's what's happening with your classes today</p>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button class="text-gray-500 hover:text-gray-700 relative">
+                    <i class="far fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <div class="relative">
+                    <img id="topProfileBtn" src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all" />
+                    
+                    <!-- Dropdown Menu -->
+                    <div id="topProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
+                        <div class="px-4 py-3 border-b border-gray-100">
+                            <p class="text-sm font-semibold text-gray-900">@Model.TeacherName</p>
+                            <p class="text-xs text-gray-500 truncate">@Model.TeacherEmail</p>
+                        </div>
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
+                            <i class="far fa-user w-4 mr-2"></i> My Profile
+                        </a>
+                        <div class="border-t border-gray-100 my-1"></div>
+                        <a href="@Url.Action("Logout", "Account")" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                            <i class="fas fa-sign-out-alt w-4 mr-2"></i> Logout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <!-- Greeting Section -->
+            <div class="flex justify-between items-end mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-1">Good Morning, @Model.TeacherName</h1>
+                    <p class="text-gray-500">You have @(Model.NextClass != null ? Model.UpcomingClasses.Count + 1 : 0) classes scheduled for today.</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-xs text-gray-500 font-semibold tracking-wider uppercase mb-1">Academic Year</p>
+                    <p class="text-xl font-bold text-gray-900">@Model.CurrentAcademicYear</p>
+                </div>
+            </div>
+
+            <!-- Top Cards Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+                <!-- Main Feature Card -->
+                @if (Model.NextClass != null)
+                {
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 relative overflow-hidden flex flex-col justify-between" style="min-height: 280px;">
+                        <!-- Decorative Background -->
+                        <div class="absolute right-0 top-0 h-full w-1/2 opacity-10 pointer-events-none" style="background-image: url('data:image/svg+xml,%3Csvg width=\'100%25\' height=\'100%25\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M10,10 L50,50 M50,10 L10,50\' stroke=\'%230B4799\' stroke-width=\'2\' fill=\'none\'/%3E%3C/svg%3E'); background-size: cover;"></div>
+                        
+                        <div>
+                            <span class="inline-block bg-[#68E387] text-white text-xs font-bold px-3 py-1 rounded-full mb-4">NEXT CLASS AT @Model.NextClass.StartTime.ToString("hh:mm tt")</span>
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">@Model.NextClass.Title</h2>
+                            <p class="text-gray-500 text-sm">@Model.NextClass.ClassName &bull; @Model.NextClass.SubjectName &bull; @Model.NextClass.BatchName &bull; @Model.NextClass.EnrolledStudents Enrolled Students</p>
+                        </div>
+
+                        <div class="flex items-center gap-6 mt-8">
+                            <button class="bg-[#0B4799] hover:bg-blue-800 text-white px-6 py-2.5 rounded-lg font-medium transition-colors flex items-center">
+                                Share Class Link <i class="fas fa-arrow-right ml-2"></i>
+                            </button>
+                            @if(!string.IsNullOrEmpty(Model.NextClass.MeetingLink))
+                            {
+                                <a href="@Model.NextClass.MeetingLink" target="_blank" class="text-[#0B4799] font-medium hover:underline">Join Meeting</a>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-100 p-8 flex items-center justify-center" style="min-height: 280px;">
+                        <div class="text-center">
+                            <i class="far fa-calendar-check text-4xl text-gray-300 mb-3"></i>
+                            <h2 class="text-xl font-bold text-gray-500">No more classes today!</h2>
+                        </div>
+                    </div>
+                }
+
+                <!-- Stats Cards -->
+                <div class="space-y-4">
+                    <!-- Stat 1 -->
+                    <div class="bg-[#F8F9FC] rounded-xl p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-[#EBF3FF] flex items-center justify-center text-[#0B4799]">
+                            <i class="fas fa-user-friends text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold tracking-wider">TOTAL STUDENTS</p>
+                            <div class="flex items-baseline gap-2">
+                                <h3 class="text-2xl font-bold text-gray-900">@Model.TotalStudents</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2 -->
+                    <div class="bg-[#F8F9FC] rounded-xl p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-[#E6F4EA] flex items-center justify-center text-[#1E8E3E]">
+                            <i class="fas fa-graduation-cap text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold tracking-wider">ACTIVE CLASSES</p>
+                            <h3 class="text-2xl font-bold text-gray-900">@Model.ActiveClasses</h3>
+                        </div>
+                    </div>
+
+                    <!-- Stat 3 -->
+                    <div class="bg-[#F8F9FC] rounded-xl p-5 flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-[#E5E7EB] flex items-center justify-center text-gray-600">
+                            <i class="fas fa-chart-bar text-xl"></i>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500 font-semibold tracking-wider">AVG. ATTENDANCE</p>
+                            <h3 class="text-2xl font-bold text-gray-900">94.2%</h3>
+                            <p class="text-xs text-[#0B4799] mt-0.5">Stable performance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upcoming Classes Section -->
+            <div class="mb-4 flex justify-between items-center">
+                <h2 class="text-xl font-bold text-gray-900">Upcoming Classes Today</h2>
+                <a href="#" class="text-[#0B4799] font-medium hover:underline text-sm flex items-center">Full Schedule <i class="fas fa-chevron-right text-xs ml-1"></i></a>
+            </div>
+
+            <div class="space-y-4">
+                @if (Model.UpcomingClasses.Any())
+                {
+                    foreach (var cls in Model.UpcomingClasses)
+                    {
+                        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex items-center justify-between">
+                            <div class="flex items-center gap-6">
+                                <div class="text-center w-20 border-r border-gray-100 pr-4">
+                                    <div class="text-[#0B4799] font-semibold text-lg leading-tight">@cls.StartTime.ToString("hh:mm")<br>@cls.StartTime.ToString("tt")</div>
+                                    <div class="text-xs text-gray-500 mt-1">@cls.DurationMinutes mins</div>
+                                </div>
+                                <div>
+                                    <h3 class="text-lg font-bold text-gray-900">@cls.Title</h3>
+                                    <p class="text-sm text-gray-500 mt-1">@cls.ClassName &bull; @cls.SubjectName &bull; @cls.BatchName</p>
+                                </div>
+                            </div>
+                            <button class="text-gray-400 hover:text-gray-600 p-2">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center p-8 text-gray-500">No other upcoming classes today.</div>
+                }
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Simple script for interactivity could go here if needed.
+        const topProfileBtn = document.getElementById('topProfileBtn');
+        const topProfileDropdown = document.getElementById('topProfileDropdown');
+
+        if (topProfileBtn) {
+            topProfileBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                topProfileDropdown.classList.toggle('hidden');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!topProfileBtn.contains(e.target) && !topProfileDropdown.contains(e.target)) {
+                    topProfileDropdown.classList.add('hidden');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

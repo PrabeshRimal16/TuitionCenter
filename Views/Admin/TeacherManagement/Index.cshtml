@@ -1,0 +1,343 @@
+﻿@model List<TuitionCenter.Models.ViewModels.Admin.TeacherVM>
+
+@{
+    ViewData["Title"] = "Manage Teachers";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    
+}
+<head>
+    <link rel="stylesheet" href="~/css/Admin/TeacherManagement.css" />
+</head>
+
+<div class="admin-page">
+
+    <div class="page-header">
+
+        <div>
+            <h1>Teachers</h1>
+            <p>Manage and monitor all teachers in the tuition center.</p>
+        </div>
+
+        <a asp-action="Create" class="btn-primary-custom">
+            <i class="bi bi-plus-lg"></i>
+            Add Teacher
+        </a>
+
+    </div>
+
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">
+            <i class="bi bi-check-circle me-2"></i>
+            @TempData["Success"]
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    }
+
+
+    <div class="teacher-stats">
+
+        <div class="stat-card">
+
+            <div class="stat-icon blue">
+                <i class="bi bi-people-fill"></i>
+            </div>
+
+            <div>
+                <span>Total Teachers</span>
+                <h3>@Model.Count</h3>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon green">
+                <i class="bi bi-person-check-fill"></i>
+            </div>
+
+            <div>
+                <span>Active Teachers</span>
+                <h3>@Model.Count(t => t.IsActive)</h3>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon red">
+                <i class="bi bi-person-x-fill"></i>
+            </div>
+
+            <div>
+                <span>Inactive Teachers</span>
+                <h3>@Model.Count(t => !t.IsActive)</h3>
+            </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+            <div class="stat-icon purple">
+                <i class="bi bi-mortarboard-fill"></i>
+            </div>
+
+            <div>
+                <span>Assigned Batches</span>
+                <h3>@Model.Sum(t => t.AssignedBatchCount)</h3>
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="content-card">
+
+        <div class="content-card-header">
+
+            <div>
+                <h3>All Teachers</h3>
+                <p>View and manage teacher accounts.</p>
+            </div>
+
+            <div class="teacher-search">
+
+                <i class="bi bi-search"></i>
+
+                <input type="text"
+                       id="teacherSearch"
+                       placeholder="Search teachers..." />
+
+            </div>
+
+        </div>
+
+
+        <div class="table-container">
+
+            <table class="teacher-table" id="teacherTable">
+
+                <thead>
+
+                    <tr>
+                        <th>Teacher</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Assigned Batches</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                    @if (Model.Any())
+                    {
+                        foreach (var teacher in Model)
+                        {
+                            <tr>
+
+                                <td>
+
+                                    <div class="teacher-info">
+
+                                        <div class="teacher-avatar">
+                                            @teacher.FullName.Substring(0, 1).ToUpper()
+                                        </div>
+
+                                        <div>
+
+                                            <strong>
+                                                @teacher.FullName
+                                            </strong>
+
+                                            <small>
+                                                ID: #@teacher.UserId
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    @teacher.Email
+                                </td>
+
+
+                                <td>
+                                    @(teacher.Phone ?? "Not provided")
+                                </td>
+
+
+                                <td>
+
+                                    <span class="batch-count">
+                                        @teacher.AssignedBatchCount
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    @if (teacher.IsActive)
+                                    {
+                                        <span class="status active">
+                                            <span></span>
+                                            Active
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status inactive">
+                                            <span></span>
+                                            Inactive
+                                        </span>
+                                    }
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="action-buttons">
+
+                                        <a asp-action="Details"
+                                           asp-route-id="@teacher.UserId"
+                                           class="action-btn view"
+                                           title="View Details">
+
+                                            <i class="bi bi-eye"></i>
+
+                                        </a>
+
+
+                                        <a asp-action="Edit"
+                                           asp-route-id="@teacher.UserId"
+                                           class="action-btn edit"
+                                           title="Edit">
+
+                                            <i class="bi bi-pencil"></i>
+
+                                        </a>
+
+
+                                        <form asp-action="ToggleActive"
+                                              asp-route-id="@teacher.UserId"
+                                              method="post">
+
+                                            @Html.AntiForgeryToken()
+
+                                            <button type="submit"
+                                                    class="action-btn toggle"
+                                                    title="Toggle Status">
+
+                                                @if (teacher.IsActive)
+                                                {
+                                                    <i class="bi bi-person-x"></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class="bi bi-person-check"></i>
+                                                }
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+
+                            <td colspan="6">
+
+                                <div class="empty-state">
+
+                                    <i class="bi bi-people"></i>
+
+                                    <h4>No Teachers Found</h4>
+
+                                    <p>
+                                        Start by adding your first teacher.
+                                    </p>
+
+                                    <a asp-action="Create"
+                                       class="btn-primary-custom">
+
+                                        <i class="bi bi-plus-lg"></i>
+                                        Add Teacher
+
+                                    </a>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+        const searchInput =
+            document.getElementById("teacherSearch");
+
+        searchInput.addEventListener("keyup", function () {
+
+            const searchValue =
+                this.value.toLowerCase();
+
+            const rows =
+                document.querySelectorAll(
+                    "#teacherTable tbody tr"
+                );
+
+            rows.forEach(row => {
+
+                row.style.display =
+                    row.innerText
+                        .toLowerCase()
+                        .includes(searchValue)
+                        ? ""
+                        : "none";
+
+            });
+
+        });
+
+    </script>
+
+}

@@ -7,7 +7,7 @@ public partial class CourseType
 {
     public int CourseTypeId { get; set; }
 
-    public string TypeName { get; set; } = null!;
+    public string CourseTypeName { get; set; } = null!;
 
     public virtual ICollection<Batch> Batches { get; set; } = new List<Batch>();
 
