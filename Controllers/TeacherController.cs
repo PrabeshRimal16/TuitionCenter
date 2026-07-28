@@ -174,5 +174,37 @@ namespace TuitionCenter.Controllers
 
             return View(viewModel);
         }
+
+        public IActionResult Profile()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdString, out int teacherId))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var teacher = _context.Users.FirstOrDefault(u => u.UserId == teacherId);
+            if (teacher == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            var viewModel = new TeacherProfileViewModel
+            {
+                FullName = teacher.FullName,
+                Email = teacher.Email,
+                Phone = teacher.Phone ?? "+977 9801234567",
+                DateOfBirth = "1985/04/12",
+                HighestDegree = "Master of Science in Applied Mathematics",
+                Institution = "Tribhuvan University",
+                YearOfGraduation = "2008",
+                SubjectSpecialization = "Calculus & Statistics",
+                YearsOfExperience = "12",
+                Bio = "I am a passionate Mathematics educator with over 12 years of experience in higher secondary education. My goal is to make complex mathematical concepts accessible and engaging for students. I specialize in advanced calculus and applied statistics, with a focus on practical application in modern science.",
+                PhotoPath = "https://i.pravatar.cc/150?img=11"
+            };
+
+            return View(viewModel);
+        }
     }
 }
