@@ -1,27 +1,33 @@
-﻿@model TuitionCenter.Models.IntakeViewModel
-
+@model TuitionCenter.Models.IntakeViewModel
 @{
+    ViewData["Title"] = "Select Course Type";
 }
 
-
-    </div>
-                <h4>@m.MonthName @m.Year</h4>
-                <p>Starts: @m.StartDateLabel</p>
-                <div class="intake-month-duration"><i class="bi bi-clock-history"></i> @m.DurationMonths Months Duration</div>
-            </label>
-        }
-    </div>
-
-
+<div class="intake-container">
+    <h2>Select Course Plan</h2>
+    <form id="intakeForm" method="post">
+        <input type="hidden" asp-for="ClassId" />
+        
+        <div class="course-types-group">
+            @if (Model?.CourseTypes != null)
+            {
+                foreach (var ct in Model.CourseTypes)
+                {
+                    <div class="course-type-card">
+                        <input type="radio" asp-for="SelectedCourseTypeId" value="@ct.CourseTypeId" id="ct_@ct.CourseTypeId" class="course-type-radio" onchange="filterBatchesByCourseType()" />
+                        <label for="ct_@ct.CourseTypeId">
+                            <h4>@ct.TypeName</h4>
+                        </label>
+                    </div>
+                }
+            }
         </div>
+    </form>
+</div>
 
-        </div>
-    }
-
-    @section FooterActions {
-        <button type="submit" form="intakeForm" class="btn-next">Next <i class="bi bi-arrow-right"></i></button>
-    }
-</form>
+@section FooterActions {
+    <button type="submit" form="intakeForm" class="btn-next">Next <i class="bi bi-arrow-right"></i></button>
+}
 
 <script>
     function filterBatchesByCourseType() {
@@ -33,20 +39,9 @@
             var match = opt.dataset.coursetype === courseTypeId;
             opt.style.display = match ? 'flex' : 'none';
             if (!match) {
-                var input = opt.querySelector('input[type=radio]');
-                if (input.checked) input.checked = false;
+                var radio = opt.querySelector('input[type="radio"]');
+                if (radio) radio.checked = false;
             }
         });
     }
-
-    document.querySelectorAll('.course-type-radio').forEach(function(r) {
-        r.addEventListener('change', filterBatchesByCourseType);
-    });
-
-
-
-
-
-
-
-
+</script>

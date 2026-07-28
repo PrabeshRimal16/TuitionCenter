@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using TuitionCenter.Models;
 using System.Text.Json;
 
@@ -7,6 +8,7 @@ namespace TuitionCenter.Controllers
 {
     public class StudentController : Controller
     {
+        private const string CurrentClassSessionKey = "CurrentClassSessionId";
         private readonly TuitionCenterDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
 
@@ -137,7 +139,7 @@ namespace TuitionCenter.Controllers
                         ClassName = e.Class.ClassName,
                         SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
                         Amount = e.ExpectedAmount,
-                        PlanLabel = e.CourseType.TypeName,
+                        PlanLabel = e.CourseType.CourseTypeName,
                         SessionsCompleted = sessionsForEnrollment.Count(s => s.Status == "Completed"),
                         SessionsTotal = sessionsForEnrollment.Count
                     };
@@ -393,7 +395,7 @@ namespace TuitionCenter.Controllers
                 CourseTypes = courseTypes.Select(ct => new CourseTypeOption
                 {
                     CourseTypeId = ct.CourseTypeId,
-                    TypeName = ct.TypeName
+                    TypeName = ct.CourseTypeName
                 }).ToList(),
                 TimeSlots = timeSlots.Select(t => new TimeSlotOption
                 {
@@ -499,7 +501,7 @@ namespace TuitionCenter.Controllers
             {
                 ClassId = classId,
                 ClassName = classEntity.ClassName,
-                CourseTypeName = courseType?.TypeName ?? "",
+                CourseTypeName = courseType?.CourseTypeName ?? "",
                 Items = items,
                 Total = items.Sum(i => i.Amount ?? 0),
                 HasMissingFees = items.Any(i => i.Amount == null)

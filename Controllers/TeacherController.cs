@@ -175,33 +175,41 @@ namespace TuitionCenter.Controllers
             return View(viewModel);
         }
 
-        public IActionResult Profile()
+        [HttpGet]
+        public IActionResult ClassManagement()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!int.TryParse(userIdString, out int teacherId))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-
+            int teacherId = 0;
+            int.TryParse(userIdString, out teacherId);
             var teacher = _context.Users.FirstOrDefault(u => u.UserId == teacherId);
-            if (teacher == null)
-            {
-                return RedirectToAction("Login", "Account");
-            }
 
-            var viewModel = new TeacherProfileViewModel
+            var viewModel = new TeacherDashboardViewModel
             {
-                FullName = teacher.FullName,
-                Email = teacher.Email,
-                Phone = teacher.Phone ?? "+977 9801234567",
-                DateOfBirth = "1985/04/12",
-                HighestDegree = "Master of Science in Applied Mathematics",
-                Institution = "Tribhuvan University",
-                YearOfGraduation = "2008",
-                SubjectSpecialization = "Calculus & Statistics",
-                YearsOfExperience = "12",
-                Bio = "I am a passionate Mathematics educator with over 12 years of experience in higher secondary education. My goal is to make complex mathematical concepts accessible and engaging for students. I specialize in advanced calculus and applied statistics, with a focus on practical application in modern science.",
-                PhotoPath = "https://i.pravatar.cc/150?img=11"
+                TeacherName = teacher?.FullName ?? "Teacher",
+                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com"
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpGet]
+        public IActionResult Classes()
+        {
+            return RedirectToAction("ClassManagement");
+        }
+
+        [HttpGet]
+        public IActionResult LiveClasses()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            int teacherId = 0;
+            int.TryParse(userIdString, out teacherId);
+            var teacher = _context.Users.FirstOrDefault(u => u.UserId == teacherId);
+
+            var viewModel = new TeacherDashboardViewModel
+            {
+                TeacherName = teacher?.FullName ?? "Teacher",
+                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com"
             };
 
             return View(viewModel);

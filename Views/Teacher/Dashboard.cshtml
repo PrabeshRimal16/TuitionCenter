@@ -54,7 +54,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                    <a href="@Url.Action("ClassManagement", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
                         <i class="fas fa-users w-5 h-5 mr-3 text-lg"></i>
                         Class Management
                     </a>
@@ -66,7 +66,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                    <a href="@Url.Action("LiveClasses", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
                         <i class="fas fa-video w-5 h-5 mr-3 text-lg"></i>
                         Live Classes
                     </a>
@@ -90,10 +90,58 @@
                 <p class="text-sm text-gray-500">Here's what's happening with your classes today</p>
             </div>
             <div class="flex items-center space-x-6">
-                <button class="text-gray-500 hover:text-gray-700 relative">
-                    <i class="far fa-bell text-xl"></i>
-                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                <div class="relative">
+                    <button id="notificationBtn" class="text-gray-500 hover:text-gray-700 relative p-1">
+                        <i class="far fa-bell text-xl"></i>
+                        <span id="notifBadge" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <!-- Notification Dropdown -->
+                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+                        <div class="flex justify-between items-center px-5 py-4 border-b border-gray-100">
+                            <h4 class="text-sm font-bold text-gray-900">Notifications</h4>
+                            <button id="markAllReadBtn" class="text-xs text-[#0B4799] font-semibold hover:underline">Mark all read</button>
+                        </div>
+                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
+                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-calendar-check text-[#0B4799] text-xs"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 leading-snug">Class session starting soon</p>
+                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Mathematics - Grade 10 · Batch A · 7:00 AM</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">5 minutes ago</p>
+                                </div>
+                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
+                            </div>
+                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
+                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-user-plus text-green-600 text-xs"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-semibold text-gray-900 leading-snug">New student enrolled</p>
+                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Priya Sharma joined Science - Grade 9</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">32 minutes ago</p>
+                                </div>
+                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
+                            </div>
+                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
+                                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-link text-amber-600 text-xs"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-700 leading-snug">Reminder: Update live class link</p>
+                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Evening batch · Science - Grade 9 has no link</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">1 hour ago</p>
+                                </div>
+                            </div>
+                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
+                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-clipboard-check text-purple-600 text-xs"></i></div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-medium text-gray-700 leading-snug">Attendance report ready</p>
+                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Weekly report for Accountancy - Grade 12</p>
+                                    <p class="text-[11px] text-gray-400 mt-1">3 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-5 py-3 border-t border-gray-100 bg-gray-50">
+                            <button class="w-full text-center text-xs font-semibold text-[#0B4799] hover:underline">View all notifications</button>
+                        </div>
+                    </div>
+                </div>
                 <div class="relative">
                     <img id="topProfileBtn" src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all" />
                     
@@ -253,11 +301,47 @@
                 topProfileDropdown.classList.toggle('hidden');
             });
 
-            // Close dropdown when clicking outside
+            // Close dropdowns when clicking outside
             document.addEventListener('click', function(e) {
                 if (!topProfileBtn.contains(e.target) && !topProfileDropdown.contains(e.target)) {
                     topProfileDropdown.classList.add('hidden');
                 }
+                const nb = document.getElementById('notificationBtn');
+                const nd = document.getElementById('notificationDropdown');
+                if (nd && nb && !nb.contains(e.target) && !nd.contains(e.target)) {
+                    nd.classList.add('hidden');
+                }
+            });
+        }
+
+        // Notification dropdown
+        const notificationBtn = document.getElementById('notificationBtn');
+        const notificationDropdown = document.getElementById('notificationDropdown');
+        const markAllReadBtn = document.getElementById('markAllReadBtn');
+        const notifBadge = document.getElementById('notifBadge');
+        if (notificationBtn && notificationDropdown) {
+            notificationBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                notificationDropdown.classList.toggle('hidden');
+                if (typeof topProfileDropdown !== 'undefined' && topProfileDropdown) topProfileDropdown.classList.add('hidden');
+            });
+            if (markAllReadBtn) {
+                markAllReadBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    document.querySelectorAll('.notif-dot').forEach(d => d.classList.add('hidden'));
+                    document.querySelectorAll('.notif-item.unread').forEach(i => i.classList.remove('unread'));
+                    if (notifBadge) notifBadge.classList.add('hidden');
+                });
+            }
+            document.querySelectorAll('.notif-item').forEach(function(item) {
+                item.addEventListener('click', function() {
+                    const dot = this.querySelector('.notif-dot');
+                    if (dot) dot.classList.add('hidden');
+                    this.classList.remove('unread');
+                    if (!document.querySelector('.notif-dot:not(.hidden)') && notifBadge) {
+                        notifBadge.classList.add('hidden');
+                    }
+                });
             });
         }
     </script>
