@@ -1,0 +1,44 @@
+﻿@model TuitionCenter.Models.ClassmatesViewModel
+
+@{
+    ViewData["Title"] = "Enrolled Students";
+    Layout = "_EnrollmentLayout";
+    ViewData["ShowSidebar"] = false;
+}
+
+<h3 class="intake-section-title" style="margin-top:0;">@Model.ClassName — Enrolled Students</h3>
+
+<div class="classmates-card">
+    @if (!Model.Classmates.Any())
+    {
+        <p style="color:#6b7280;">No students are enrolled in this class yet.</p>
+    }
+    else
+    {
+        <table class="classmates-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Enrollment Date</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model.Classmates)
+                {
+                    <tr>
+                        <td>@s.Name</td>
+                        <td>@s.Email</td>
+                        <td>@s.EnrolledDateLabel</td>
+                        <td><span class="classmate-status">@s.Status</span></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<a asp-action="EnrollClass" class="enroll-back" style="margin-top:20px;display:inline-flex;">
+    <i class="bi bi-arrow-left"></i> Back to Classes
+</a>

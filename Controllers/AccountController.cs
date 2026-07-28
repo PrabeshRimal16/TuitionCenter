@@ -10,7 +10,6 @@ namespace TuitionCenter.Controllers
 {
     public class AccountController : Controller
     {
-        // TODO: rename to match your actual DbContext class/namespace if different
         private readonly TuitionCenterDbContext _context;
         private readonly PasswordHasher<User> _passwordHasher;
 
