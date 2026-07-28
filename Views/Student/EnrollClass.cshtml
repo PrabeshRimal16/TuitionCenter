@@ -1,0 +1,29 @@
+﻿@model IEnumerable<TuitionCenter.Models.ClassPickerItem>
+
+@{
+    ViewData["Title"] = "Select Class";
+    Layout = "_EnrollmentLayout";
+    ViewData["ShowSidebar"] = false;
+}
+
+<div class="class-picker-grid">
+    @foreach (var c in Model)
+    {
+        <div class="class-tile @(c.IsEnrolled ? "my-enrolled" : "")"
+             onclick="window.location.href='@Url.Action("Subject", "Student", new { classId = c.ClassId })'"
+             style="cursor:pointer;">
+            <div class="class-tile-top">
+                <div class="class-tile-num @(c.Label.Length > 2 ? "wide" : "")">@c.Label</div>
+                <a asp-action="Classmates" asp-route-classId="@c.ClassId" class="class-tile-count" onclick="event.stopPropagation();">
+                    <i class="bi bi-people-fill"></i> @c.EnrolledStudentCount enrolled
+                </a>
+            </div>
+            <h4>@c.ClassName</h4>
+            <p class="class-tile-subtitle">@c.Subtitle</p>
+            @if (c.IsEnrolled)
+            {
+                <p class="class-tile-mystatus">You: @c.EnrollmentStatusLabel</p>
+            }
+        </div>
+    }
+</div>

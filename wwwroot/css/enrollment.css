@@ -1,0 +1,572 @@
+﻿/* ============================================================
+   Enrollment flow: Class -> Subject -> Intake -> Pricing -> Payments
+   ============================================================ */
+
+.enroll-page {
+    display: flex;
+    min-height: 100vh;
+    background: #f7f8fc;
+}
+
+.enroll-sidebar {
+    width: 250px;
+    flex-shrink: 0;
+    background: #f7f8fc;
+    padding: 30px 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+    .enroll-sidebar h2 {
+        color: #4f46e5;
+        font-size: 20px;
+        font-weight: 800;
+        margin: 0 0 30px;
+    }
+
+.enroll-steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+}
+
+    .enroll-steps li a {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        border-radius: 10px;
+        color: #6b7280;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 15px;
+        margin-bottom: 6px;
+    }
+
+    .enroll-steps li.active a {
+        background: #4f46e5;
+        color: #fff;
+    }
+
+.enroll-back {
+    border: 1px solid #d1d5db;
+    background: #fff;
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-weight: 600;
+    color: #374151;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    font-size: 14px;
+}
+
+.enroll-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.enroll-main-centered {
+    max-width: 1100px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.enroll-topbar {
+    background: #fff;
+    padding: 20px 40px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1px 0 rgba(0,0,0,.05);
+}
+
+    .enroll-topbar .logo {
+        color: #4f46e5;
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .enroll-topbar .right-icons {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        color: #374151;
+        font-size: 20px;
+        margin-left: auto;
+    }
+
+.enroll-content {
+    padding: 40px;
+    flex: 1;
+}
+
+.enroll-alert {
+    background: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 12px 18px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+/* ---------- Intro header (Class step, no sidebar) ---------- */
+
+.enroll-intro-header {
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.enroll-intro-title {
+    color: #2563eb;
+    font-size: 40px;
+    font-weight: 800;
+    margin: 0 0 10px;
+}
+
+.enroll-intro-subtitle {
+    color: #4b5563;
+    font-size: 17px;
+    margin: 0;
+}
+
+.enroll-intro-divider {
+    border: none;
+    border-top: 1px solid #d1d5db;
+    margin: 30px 0 10px;
+}
+.class-tile-badge {
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+    .class-tile-badge.approved {
+        background: #dcfce7;
+        color: #16a34a;
+    }
+
+    .class-tile-badge.pending {
+        background: #fef9c3;
+        color: #ca8a04;
+    }
+
+.class-tile.enrolled {
+    border: 2px solid #16a34a;
+}
+.class-tile-count {
+    background: #eef2ff;
+    color: #4f46e5;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.class-tile.my-enrolled {
+    border: 2px solid #4f46e5;
+}
+
+.class-tile-mystatus {
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 13px;
+    margin: 8px 0 0;
+}
+
+/* ---------- Class picker grid ---------- */
+
+.class-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+}
+
+.class-tile {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.04);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+    .class-tile:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0,0,0,.08);
+    }
+
+.class-tile-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.class-tile-num {
+    background: #eef2ff;
+    color: #4f46e5;
+    font-weight: 800;
+    font-size: 20px;
+    border-radius: 12px;
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .class-tile-num.wide {
+        width: auto;
+        padding: 0 14px;
+    }
+
+.class-tile-top > i {
+    color: #9ca3af;
+    font-size: 18px;
+}
+
+.class-tile h4 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.class-tile-subtitle {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 4px 0 0;
+}
+
+/* ---------- Subject picker grid ---------- */
+
+.subject-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.subject-card {
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: border-color .15s ease, box-shadow .15s ease;
+    position: relative;
+}
+
+    .subject-card:hover {
+        border-color: #c7d2fe;
+    }
+
+    .subject-card.selected {
+        border-color: #4f46e5;
+        box-shadow: 0 4px 14px rgba(79,70,229,.15);
+    }
+
+    .subject-card input[type="checkbox"] {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+.subject-card-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 14px;
+}
+
+.subject-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
+    background: #eef2ff;
+    color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+.subject-card .checkmark {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid #d1d5db;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: transparent;
+    font-size: 14px;
+}
+
+.subject-card.selected .checkmark {
+    background: #4f46e5;
+    border-color: #4f46e5;
+    color: #fff;
+}
+
+.subject-card h4 {
+    margin: 0 0 6px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.subject-meta {
+    color: #6b7280;
+    font-size: 13px;
+    margin: 0 0 18px;
+    flex: 1;
+}
+
+.subject-card-footer .seats-label {
+    color: #374151;
+    font-size: 13px;
+    margin-bottom: 2px;
+}
+
+.subject-card-footer .seats-num {
+    color: #4f46e5;
+    font-weight: 800;
+    font-size: 17px;
+}
+
+/* ---------- Intake step ---------- */
+
+.intake-section-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 28px 0 14px;
+}
+
+    .intake-section-title:first-of-type {
+        margin-top: 0;
+    }
+
+.course-type-grid {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.course-type-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 14px 22px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+    .course-type-card:has(input:checked) {
+        border-color: #4f46e5;
+        background: #eef2ff;
+    }
+
+.intake-select {
+    width: 100%;
+    max-width: 420px;
+    padding: 12px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #fff;
+}
+
+.intake-subject-block {
+    background: #fff;
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+
+    .intake-subject-block h4 {
+        margin: 0 0 12px;
+        font-size: 16px;
+    }
+
+.batch-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.batch-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 12px 16px;
+    cursor: pointer;
+}
+
+    .batch-option:has(input:checked) {
+        border-color: #4f46e5;
+        background: #eef2ff;
+    }
+
+    .batch-option div {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 14px;
+    }
+
+    .batch-option span {
+        color: #6b7280;
+        font-size: 13px;
+    }
+
+.batch-seats {
+    font-weight: 700;
+    color: #4f46e5 !important;
+    white-space: nowrap;
+}
+
+/* ---------- Pricing step ---------- */
+
+.pricing-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+    max-width: 560px;
+}
+
+.pricing-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .pricing-table th, .pricing-table td {
+        padding: 12px 8px;
+        text-align: left;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+    }
+
+    .pricing-table th {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+    .pricing-table tfoot td {
+        border-bottom: none;
+        border-top: 2px solid #e5e7eb;
+        font-size: 16px;
+        padding-top: 16px;
+    }
+
+.pricing-warning {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 16px;
+    font-size: 13px;
+}
+
+/* ---------- Shared footer bar + buttons ---------- */
+
+.enroll-footer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 40px;
+}
+
+.enroll-footer-bar-right {
+    justify-content: flex-end;
+}
+
+.btn-next {
+    background: #4f46e5;
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    padding: 14px 26px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+    .btn-next:disabled {
+        background: #c7d2fe;
+        cursor: not-allowed;
+    }
+
+@media (max-width: 1300px) {
+    .subject-picker-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 900px) {
+    .enroll-sidebar {
+        display: none;
+    }
+
+    .class-picker-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 700px) {
+    .subject-picker-grid {
+        grid-template-columns: 1fr;
+    }
+}
+.classmates-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,.05);
+}
+
+.classmates-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .classmates-table th, .classmates-table td {
+        padding: 14px 10px;
+        text-align: left;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+    }
+
+    .classmates-table th {
+        color: #6b7280;
+        font-weight: 600;
+    }
+
+.classmate-status {
+    background: #dcfce7;
+    color: #16a34a;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+}
