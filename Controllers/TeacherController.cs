@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using TuitionCenter.Models;
 using TuitionCenter.Models.ViewModels;
+using System.Globalization;
 
 namespace TuitionCenter.Controllers
 {
@@ -214,5 +215,111 @@ namespace TuitionCenter.Controllers
 
             return View(viewModel);
         }
+
+        [HttpPost]
+        public IActionResult CreateClass([FromBody] CreateClassRequest request)
+        {
+            try 
+            {
+                var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(userIdString, out int teacherId))
+                {
+                    return Unauthorized("User is not logged in.");
+                }
+
+                // Find a valid batch for the teacher or fallback
+                var batch = _context.Batches.FirstOrDefault(b => b.TeacherId == teacherId);
+                
+                if (batch == null) 
+                {
+                    // Fallback: Create a dummy batch if none exists
+                    var dummyClass = _context.Classes.FirstOrDefault() ?? new Class { ClassName = "Class 10" };
+                    if (dummyClass.ClassId == 0) _context.Classes.Add(dummyClass);
+
+                    var dummySubject = _context.Subjects.FirstOrDefault() ?? new Subject { SubjectName = "Science", Class = dummyClass };
+                    if (dummySubject.SubjectId == 0) _context.Subjects.Add(dummySubject);
+
+                    var dummyCourseType = _context.CourseTypes.FirstOrDefault() ?? new CourseType { CourseTypeName = "Regular" };
+                    if (dummyCourseType.CourseTypeId == 0) _context.CourseTypes.Add(dummyCourseType);
+
+                    var dummyTimeSlot = _context.TimeSlots.FirstOrDefault() ?? new TimeSlot { Days = "Mon-Fri" };
+                    if (dummyTimeSlot.TimeSlotId == 0) _context.TimeSlots.Add(dummyTimeSlot);
+
+                    _context.SaveChanges();
+
+                    batch = new Batch {
+                        BatchName = "Default Batch",
+                        TeacherId = teacherId,
+                        ClassId = dummyClass.ClassId,
+                        SubjectId = dummySubject.SubjectId,
+                        CourseTypeId = dummyCourseType.CourseTypeId,
+                        TimeSlotId = dummyTimeSlot.TimeSlotId,
+                        Capacity = 30
+                    };
+                    _context.Batches.Add(batch);
+                    _context.SaveChanges();
+                }
+
+                // Parse time
+                if (!TimeOnly.TryParse(request.StartTime, out TimeOnly startTime)) startTime = new TimeOnly(10, 0);
+                if (!TimeOnly.TryParse(request.EndTime, out TimeOnly endTime)) endTime = new TimeOnly(11, 0);
+
+                // Parse date range
+                if (!DateTime.TryParse(request.StartDate, out DateTime startDate)) startDate = DateTime.Today;
+                if (!DateTime.TryParse(request.EndDate, out DateTime endDate)) endDate = startDate.AddMonths(1);
+
+                var dayMap = new Dictionary<string, DayOfWeek>
+                {
+                    { "SUN", DayOfWeek.Sunday }, { "MON", DayOfWeek.Monday }, { "TUE", DayOfWeek.Tuesday },
+                    { "WED", DayOfWeek.Wednesday }, { "THU", DayOfWeek.Thursday }, { "FRI", DayOfWeek.Friday }, { "SAT", DayOfWeek.Saturday }
+                };
+
+                // Build set of selected DayOfWeek values
+                var selectedDays = new HashSet<DayOfWeek>();
+                foreach (var dayStr in request.Days)
+                {
+                    if (dayMap.TryGetValue(dayStr.ToUpper(), out DayOfWeek dow))
+                        selectedDays.Add(dow);
+                }
+
+                // Iterate every day in the range and create a session on matching weekdays
+                var title = $"{request.SubjectName} - {request.ClassName}";
+                for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
+                {
+                    if (selectedDays.Contains(date.DayOfWeek))
+                    {
+                        _context.ClassSessions.Add(new ClassSession
+                        {
+                            BatchId = batch.BatchId,
+                            TeacherId = teacherId,
+                            Title = title,
+                            MeetingLink = "https://meet.google.com/new",
+                            SessionDate = DateOnly.FromDateTime(date),
+                            StartTime = startTime,
+                            EndTime = endTime,
+                            Status = "Upcoming"
+                        });
+                    }
+                }
+
+                _context.SaveChanges();
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
+            }
+        }
+    }
+
+    public class CreateClassRequest
+    {
+        public string ClassName { get; set; }
+        public string SubjectName { get; set; }
+        public string StartDate { get; set; }
+        public string EndDate { get; set; }
+        public string StartTime { get; set; }
+        public string EndTime { get; set; }
+        public List<string> Days { get; set; }
     }
 }
