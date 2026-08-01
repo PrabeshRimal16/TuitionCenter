@@ -1,19 +1,23 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TuitionCenter.Models;
 using System.Text.Json;
+using TuitionCenter.Models;
 
 namespace TuitionCenter.Controllers
 {
     public class StudentController : Controller
     {
         private readonly TuitionCenterDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
+        private const string CurrentClassSessionKey = "EnrollCurrentClassId";
 
         public StudentController(TuitionCenterDbContext context)
         {
             _context = context;
         }
+
+        // ============================================================
+        // Dashboard
+        // ============================================================
 
         [HttpGet]
         public IActionResult Dashboard()
@@ -137,7 +141,7 @@ namespace TuitionCenter.Controllers
                         ClassName = e.Class.ClassName,
                         SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
                         Amount = e.ExpectedAmount,
-                        PlanLabel = e.CourseType.TypeName,
+                        PlanLabel = e.CourseType.CourseTypeName,
                         SessionsCompleted = sessionsForEnrollment.Count(s => s.Status == "Completed"),
                         SessionsTotal = sessionsForEnrollment.Count
                     };
@@ -146,6 +150,11 @@ namespace TuitionCenter.Controllers
 
             return View(model);
         }
+
+        // ============================================================
+        // Classmates
+        // ============================================================
+
         [HttpGet]
         public IActionResult Classmates(int classId)
         {
@@ -176,7 +185,79 @@ namespace TuitionCenter.Controllers
         }
 
         // ============================================================
-        // Enroll: Class picker
+        // Enroll: My Classes (enrolled-only summary, no browse grid)
+        // ============================================================
+
+        [HttpGet]
+        public IActionResult EnrollClass()
+        {
+            var studentId = GetCurrentUserId();
+
+            var myEnrollments = studentId == null
+                ? new List<Enrollment>()
+                : _context.Enrollments
+                    .Where(e => e.StudentId == studentId)
+                    .Include(e => e.Class)
+                    .Include(e => e.Student)
+                    .Include(e => e.EnrollmentSubjects).ThenInclude(es => es.Subject)
+                    .ToList();
+
+            var myBatchIds = myEnrollments
+                .SelectMany(e => e.EnrollmentSubjects)
+                .Where(es => es.AssignedBatchId != null)
+                .Select(es => es.AssignedBatchId!.Value)
+                .Distinct()
+                .ToList();
+
+            var today = DateOnly.FromDateTime(DateTime.Now);
+
+            var mySessions = _context.ClassSessions
+                .Where(s => myBatchIds.Contains(s.BatchId))
+                .ToList();
+
+            var totalSessions = mySessions.Count;
+            var completedSessions = mySessions.Count(s => s.Status == "Completed");
+
+            var model = new ClassOverviewViewModel
+            {
+                MyEnrolledClassCount = myEnrollments.Count,
+                SessionsCompleted = completedSessions,
+                SessionsTotal = totalSessions,
+                OverallCompletionPercent = totalSessions == 0 ? 0 : (int)(completedSessions * 100.0 / totalSessions),
+                UpcomingSessionCount = mySessions.Count(s => s.SessionDate >= today && s.Status != "Completed" && s.Status != "Cancelled"),
+                UpcomingSessionLabel = mySessions
+                    .Where(s => s.SessionDate >= today && s.Status != "Completed" && s.Status != "Cancelled")
+                    .OrderBy(s => s.SessionDate).ThenBy(s => s.StartTime)
+                    .Select(s => $"{s.SessionDate:MMM d} at {s.StartTime:h:mm tt}")
+                    .FirstOrDefault() ?? "No upcoming session",
+                MyClasses = myEnrollments.Select(e =>
+                {
+                    var batchIdsForThis = e.EnrollmentSubjects
+                        .Where(es => es.AssignedBatchId != null)
+                        .Select(es => es.AssignedBatchId!.Value)
+                        .ToList();
+
+                    var sessionsForThis = mySessions.Where(s => batchIdsForThis.Contains(s.BatchId)).ToList();
+
+                    return new MyClassItem
+                    {
+                        ClassName = e.Class.ClassName,
+                        StudentName = e.Student.FullName,
+                        SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
+                        Status = e.Status,
+                        EnrolledDateLabel = e.EnrolledDate.HasValue ? e.EnrolledDate.Value.ToString("MMM d, yyyy") : "-",
+                        Amount = e.ExpectedAmount,
+                        SessionsCompleted = sessionsForThis.Count(s => s.Status == "Completed"),
+                        SessionsTotal = sessionsForThis.Count
+                    };
+                }).ToList()
+            };
+
+            return View(model);
+        }
+
+        // ============================================================
+        // Enroll: Subject picker
         // ============================================================
 
         private static readonly Dictionary<string, string> ClassSubtitles = new(StringComparer.OrdinalIgnoreCase)
@@ -191,53 +272,6 @@ namespace TuitionCenter.Controllers
             ["Class 12"] = "Senior Secondary Level",
             ["Bachelor"] = "Undergraduate Courses"
         };
-
-        [HttpGet]
-        public IActionResult EnrollClass()
-        {
-            var studentId = GetCurrentUserId();
-
-            var classes = _context.Classes
-                .Where(c => c.IsActive)
-                .OrderBy(c => c.ClassName)
-                .ToList();
-
-            var myEnrollmentsByClass = studentId == null
-                ? new Dictionary<int, string>()
-                : _context.Enrollments
-                    .Where(e => e.StudentId == studentId)
-                    .GroupBy(e => e.ClassId)
-                    .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.EnrolledDate).First().Status);
-
-            var enrolledCountsByClass = _context.Enrollments
-                .Where(e => e.Status == "Approved")
-                .GroupBy(e => e.ClassId)
-                .ToDictionary(g => g.Key, g => g.Select(e => e.StudentId).Distinct().Count());
-
-            var model = classes.Select(c =>
-            {
-                var digits = System.Text.RegularExpressions.Regex.Match(c.ClassName, @"\d+").Value;
-                var label = digits != "" ? digits : c.ClassName;
-                var subtitle = ClassSubtitles.TryGetValue(c.ClassName, out var s) ? s : "Explore available subjects";
-                var hasMyStatus = myEnrollmentsByClass.TryGetValue(c.ClassId, out var myStatus);
-
-                return new ClassPickerItem
-                {
-                    ClassId = c.ClassId,
-                    ClassName = c.ClassName,
-                    Label = label,
-                    Subtitle = subtitle,
-                    IsEnrolled = hasMyStatus,
-                    EnrollmentStatusLabel = hasMyStatus ? myStatus : null,
-                    EnrolledStudentCount = enrolledCountsByClass.TryGetValue(c.ClassId, out var count) ? count : 0
-                };
-            }).ToList();
-
-            return View(model);
-        }
-        // ============================================================
-        // Enroll: Subject picker
-        // ============================================================
 
         private class SubjectMetaInfo
         {
@@ -274,8 +308,46 @@ namespace TuitionCenter.Controllers
             var resolvedClassId = ResolveClassId(classId);
             if (resolvedClassId == null)
             {
-                TempData["EnrollError"] = "Please select a class first.";
-                return RedirectToAction("EnrollClass");
+                // No class chosen yet - show the class picker grid instead of redirecting away.
+                var classes = _context.Classes
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.ClassName)
+                    .ToList();
+
+                var studentId = GetCurrentUserId();
+
+                var myEnrollmentsByClass = studentId == null
+                    ? new Dictionary<int, string>()
+                    : _context.Enrollments
+                        .Where(e => e.StudentId == studentId)
+                        .GroupBy(e => e.ClassId)
+                        .ToDictionary(g => g.Key, g => g.First().Status);
+
+                var enrolledCountsByClass = _context.Enrollments
+                    .Where(e => e.Status == "Approved")
+                    .GroupBy(e => e.ClassId)
+                    .ToDictionary(g => g.Key, g => g.Select(e => e.StudentId).Distinct().Count());
+
+                var pickerModel = classes.Select(c =>
+                {
+                    var digits = System.Text.RegularExpressions.Regex.Match(c.ClassName, @"\d+").Value;
+                    var label = digits != "" ? digits : c.ClassName;
+                    var subtitle = ClassSubtitles.TryGetValue(c.ClassName, out var s) ? s : "Explore available subjects";
+                    var hasMyStatus = myEnrollmentsByClass.TryGetValue(c.ClassId, out var myStatus);
+
+                    return new ClassPickerItem
+                    {
+                        ClassId = c.ClassId,
+                        ClassName = c.ClassName,
+                        Label = label,
+                        Subtitle = subtitle,
+                        IsEnrolled = hasMyStatus,
+                        EnrollmentStatusLabel = hasMyStatus ? myStatus : null,
+                        EnrolledStudentCount = enrolledCountsByClass.TryGetValue(c.ClassId, out var count) ? count : 0
+                    };
+                }).ToList();
+
+                return View("SubjectClassPicker", pickerModel);
             }
             classId = resolvedClassId.Value;
 
@@ -283,7 +355,7 @@ namespace TuitionCenter.Controllers
             if (classEntity == null)
             {
                 TempData["EnrollError"] = "That class could not be found. Please select a class again.";
-                return RedirectToAction("EnrollClass");
+                return View("SubjectClassPicker", new List<ClassPickerItem>());
             }
 
             var subjects = _context.Subjects
@@ -393,7 +465,7 @@ namespace TuitionCenter.Controllers
                 CourseTypes = courseTypes.Select(ct => new CourseTypeOption
                 {
                     CourseTypeId = ct.CourseTypeId,
-                    TypeName = ct.TypeName
+                    TypeName = ct.CourseTypeName
                 }).ToList(),
                 TimeSlots = timeSlots.Select(t => new TimeSlotOption
                 {
@@ -499,7 +571,7 @@ namespace TuitionCenter.Controllers
             {
                 ClassId = classId,
                 ClassName = classEntity.ClassName,
-                CourseTypeName = courseType?.TypeName ?? "",
+                CourseTypeName = courseType?.CourseTypeName ?? "",
                 Items = items,
                 Total = items.Sum(i => i.Amount ?? 0),
                 HasMissingFees = items.Any(i => i.Amount == null)
@@ -538,6 +610,22 @@ namespace TuitionCenter.Controllers
             HttpContext.Session.SetString($"EnrollTotal_{classId}", total.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
             return RedirectToAction("Payments", new { classId });
+        }
+
+        // ============================================================
+        // Timing / Payments (not built yet - simple placeholders)
+        // ============================================================
+
+        [HttpGet]
+        public IActionResult Timing(int classId = 0)
+        {
+            return Content($"Timing step for class {classId} - coming soon.");
+        }
+
+        [HttpGet]
+        public IActionResult Payments(int classId = 0)
+        {
+            return Content($"Payments step for class {classId} - coming soon.");
         }
 
         // ============================================================
@@ -633,49 +721,6 @@ namespace TuitionCenter.Controllers
                 DurationMonths = 6,
                 IsPopular = i == 0
             }).ToList();
-        }
-
-        public async Task<IActionResult> Class()
-        {
-            return View(await _context.Classes.ToListAsync());
-        }
-
-        public async Task<IActionResult> Subject()
-        {
-            return View(await _context.Subjects
-                .Include(x => x.Class)
-                .ToListAsync());
-        }
-
-        public async Task<IActionResult> Intake()
-        {
-            return View(await _context.Batches
-                .Include(x => x.Class)
-                .Include(x => x.Subject)
-                .ToListAsync());
-        }
-
-        public async Task<IActionResult> Pricing()
-        {
-            return View(await _context.CourseFees
-                .Include(x => x.Class)
-                .Include(x => x.Subject)
-                .Include(x => x.CourseType)
-                .Where(x => x.IsActive)
-                .ToListAsync());
-        }
-
-        public async Task<IActionResult> Timing()
-        {
-            return View(await _context.Batches
-                .Include(x => x.Class)
-                .Include(x => x.Subject)
-                .ToListAsync());
-        }
-
-        public async Task<IActionResult> Payments()
-        {
-            return View();
         }
     }
 }

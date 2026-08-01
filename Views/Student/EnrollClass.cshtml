@@ -1,29 +1,64 @@
-﻿@model IEnumerable<TuitionCenter.Models.ClassPickerItem>
+﻿@model TuitionCenter.Models.ClassOverviewViewModel
 
 @{
-    ViewData["Title"] = "Select Class";
+    ViewData["Title"] = "My Classes";
     Layout = "_EnrollmentLayout";
     ViewData["ShowSidebar"] = false;
 }
 
-<div class="class-picker-grid">
-    @foreach (var c in Model)
+<div class="overview-stats">
+    <div class="overview-card">
+        <div class="overview-icon blue"><i class="bi bi-mortarboard-fill"></i></div>
+        <div>
+            <p>Enrolled Classes</p>
+            <h2>@Model.MyEnrolledClassCount</h2>
+        </div>
+    </div>
+
+    <div class="overview-card">
+        <div class="overview-icon green"><i class="bi bi-graph-up"></i></div>
+        <div>
+            <p>Overall Completion</p>
+            <h2>@Model.OverallCompletionPercent%</h2>
+            <small>@Model.SessionsCompleted / @Model.SessionsTotal sessions</small>
+        </div>
+    </div>
+
+    <div class="overview-card">
+        <div class="overview-icon amber"><i class="bi bi-calendar-event"></i></div>
+        <div>
+            <p>Upcoming Sessions</p>
+            <h2>@Model.UpcomingSessionCount</h2>
+            <small>@Model.UpcomingSessionLabel</small>
+        </div>
+    </div>
+</div>
+
+<div class="myclass-list">
+    @if (!Model.MyClasses.Any())
     {
-        <div class="class-tile @(c.IsEnrolled ? "my-enrolled" : "")"
-             onclick="window.location.href='@Url.Action("Subject", "Student", new { classId = c.ClassId })'"
-             style="cursor:pointer;">
-            <div class="class-tile-top">
-                <div class="class-tile-num @(c.Label.Length > 2 ? "wide" : "")">@c.Label</div>
-                <a asp-action="Classmates" asp-route-classId="@c.ClassId" class="class-tile-count" onclick="event.stopPropagation();">
-                    <i class="bi bi-people-fill"></i> @c.EnrolledStudentCount enrolled
-                </a>
+        <div class="card-panel" style="color:#6b7280;">You're not enrolled in any class yet.</div>
+    }
+    @foreach (var c in Model.MyClasses)
+    {
+        <div class="myclass-card">
+            <div class="myclass-header">
+                <h4>@c.ClassName</h4>
+                <span class="myclass-status @(c.Status == "Approved" ? "approved" : "pending")">@c.Status</span>
             </div>
-            <h4>@c.ClassName</h4>
-            <p class="class-tile-subtitle">@c.Subtitle</p>
-            @if (c.IsEnrolled)
-            {
-                <p class="class-tile-mystatus">You: @c.EnrollmentStatusLabel</p>
-            }
+            <p class="myclass-subjects">@c.SubjectsSummary</p>
+            <div class="myclass-meta">
+                <span><i class="bi bi-person"></i> @c.StudentName</span>
+                <span><i class="bi bi-calendar3"></i> Enrolled @c.EnrolledDateLabel</span>
+                <span><i class="bi bi-cash"></i> Rs @c.Amount</span>
+            </div>
+            <div class="myclass-progress-label">
+                <span>Progress</span>
+                <span>@c.SessionsCompleted/@c.SessionsTotal sessions</span>
+            </div>
+            <div class="mini-progress" style="width:100%;">
+                <span style="width:@c.ProgressPercent%;"></span>
+            </div>
         </div>
     }
 </div>

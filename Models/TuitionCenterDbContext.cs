@@ -42,6 +42,7 @@ public partial class TuitionCenterDbContext : DbContext
     public virtual DbSet<TimeSlot> TimeSlots { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<Attendance> Attendances { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseSqlServer("Name=DbConn");
