@@ -280,7 +280,7 @@ namespace TuitionCenter.Controllers
         public IActionResult CreateTeacher()
         {
             return View(
-                "~/Views/Admin/TeacherManagement/Create.cshtml",
+                "~/Views/Admin/CreateTeacher.cshtml",
                 new TeacherVM()
             );
         }
@@ -293,7 +293,7 @@ namespace TuitionCenter.Controllers
             if (!ModelState.IsValid)
             {
                 return View(
-                    "~/Views/Admin/TeacherManagement/Create.cshtml",
+                    "~/Views/Admin/CreateTeacher.cshtml",
                     model
                 );
             }
@@ -309,7 +309,7 @@ namespace TuitionCenter.Controllers
                 );
 
                 return View(
-                    "~/Views/Admin/TeacherManagement/Create.cshtml",
+                    "~/Views/Admin/CreateTeacher.cshtml",
                     model
                 );
             }
@@ -364,7 +364,7 @@ namespace TuitionCenter.Controllers
             }
 
             return View(
-                "~/Views/Admin/TeacherManagement/Edit.cshtml",
+                "~/Views/Admin/EditTeacher.cshtml",
                 teacher
             );
         }
@@ -384,7 +384,7 @@ namespace TuitionCenter.Controllers
             if (!ModelState.IsValid)
             {
                 return View(
-                    "~/Views/Admin/TeacherManagement/Edit.cshtml",
+                    "~/Views/Admin/EditTeacher.cshtml",
                     model
                 );
             }
@@ -412,7 +412,7 @@ namespace TuitionCenter.Controllers
                 );
 
                 return View(
-                    "~/Views/Admin/TeacherManagement/Edit.cshtml",
+                    "~/Views/Admin/EditTeacher.cshtml",
                     model
                 );
             }
@@ -421,6 +421,11 @@ namespace TuitionCenter.Controllers
             teacher.Email = model.Email;
             teacher.Phone = model.Phone;
             teacher.IsActive = model.IsActive;
+
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                teacher.PasswordHash = _passwordHasher.HashPassword(teacher, model.Password);
+            }
 
             await _context.SaveChangesAsync();
 
@@ -471,7 +476,7 @@ namespace TuitionCenter.Controllers
                 .ToListAsync();
 
             return View(
-                "~/Views/Admin/TeacherManagement/Details.cshtml",
+                "~/Views/Admin/TeacherDetails.cshtml",
                 teacher
             );
         }
