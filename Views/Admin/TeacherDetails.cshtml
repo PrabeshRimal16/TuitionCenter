@@ -1,0 +1,148 @@
+@model TuitionCenter.Models.ViewModels.Admin.TeacherVM
+
+@{
+    ViewData["Title"] = "Teacher Details";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/Admin/TeacherManagement.css" />
+</head>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <div>
+            <a asp-controller="Admin" asp-action="TeacherIndex" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Teachers
+            </a>
+            <h1 class="mt-2">Teacher Details</h1>
+            <p>View teacher account details and assigned classes.</p>
+        </div>
+
+        <a asp-controller="Admin"
+           asp-action="EditTeacher"
+           asp-route-id="@Model.UserId"
+           class="btn-primary-custom">
+            <i class="bi bi-pencil"></i>
+            Edit Teacher
+        </a>
+    </div>
+
+    <div class="details-grid">
+
+        <!-- Left Column: Profile Card -->
+        <div class="content-card">
+            <div class="profile-cover"></div>
+            <div class="profile-content">
+                <div class="teacher-profile-avatar large">
+                    @(!string.IsNullOrWhiteSpace(Model.FullName) ? Model.FullName.Trim()[0].ToString().ToUpper() : "T")
+                </div>
+
+                <h2>@Model.FullName</h2>
+
+                <div class="mt-2">
+                    @if (Model.IsActive)
+                    {
+                        <span class="status active">
+                            <span></span> Active Account
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="status inactive">
+                            <span></span> Inactive Account
+                        </span>
+                    }
+                </div>
+
+                <div class="profile-details">
+                    <div class="profile-detail">
+                        <i class="bi bi-envelope"></i>
+                        <div>
+                            <small>Email Address</small>
+                            <strong>@Model.Email</strong>
+                        </div>
+                    </div>
+
+                    <div class="profile-detail">
+                        <i class="bi bi-telephone"></i>
+                        <div>
+                            <small>Phone Number</small>
+                            <strong>@(Model.Phone ?? "Not provided")</strong>
+                        </div>
+                    </div>
+
+                    <div class="profile-detail">
+                        <i class="bi bi-calendar-event"></i>
+                        <div>
+                            <small>Joined Date</small>
+                            <strong>@(Model.CreatedDate?.ToString("dd MMM yyyy") ?? "Not available")</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Assigned Batches -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <div>
+                    <h3>Assigned Batches</h3>
+                    <p>Classes and subjects assigned to this teacher.</p>
+                </div>
+                <span class="batch-count">
+                    @Model.Batches.Count Batches
+                </span>
+            </div>
+
+            <div class="table-container">
+                <table class="teacher-table">
+                    <thead>
+                        <tr>
+                            <th>Batch Name</th>
+                            <th>Class</th>
+                            <th>Subject</th>
+                            <th>Enrolled Students</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Batches.Any())
+                        {
+                            foreach (var batch in Model.Batches)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@batch.BatchName</strong>
+                                    </td>
+                                    <td>@batch.ClassName</td>
+                                    <td>@batch.SubjectName</td>
+                                    <td>
+                                        <span class="batch-count">
+                                            @batch.StudentCount Students
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="4">
+                                    <div class="empty-state py-4">
+                                        <i class="bi bi-mortarboard fs-2 text-muted"></i>
+                                        <h5 class="mt-2 text-muted">No Batches Assigned</h5>
+                                        <p class="small text-muted mb-0">This teacher has not been assigned to any batch yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+</div>
