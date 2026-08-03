@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -137,6 +137,11 @@ namespace TuitionCenter.Controllers
             student.Phone = model.Phone;
             student.IsActive = model.IsActive;
 
+            if (!string.IsNullOrWhiteSpace(model.Password))
+            {
+                student.PasswordHash = _passwordHasher.HashPassword(student, model.Password);
+            }
+
             await _context.SaveChangesAsync();
 
             TempData["Success"] =
@@ -170,15 +175,17 @@ namespace TuitionCenter.Controllers
             if (student == null)
                 return NotFound();
 
-            student.Enrollments =
-                await _context.Enrollments
+            student.Enrollments = await _context.Enrollments
                 .Where(e => e.StudentId == id)
                 .Select(e => new StudentEnrollmentVM
                 {
                     EnrollmentId = e.EnrollmentId,
-                    //EnrollmentDate = e.EnrollmentDate,
+                    ClassName = e.Class.ClassName,
+                    CourseType = e.CourseType.TypeName,
+                    SubjectName = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
                     EnrollmentStatus = e.Status,
-                    // CourseType = e.CourseType
+                    PaymentStatus = e.Payments.OrderByDescending(p => p.PaymentDate).Select(p => p.Status).FirstOrDefault() ?? "Pending",
+                    EnrollmentDate = e.EnrolledDate
                 })
                 .ToListAsync();
 

@@ -1,4 +1,4 @@
-﻿@model TuitionCenter.Models.ViewModels.Admin.StudentVM
+@model TuitionCenter.Models.ViewModels.Admin.StudentVM
 
 @{
     ViewData["Title"] = "EditStudent";
@@ -91,6 +91,27 @@
                            class="form-control" />
 
                     <span asp-validation-for="Phone"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
+                    <label asp-for="Password"
+                           class="form-label">
+
+                        New Password
+
+                    </label>
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           placeholder="Leave blank to keep current password" />
+
+                    <span asp-validation-for="Password"
                           class="text-danger">
                     </span>
 

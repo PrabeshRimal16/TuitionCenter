@@ -1,4 +1,4 @@
-﻿@model TuitionCenter.Models.ViewModels.Admin.StudentVM
+@model TuitionCenter.Models.ViewModels.Admin.StudentVM
 
 @{
     ViewData["Title"] = "StudentDetails";
@@ -16,15 +16,26 @@
     </div>
 
 
-    <a asp-action="EditStudent"
-       asp-controller="Admin"
-       asp-route-id="@Model.UserId"
-       class="btn btn-primary">
+    <div>
+        <a asp-action="StudentIndex"
+           asp-controller="Admin"
+           class="btn btn-outline-secondary me-2">
 
-        <i class="bi bi-pencil"></i>
-        Edit Student
+            <i class="bi bi-arrow-left"></i>
+            Back to List
 
-    </a>
+        </a>
+
+        <a asp-action="EditStudent"
+           asp-controller="Admin"
+           asp-route-id="@Model.UserId"
+           class="btn btn-primary">
+
+            <i class="bi bi-pencil"></i>
+            Edit Student
+
+        </a>
+    </div>
 
 </div>
 
@@ -39,7 +50,7 @@
 
                 <div class="student-avatar">
 
-                    @Model.FullName.Substring(0, 1).ToUpper()
+                    @(!string.IsNullOrWhiteSpace(Model.FullName) ? Model.FullName.Trim()[0].ToString().ToUpper() : "S")
 
                 </div>
 
