@@ -1180,5 +1180,10 @@ namespace TuitionCenter.Controllers
 
             return Json(batches);
         }
+
+
+        //Payment
+
+
     }
 }

@@ -68,12 +68,13 @@
                     </a>
                 </li>
 
-                <li class="@(currentController == "Subjects" ? "active" : "")">
-                    <a asp-controller="Subjects" asp-action="Index">
+                <li class="@((currentController == "Subjects" || (currentController == "Admin" && currentAction == "CourseManagement")) ? "active" : "")">
+                    <a asp-controller="Admin" asp-action="CourseManagement">
                         <i class="bi bi-book-half"></i>
                         <span>Courses & Subjects</span>
                     </a>
                 </li>
+
 
                 <li class="@(currentController == "Admin" && currentAction == "Payments" ? "active" : "")">
                     <a asp-controller="Admin" asp-action="Payments">

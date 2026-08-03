@@ -1,0 +1,1028 @@
+@model TuitionCenter.Models.ViewModels.Admin.CourseManagementVM
+@{
+    ViewData["Title"] = "Course & Schedule Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="course-management-container">
+
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4 page-header-row">
+        <div>
+            <h2 class="fw-bold mb-1 text-dark">Course & Schedule Management</h2>
+            <p class="text-muted small mb-0">Manage course durations, class schedules, student batches, and teacher assignments.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-primary d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm font-medium" data-bs-toggle="modal" data-bs-target="#createBatchModal">
+                <i class="bi bi-plus-circle-fill"></i>
+                <span>Create Batch</span>
+            </button>
+            <button class="btn btn-outline-primary d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3 shadow-sm font-medium" data-bs-toggle="modal" data-bs-target="#assignTeacherModal">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>Assign Teacher</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Alert / Toast Notifications -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4 d-flex align-items-center" role="alert">
+            <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+            <div>@TempData["Success"]</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4 d-flex align-items-center" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+            <div>@TempData["Error"]</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Stat Metric Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 stat-card h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-primary-subtle text-primary rounded-3 p-3 me-3">
+                        <i class="bi bi-tags-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block fw-medium">Course Types</span>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.CourseTypes.Count</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 stat-card h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-info-subtle text-info rounded-3 p-3 me-3">
+                        <i class="bi bi-clock-history fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block fw-medium">Time Slots</span>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.TimeSlots.Count</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 stat-card h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-success-subtle text-success rounded-3 p-3 me-3">
+                        <i class="bi bi-collection-play-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block fw-medium">Active Batches</span>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.Batches.Count(b => b.IsActive)</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <div class="card border-0 shadow-sm rounded-4 p-3 stat-card h-100">
+                <div class="d-flex align-items-center">
+                    <div class="stat-icon-wrapper bg-warning-subtle text-warning-emphasis rounded-3 p-3 me-3">
+                        <i class="bi bi-person-badge-fill fs-4"></i>
+                    </div>
+                    <div>
+                        <span class="text-muted small d-block fw-medium">Assigned Teachers</span>
+                        <h3 class="fw-bold mb-0 text-dark">@Model.TeacherAssignments.Count</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4 overflow-hidden">
+        <div class="card-header bg-white border-bottom-0 p-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <ul class="nav nav-pills custom-pills gap-2" id="mgmtTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-item-btn active d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3" id="batches-tab" data-bs-toggle="tab" data-bs-target="#batches-pane" type="button" role="tab">
+                            <i class="bi bi-collection-fill"></i>
+                            <span>Batches Management</span>
+                            <span class="badge rounded-pill bg-primary ms-1">@Model.Batches.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-item-btn d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-pane" type="button" role="tab">
+                            <i class="bi bi-person-workspace"></i>
+                            <span>Teacher Assignments</span>
+                            <span class="badge rounded-pill bg-primary ms-1">@Model.TeacherAssignments.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-item-btn d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3" id="course-types-tab" data-bs-toggle="tab" data-bs-target="#course-types-pane" type="button" role="tab">
+                            <i class="bi bi-tags-fill"></i>
+                            <span>Course Types</span>
+                            <span class="badge rounded-pill bg-primary ms-1">@Model.CourseTypes.Count</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-item-btn d-inline-flex align-items-center gap-2 px-3 py-2 rounded-3" id="time-slots-tab" data-bs-toggle="tab" data-bs-target="#time-slots-pane" type="button" role="tab">
+                            <i class="bi bi-clock-fill"></i>
+                            <span>Time Slots</span>
+                            <span class="badge rounded-pill bg-primary ms-1">@Model.TimeSlots.Count</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Search Input -->
+                <div class="search-wrapper position-relative" style="min-width: 250px;">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                    <input type="text" id="tableSearchInput" class="form-control ps-5 py-2 rounded-3 border-light-subtle" placeholder="Search tables..." />
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="tab-content" id="mgmtTabsContent">
+
+                <!-- ================= BATCHES TAB ================= -->
+                <div class="tab-pane fade show active p-3" id="batches-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">Created Batches</h5>
+                        <button class="btn btn-sm btn-primary rounded-3 px-3 py-1-5" data-bs-toggle="modal" data-bs-target="#createBatchModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Batch
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle custom-table mb-0" id="batchesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Batch ID</th>
+                                    <th scope="col">Class</th>
+                                    <th scope="col">Subject</th>
+                                    <th scope="col">Course Type</th>
+                                    <th scope="col">Time Slot</th>
+                                    <th scope="col">Teacher</th>
+                                    <th scope="col">Students</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.Batches.Any())
+                                {
+                                    @foreach (var batch in Model.Batches)
+                                    {
+                                        <tr>
+                                            <td><span class="fw-semibold text-secondary">#BTC-@batch.BatchId</span></td>
+                                            <td><span class="fw-bold text-dark">@batch.ClassName</span></td>
+                                            <td><span class="badge bg-light text-dark border me-1">@batch.SubjectName</span></td>
+                                            <td><span class="badge bg-primary-subtle text-primary fw-medium">@batch.CourseTypeName</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-1 text-muted small">
+                                                    <i class="bi bi-clock"></i>
+                                                    <span>@batch.TimeSlotName</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (batch.TeacherName != "Unassigned")
+                                                {
+                                                    <span class="badge bg-info-subtle text-info-emphasis fw-medium"><i class="bi bi-person-fill me-1"></i>@batch.TeacherName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary-subtle text-secondary fw-normal">Unassigned</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <span class="small fw-semibold text-dark">@batch.StudentCount / @batch.Capacity</span>
+                                                    <div class="progress flex-grow-1" style="height: 6px; width: 60px;">
+                                                        @{
+                                                            int pct = batch.Capacity > 0 ? (batch.StudentCount * 100 / batch.Capacity) : 0;
+                                                        }
+                                                        <div class="progress-bar bg-primary" role="progressbar" style="width: @pct%"></div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (batch.IsActive)
+                                                {
+                                                    <span class="badge bg-success-subtle text-success px-2 py-1 rounded-2"><i class="bi bi-dot"></i>Active</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-2"><i class="bi bi-dot"></i>Inactive</span>
+                                                }
+                                            </td>
+                                            <td class="text-end">
+                                                <div class="btn-group btn-group-sm">
+                                                    <button class="btn btn-light border edit-batch-btn"
+                                                            data-id="@batch.BatchId"
+                                                            data-name="@batch.BatchName"
+                                                            data-classid="@batch.ClassId"
+                                                            data-subjectid="@batch.SubjectId"
+                                                            data-coursetypeid="@batch.CourseTypeId"
+                                                            data-timeslotid="@batch.TimeSlotId"
+                                                            data-capacity="@batch.Capacity"
+                                                            data-isactive="@(batch.IsActive ? "true" : "false")"
+                                                            data-teacherid="@batch.TeacherId"
+                                                            title="Edit Batch">
+                                                        <i class="bi bi-pencil-fill text-primary"></i>
+                                                    </button>
+                                                    <button class="btn btn-light border delete-btn"
+                                                            data-action="/Admin/Batches/Delete/@batch.BatchId"
+                                                            data-title="Delete Batch"
+                                                            data-message="Are you sure you want to delete batch '@batch.BatchName'? Any assigned students or class sessions will be unlinked."
+                                                            title="Delete Batch">
+                                                        <i class="bi bi-trash-fill text-danger"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" class="text-center py-4 text-muted">
+                                            <i class="bi bi-inbox fs-2 d-block mb-2 text-secondary"></i>
+                                            <span>No batches created yet. Click "Add Batch" to create one.</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================= TEACHER ASSIGNMENTS TAB ================= -->
+                <div class="tab-pane fade p-3" id="assignments-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">Teacher Subject & Batch Assignments</h5>
+                        <button class="btn btn-sm btn-primary rounded-3 px-3 py-1-5" data-bs-toggle="modal" data-bs-target="#assignTeacherModal">
+                            <i class="bi bi-person-plus-fill me-1"></i> Assign Teacher
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle custom-table mb-0" id="assignmentsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col">Teacher</th>
+                                    <th scope="col">Class</th>
+                                    <th scope="col">Subject</th>
+                                    <th scope="col">Assigned Batch</th>
+                                    <th scope="col">Time Slot</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.TeacherAssignments.Any())
+                                {
+                                    @foreach (var assign in Model.TeacherAssignments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="avatar-circle bg-primary-subtle text-primary fw-bold">
+                                                        @assign.TeacherName.Substring(0, Math.Min(2, assign.TeacherName.Length)).ToUpper()
+                                                    </div>
+                                                    <div>
+                                                        <span class="fw-bold text-dark d-block">@assign.TeacherName</span>
+                                                        <small class="text-muted">@assign.TeacherEmail</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td><span class="fw-semibold text-dark">@assign.ClassName</span></td>
+                                            <td><span class="badge bg-light text-dark border">@assign.SubjectName</span></td>
+                                            <td><span class="fw-medium text-primary">@assign.BatchName</span></td>
+                                            <td>
+                                                <span class="badge bg-info-subtle text-info-emphasis fw-normal">
+                                                    <i class="bi bi-clock me-1"></i>@assign.TimeSlotName
+                                                </span>
+                                            </td>
+                                            <td class="text-end">
+                                                <button class="btn btn-sm btn-outline-danger rounded-2 d-inline-flex align-items-center gap-1 delete-btn"
+                                                        data-action="/Admin/TeacherAssignments/Unassign/@assign.BatchId"
+                                                        data-title="Unassign Teacher"
+                                                        data-message="Are you sure you want to remove teacher '@assign.TeacherName' from batch '@assign.BatchName'?"
+                                                        title="Unassign Teacher">
+                                                    <i class="bi bi-person-x-fill"></i>
+                                                    <span>Unassign</span>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-muted">
+                                            <i class="bi bi-person-workspace fs-2 d-block mb-2 text-secondary"></i>
+                                            <span>No active teacher assignments. Click "Assign Teacher" to assign a teacher to a batch.</span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================= COURSE TYPES TAB ================= -->
+                <div class="tab-pane fade p-3" id="course-types-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">Available Course Types</h5>
+                        <button class="btn btn-sm btn-primary rounded-3 px-3 py-1-5" data-bs-toggle="modal" data-bs-target="#createCourseTypeModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Course Type
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle custom-table mb-0" id="courseTypesTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 100px;">ID</th>
+                                    <th scope="col">Course Type Name</th>
+                                    <th scope="col">Active Batches</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ct in Model.CourseTypes)
+                                {
+                                    <tr>
+                                        <td><span class="fw-semibold text-secondary">#CT-@ct.CourseTypeId</span></td>
+                                        <td><span class="fw-bold text-dark">@ct.TypeName</span></td>
+                                        <td><span class="badge bg-primary-subtle text-primary">@ct.ActiveBatchCount Batches</span></td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-light border edit-ct-btn"
+                                                        data-id="@ct.CourseTypeId"
+                                                        data-name="@ct.TypeName"
+                                                        title="Edit Course Type">
+                                                    <i class="bi bi-pencil-fill text-primary"></i>
+                                                </button>
+                                                <button class="btn btn-light border delete-btn"
+                                                        data-action="/Admin/CourseTypes/Delete/@ct.CourseTypeId"
+                                                        data-title="Delete Course Type"
+                                                        data-message="Are you sure you want to delete course type '@ct.TypeName'?"
+                                                        title="Delete Course Type">
+                                                    <i class="bi bi-trash-fill text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ================= TIME SLOTS TAB ================= -->
+                <div class="tab-pane fade p-3" id="time-slots-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0 text-dark">Available Class Time Slots</h5>
+                        <button class="btn btn-sm btn-primary rounded-3 px-3 py-1-5" data-bs-toggle="modal" data-bs-target="#createTimeSlotModal">
+                            <i class="bi bi-plus-lg me-1"></i> Add Time Slot
+                        </button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle custom-table mb-0" id="timeSlotsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th scope="col" style="width: 100px;">ID</th>
+                                    <th scope="col">Time Range</th>
+                                    <th scope="col">Days Schedule</th>
+                                    <th scope="col">Assigned Batches</th>
+                                    <th scope="col" class="text-end">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ts in Model.TimeSlots)
+                                {
+                                    <tr>
+                                        <td><span class="fw-semibold text-secondary">#TS-@ts.TimeSlotId</span></td>
+                                        <td>
+                                            <span class="fw-bold text-dark d-inline-flex align-items-center gap-1">
+                                                <i class="bi bi-clock text-primary"></i>
+                                                @ts.FormattedTime
+                                            </span>
+                                        </td>
+                                        <td><span class="badge bg-light text-dark border">@ts.Days</span></td>
+                                        <td><span class="badge bg-info-subtle text-info-emphasis">@ts.ActiveBatchCount Batches</span></td>
+                                        <td class="text-end">
+                                            <div class="btn-group btn-group-sm">
+                                                <button class="btn btn-light border edit-ts-btn"
+                                                        data-id="@ts.TimeSlotId"
+                                                        data-start="@ts.StartTime"
+                                                        data-end="@ts.EndTime"
+                                                        data-days="@ts.Days"
+                                                        title="Edit Time Slot">
+                                                    <i class="bi bi-pencil-fill text-primary"></i>
+                                                </button>
+                                                <button class="btn btn-light border delete-btn"
+                                                        data-action="/Admin/TimeSlots/Delete/@ts.TimeSlotId"
+                                                        data-title="Delete Time Slot"
+                                                        data-message="Are you sure you want to delete time slot '@ts.FormattedTime'?"
+                                                        title="Delete Time Slot">
+                                                    <i class="bi bi-trash-fill text-danger"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= MODALS ================= -->
+
+<!-- 1. CREATE COURSE TYPE MODAL -->
+<div class="modal fade" id="createCourseTypeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="CreateCourseType" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Add New Course Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Course Type Name <span class="text-danger">*</span></label>
+                        <input type="text" name="typeName" class="form-control rounded-3" placeholder="e.g. Monthly, 6 Months, Full Course" required />
+                        <small class="text-muted mt-1 d-block">Default examples: Monthly, 6 Months, Full Course</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Save Course Type</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. EDIT COURSE TYPE MODAL -->
+<div class="modal fade" id="editCourseTypeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="EditCourseType" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="courseTypeId" id="editCourseTypeId" />
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Course Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Course Type Name <span class="text-danger">*</span></label>
+                        <input type="text" name="typeName" id="editCourseTypeName" class="form-control rounded-3" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Update Course Type</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 3. CREATE TIME SLOT MODAL -->
+<div class="modal fade" id="createTimeSlotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="CreateTimeSlot" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Add Available Time Slot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-medium text-dark">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" name="startTime" class="form-control rounded-3" value="18:00" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-medium text-dark">End Time <span class="text-danger">*</span></label>
+                            <input type="time" name="endTime" class="form-control rounded-3" value="19:00" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Days Schedule</label>
+                        <input type="text" name="days" class="form-control rounded-3" value="Monday - Friday" placeholder="e.g. Monday - Friday or Daily" />
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Save Time Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 4. EDIT TIME SLOT MODAL -->
+<div class="modal fade" id="editTimeSlotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="EditTimeSlot" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="timeSlotId" id="editTimeSlotId" />
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Time Slot</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <label class="form-label fw-medium text-dark">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" name="startTime" id="editStartTime" class="form-control rounded-3" required />
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label fw-medium text-dark">End Time <span class="text-danger">*</span></label>
+                            <input type="time" name="endTime" id="editEndTime" class="form-control rounded-3" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Days Schedule</label>
+                        <input type="text" name="days" id="editDays" class="form-control rounded-3" required />
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Update Time Slot</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 5. CREATE BATCH MODAL -->
+<div class="modal fade" id="createBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="CreateBatch" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Create New Batch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Class <span class="text-danger">*</span></label>
+                            <select name="classId" id="createBatchClassSelect" class="form-select rounded-3" required>
+                                <option value="">-- Select Class --</option>
+                                @foreach (var item in Model.ClassesList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Subject <span class="text-danger">*</span></label>
+                            <select name="subjectId" id="createBatchSubjectSelect" class="form-select rounded-3" required disabled>
+                                <option value="">-- Select Class First --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Course Type <span class="text-danger">*</span></label>
+                            <select name="courseTypeId" class="form-select rounded-3" required>
+                                <option value="">-- Select Course Type --</option>
+                                @foreach (var item in Model.CourseTypesList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Time Slot <span class="text-danger">*</span></label>
+                            <select name="timeSlotId" class="form-select rounded-3" required>
+                                <option value="">-- Select Time Slot --</option>
+                                @foreach (var item in Model.TimeSlotsList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Assign Teacher (Optional)</label>
+                            <select name="teacherId" class="form-select rounded-3">
+                                <option value="">-- Select Teacher --</option>
+                                @foreach (var item in Model.TeachersList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium text-dark">Max Students <span class="text-danger">*</span></label>
+                            <input type="number" name="capacity" class="form-control rounded-3" value="25" min="1" max="200" required />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium text-dark">Status</label>
+                            <select name="isActive" class="form-select rounded-3">
+                                <option value="true" selected>Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Batch Name (Optional)</label>
+                        <input type="text" name="batchName" class="form-control rounded-3" placeholder="Leave empty for auto-generated name" />
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Create Batch</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 6. EDIT BATCH MODAL -->
+<div class="modal fade" id="editBatchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="EditBatch" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="batchId" id="editBatchId" />
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Edit Batch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Batch Name <span class="text-danger">*</span></label>
+                        <input type="text" name="batchName" id="editBatchName" class="form-control rounded-3" required />
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Class <span class="text-danger">*</span></label>
+                            <select name="classId" id="editBatchClassSelect" class="form-select rounded-3" required>
+                                @foreach (var item in Model.ClassesList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Subject <span class="text-danger">*</span></label>
+                            <select name="subjectId" id="editBatchSubjectSelect" class="form-select rounded-3" required>
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Course Type <span class="text-danger">*</span></label>
+                            <select name="courseTypeId" id="editBatchCourseTypeSelect" class="form-select rounded-3" required>
+                                @foreach (var item in Model.CourseTypesList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Time Slot <span class="text-danger">*</span></label>
+                            <select name="timeSlotId" id="editBatchTimeSlotSelect" class="form-select rounded-3" required>
+                                @foreach (var item in Model.TimeSlotsList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-medium text-dark">Teacher</label>
+                            <select name="teacherId" id="editBatchTeacherSelect" class="form-select rounded-3">
+                                <option value="0">-- Unassigned --</option>
+                                @foreach (var item in Model.TeachersList)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium text-dark">Max Students <span class="text-danger">*</span></label>
+                            <input type="number" name="capacity" id="editBatchCapacity" class="form-control rounded-3" required min="1" />
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label fw-medium text-dark">Status</label>
+                            <select name="isActive" id="editBatchStatusSelect" class="form-select rounded-3">
+                                <option value="true">Active</option>
+                                <option value="false">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 7. ASSIGN TEACHER MODAL -->
+<div class="modal fade" id="assignTeacherModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form asp-controller="Admin" asp-action="AssignTeacher" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold">Assign Teacher to Batch</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Select Teacher <span class="text-danger">*</span></label>
+                        <select name="teacherId" class="form-select rounded-3" required>
+                            <option value="">-- Select Teacher --</option>
+                            @foreach (var item in Model.TeachersList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Select Class <span class="text-danger">*</span></label>
+                        <select id="assignClassSelect" class="form-select rounded-3" required>
+                            <option value="">-- Select Class --</option>
+                            @foreach (var item in Model.ClassesList)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Select Subject <span class="text-danger">*</span></label>
+                        <select id="assignSubjectSelect" class="form-select rounded-3" required disabled>
+                            <option value="">-- Select Class First --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-medium text-dark">Select Batch <span class="text-danger">*</span></label>
+                        <select name="batchId" id="assignBatchSelect" class="form-select rounded-3" required disabled>
+                            <option value="">-- Select Subject First --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-3 px-4">Save Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 8. DELETE CONFIRMATION MODAL -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-4">
+            <form id="deleteConfirmForm" method="post">
+                @Html.AntiForgeryToken()
+                <div class="modal-header border-bottom-0 pb-0">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteModalTitle">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Delete Confirmation
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-3">
+                    <p class="text-secondary mb-0" id="deleteModalMessage">Are you sure you want to proceed with this deletion?</p>
+                </div>
+                <div class="modal-footer border-top-0 pt-0">
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger rounded-3 px-4">Confirm Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // --- 1. Dynamic Search & Filter on Tables ---
+            const searchInput = document.getElementById('tableSearchInput');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function () {
+                    const filter = this.value.toLowerCase();
+                    const activePane = document.querySelector('.tab-pane.active');
+                    if (activePane) {
+                        const rows = activePane.querySelectorAll('tbody tr');
+                        rows.forEach(row => {
+                            const text = row.textContent.toLowerCase();
+                            row.style.display = text.includes(filter) ? '' : 'none';
+                        });
+                    }
+                });
+            }
+
+            // Reset search when changing tabs
+            const tabBtns = document.querySelectorAll('#mgmtTabs button');
+            tabBtns.forEach(btn => {
+                btn.addEventListener('shown.bs.tab', function () {
+                    if (searchInput) {
+                        searchInput.value = '';
+                        const rows = document.querySelectorAll('tbody tr');
+                        rows.forEach(r => r.style.display = '');
+                    }
+                });
+            });
+
+            // --- 2. Delete Confirmation Modal Setup ---
+            const deleteButtons = document.querySelectorAll('.delete-btn');
+            const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+            const deleteForm = document.getElementById('deleteConfirmForm');
+            const deleteTitle = document.getElementById('deleteModalTitle');
+            const deleteMessage = document.getElementById('deleteModalMessage');
+
+            deleteButtons.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const action = this.getAttribute('data-action');
+                    const title = this.getAttribute('data-title') || 'Confirm Deletion';
+                    const message = this.getAttribute('data-message') || 'Are you sure you want to delete this item?';
+
+                    deleteForm.setAttribute('action', action);
+                    deleteTitle.innerHTML = `<i class="bi bi-exclamation-triangle-fill"></i> ${title}`;
+                    deleteMessage.textContent = message;
+                    deleteConfirmModal.show();
+                });
+            });
+
+            // --- 3. Dynamic Subject Cascading Dropdown Helper ---
+            function loadSubjectsForClass(classId, subjectSelectEl, callback) {
+                if (!classId) {
+                    subjectSelectEl.innerHTML = '<option value="">-- Select Class First --</option>';
+                    subjectSelectEl.disabled = true;
+                    if (callback) callback();
+                    return;
+                }
+
+                fetch(`/Admin/GetSubjectsByClass/${classId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        subjectSelectEl.innerHTML = '<option value="">-- Select Subject --</option>';
+                        data.forEach(sub => {
+                            const opt = document.createElement('option');
+                            opt.value = sub.subjectId;
+                            opt.textContent = sub.subjectName;
+                            subjectSelectEl.appendChild(opt);
+                        });
+                        subjectSelectEl.disabled = false;
+                        if (callback) callback();
+                    })
+                    .catch(err => {
+                        console.error('Error fetching subjects:', err);
+                        subjectSelectEl.disabled = true;
+                    });
+            }
+
+            // Create Batch Class -> Subject
+            const createClassSel = document.getElementById('createBatchClassSelect');
+            const createSubSel = document.getElementById('createBatchSubjectSelect');
+            if (createClassSel && createSubSel) {
+                createClassSel.addEventListener('change', function () {
+                    loadSubjectsForClass(this.value, createSubSel);
+                });
+            }
+
+            // Assign Teacher Class -> Subject -> Batch
+            const assignClassSel = document.getElementById('assignClassSelect');
+            const assignSubSel = document.getElementById('assignSubjectSelect');
+            const assignBatchSel = document.getElementById('assignBatchSelect');
+
+            if (assignClassSel && assignSubSel && assignBatchSel) {
+                assignClassSel.addEventListener('change', function () {
+                    assignBatchSel.innerHTML = '<option value="">-- Select Subject First --</option>';
+                    assignBatchSel.disabled = true;
+                    loadSubjectsForClass(this.value, assignSubSel);
+                });
+
+                assignSubSel.addEventListener('change', function () {
+                    const classId = assignClassSel.value;
+                    const subjectId = this.value;
+
+                    if (!classId || !subjectId) {
+                        assignBatchSel.innerHTML = '<option value="">-- Select Subject First --</option>';
+                        assignBatchSel.disabled = true;
+                        return;
+                    }
+
+                    fetch(`/Admin/GetBatchesByClassAndSubject/${classId}/${subjectId}`)
+                        .then(res => res.json())
+                        .then(data => {
+                            assignBatchSel.innerHTML = '<option value="">-- Select Batch --</option>';
+                            if (data.length === 0) {
+                                assignBatchSel.innerHTML = '<option value="">No batches available for this subject</option>';
+                            } else {
+                                data.forEach(b => {
+                                    const opt = document.createElement('option');
+                                    opt.value = b.batchId;
+                                    opt.textContent = `${b.batchName} (${b.teacherName})`;
+                                    assignBatchSel.appendChild(opt);
+                                });
+                            }
+                            assignBatchSel.disabled = false;
+                        });
+                });
+            }
+
+            // --- 4. Edit Course Type Modal Trigger ---
+            const editCtBtns = document.querySelectorAll('.edit-ct-btn');
+            const editCtModal = new bootstrap.Modal(document.getElementById('editCourseTypeModal'));
+            editCtBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.getElementById('editCourseTypeId').value = this.getAttribute('data-id');
+                    document.getElementById('editCourseTypeName').value = this.getAttribute('data-name');
+                    editCtModal.show();
+                });
+            });
+
+            // --- 5. Edit Time Slot Modal Trigger ---
+            const editTsBtns = document.querySelectorAll('.edit-ts-btn');
+            const editTsModal = new bootstrap.Modal(document.getElementById('editTimeSlotModal'));
+            editTsBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    document.getElementById('editTimeSlotId').value = this.getAttribute('data-id');
+                    document.getElementById('editStartTime').value = this.getAttribute('data-start');
+                    document.getElementById('editEndTime').value = this.getAttribute('data-end');
+                    document.getElementById('editDays').value = this.getAttribute('data-days');
+                    editTsModal.show();
+                });
+            });
+
+            // --- 6. Edit Batch Modal Trigger ---
+            const editBatchBtns = document.querySelectorAll('.edit-batch-btn');
+            const editBatchModal = new bootstrap.Modal(document.getElementById('editBatchModal'));
+            editBatchBtns.forEach(btn => {
+                btn.addEventListener('click', function () {
+                    const batchId = this.getAttribute('data-id');
+                    const name = this.getAttribute('data-name');
+                    const classId = this.getAttribute('data-classid');
+                    const subjectId = this.getAttribute('data-subjectid');
+                    const ctId = this.getAttribute('data-coursetypeid');
+                    const tsId = this.getAttribute('data-timeslotid');
+                    const cap = this.getAttribute('data-capacity');
+                    const active = this.getAttribute('data-isactive');
+                    const teacherId = this.getAttribute('data-teacherid');
+
+                    document.getElementById('editBatchId').value = batchId;
+                    document.getElementById('editBatchName').value = name;
+                    document.getElementById('editBatchClassSelect').value = classId;
+                    document.getElementById('editBatchCourseTypeSelect').value = ctId;
+                    document.getElementById('editBatchTimeSlotSelect').value = tsId;
+                    document.getElementById('editBatchCapacity').value = cap;
+                    document.getElementById('editBatchStatusSelect').value = active;
+                    document.getElementById('editBatchTeacherSelect').value = teacherId || "0";
+
+                    const editSubSel = document.getElementById('editBatchSubjectSelect');
+                    loadSubjectsForClass(classId, editSubSel, function () {
+                        editSubSel.value = subjectId;
+                    });
+
+                    editBatchModal.show();
+                });
+            });
+
+            const editBatchClassSel = document.getElementById('editBatchClassSelect');
+            if (editBatchClassSel) {
+                editBatchClassSel.addEventListener('change', function () {
+                    loadSubjectsForClass(this.value, document.getElementById('editBatchSubjectSelect'));
+                });
+            }
+
+        });
+    </script>
+}
