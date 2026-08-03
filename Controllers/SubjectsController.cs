@@ -76,7 +76,7 @@ public class SubjectsController : Controller
         return View(subject);
     }
 
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int? id, [Bind("SubjectId,ClassId,SubjectName,IsActive")] Subject subject)

@@ -1,7 +1,7 @@
 ﻿@model TuitionCenter.Models.ViewModels.Admin.StudentVM
 
 @{
-    ViewData["Title"] = "Edit Student";
+    ViewData["Title"] = "EditStudent";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -22,8 +22,8 @@
 
     <div class="card-body">
 
-        <form asp-action="Edit"
-              asp-controller="StudentManagement"
+        <form asp-action="EditStudent"
+              asp-controller="Admin"
               asp-route-id="@Model.UserId"
               method="post">
 
@@ -134,8 +134,8 @@
                 </button>
 
 
-                <a asp-action="Index"
-                   asp-controller="StudentManagement"
+                <a asp-action="StudentIndex"
+                   asp-controller="Admin"
                    class="btn btn-secondary">
 
                     Cancel

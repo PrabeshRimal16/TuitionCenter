@@ -1,7 +1,7 @@
 ﻿@model TuitionCenter.Models.ViewModels.Admin.StudentVM
 
 @{
-    ViewData["Title"] = "Student Details";
+    ViewData["Title"] = "StudentDetails";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -16,8 +16,8 @@
     </div>
 
 
-    <a asp-action="Edit"
-       asp-controller="StudentManagement"
+    <a asp-action="EditStudent"
+       asp-controller="Admin"
        asp-route-id="@Model.UserId"
        class="btn btn-primary">
 

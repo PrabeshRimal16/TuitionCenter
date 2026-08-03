@@ -43,3 +43,4 @@ public partial class Enrollment
 
     public virtual User Student { get; set; } = null!;
 }
+

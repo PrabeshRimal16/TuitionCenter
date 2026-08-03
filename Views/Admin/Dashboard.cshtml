@@ -1,8 +1,9 @@
-﻿git @{
+﻿@{
     ViewData["Title"] = "Admin Dashboard";
 }
 
 <div class="p-4 bg-light rounded shadow-sm">
     <h2>Welcome, @User.Identity?.Name!</h2>
+    <p>Prabrsh rimal is.....</p>
     <p class="text-muted">Role: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
 </div>

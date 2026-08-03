@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,12 +12,10 @@ namespace TuitionCenter.Controllers
     public class TeacherController : Controller
     {
         private readonly TuitionCenterDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
 
         public TeacherController(TuitionCenterDbContext context)
         {
             _context = context;
-            _passwordHasher = new PasswordHasher<User>();
         }
 
         [HttpGet]
@@ -71,7 +68,7 @@ namespace TuitionCenter.Controllers
                 ActiveClasses = activeClasses,
                 AverageAttendance = 0, // Placeholder
                 CurrentAcademicYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
-                
+
                 NextClass = nextSession != null ? new UpcomingClassViewModel
                 {
                     SessionId = nextSession.SessionId,
@@ -129,8 +126,8 @@ namespace TuitionCenter.Controllers
                     .ThenInclude(b => b.Subject)
                 .Include(cs => cs.Batch)
                     .ThenInclude(b => b.Class)
-                .Where(cs => cs.TeacherId == teacherId 
-                        && cs.SessionDate >= DateOnly.FromDateTime(startOfWeek) 
+                .Where(cs => cs.TeacherId == teacherId
+                        && cs.SessionDate >= DateOnly.FromDateTime(startOfWeek)
                         && cs.SessionDate <= DateOnly.FromDateTime(endOfWeek))
                 .ToList();
 
@@ -219,7 +216,7 @@ namespace TuitionCenter.Controllers
         [HttpPost]
         public IActionResult CreateClass([FromBody] CreateClassRequest request)
         {
-            try 
+            try
             {
                 var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (!int.TryParse(userIdString, out int teacherId))
@@ -229,8 +226,8 @@ namespace TuitionCenter.Controllers
 
                 // Find a valid batch for the teacher or fallback
                 var batch = _context.Batches.FirstOrDefault(b => b.TeacherId == teacherId);
-                
-                if (batch == null) 
+
+                if (batch == null)
                 {
                     // Fallback: Create a dummy batch if none exists
                     var dummyClass = _context.Classes.FirstOrDefault() ?? new Class { ClassName = "Class 10" };
@@ -239,7 +236,7 @@ namespace TuitionCenter.Controllers
                     var dummySubject = _context.Subjects.FirstOrDefault() ?? new Subject { SubjectName = "Science", Class = dummyClass };
                     if (dummySubject.SubjectId == 0) _context.Subjects.Add(dummySubject);
 
-                    var dummyCourseType = _context.CourseTypes.FirstOrDefault() ?? new CourseType { CourseTypeName = "Regular" };
+                    var dummyCourseType = _context.CourseTypes.FirstOrDefault() ?? new CourseType { TypeName = "Regular" };
                     if (dummyCourseType.CourseTypeId == 0) _context.CourseTypes.Add(dummyCourseType);
 
                     var dummyTimeSlot = _context.TimeSlots.FirstOrDefault() ?? new TimeSlot { Days = "Mon-Fri" };
@@ -247,7 +244,8 @@ namespace TuitionCenter.Controllers
 
                     _context.SaveChanges();
 
-                    batch = new Batch {
+                    batch = new Batch
+                    {
                         BatchName = "Default Batch",
                         TeacherId = teacherId,
                         ClassId = dummyClass.ClassId,
@@ -314,12 +312,12 @@ namespace TuitionCenter.Controllers
 
     public class CreateClassRequest
     {
-        public string ClassName { get; set; }
-        public string SubjectName { get; set; }
-        public string StartDate { get; set; }
-        public string EndDate { get; set; }
-        public string StartTime { get; set; }
-        public string EndTime { get; set; }
-        public List<string> Days { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public string SubjectName { get; set; } = string.Empty;
+        public string StartDate { get; set; } = string.Empty;
+        public string EndDate { get; set; } = string.Empty;
+        public string StartTime { get; set; } = string.Empty;
+        public string EndTime { get; set; } = string.Empty;
+        public List<string> Days { get; set; } = new();
     }
 }

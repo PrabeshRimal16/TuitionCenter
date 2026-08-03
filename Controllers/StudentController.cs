@@ -10,7 +10,6 @@ namespace TuitionCenter.Controllers
     {
         private const string CurrentClassSessionKey = "CurrentClassSessionId";
         private readonly TuitionCenterDbContext _context;
-        private readonly PasswordHasher<User> _passwordHasher;
 
         public StudentController(TuitionCenterDbContext context)
         {
@@ -139,7 +138,7 @@ namespace TuitionCenter.Controllers
                         ClassName = e.Class.ClassName,
                         SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
                         Amount = e.ExpectedAmount,
-                        PlanLabel = e.CourseType.CourseTypeName,
+                        PlanLabel = e.CourseType.TypeName,
                         SessionsCompleted = sessionsForEnrollment.Count(s => s.Status == "Completed"),
                         SessionsTotal = sessionsForEnrollment.Count
                     };
@@ -395,7 +394,7 @@ namespace TuitionCenter.Controllers
                 CourseTypes = courseTypes.Select(ct => new CourseTypeOption
                 {
                     CourseTypeId = ct.CourseTypeId,
-                    TypeName = ct.CourseTypeName
+                    TypeName = ct.TypeName
                 }).ToList(),
                 TimeSlots = timeSlots.Select(t => new TimeSlotOption
                 {
@@ -501,7 +500,7 @@ namespace TuitionCenter.Controllers
             {
                 ClassId = classId,
                 ClassName = classEntity.ClassName,
-                CourseTypeName = courseType?.CourseTypeName ?? "",
+                CourseTypeName = courseType?.TypeName ?? "",
                 Items = items,
                 Total = items.Sum(i => i.Amount ?? 0),
                 HasMissingFees = items.Any(i => i.Amount == null)

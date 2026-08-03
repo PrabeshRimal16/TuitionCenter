@@ -4,19 +4,19 @@ namespace TuitionCenter.Models.ViewModels
 {
     public class TeacherProfileViewModel
     {
-        public string FullName { get; set; }
-        public string Email { get; set; }
-        public string Phone { get; set; }
-        public string DateOfBirth { get; set; }
-        public string HighestDegree { get; set; }
-        public string Institution { get; set; }
-        public string YearOfGraduation { get; set; }
-        public string SubjectSpecialization { get; set; }
-        public string YearsOfExperience { get; set; }
-        public string Bio { get; set; }
-        
-        public string PhotoPath { get; set; }
-        
+        public string FullName { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Phone { get; set; } = string.Empty;
+        public string DateOfBirth { get; set; } = string.Empty;
+        public string HighestDegree { get; set; } = string.Empty;
+        public string Institution { get; set; } = string.Empty;
+        public string YearOfGraduation { get; set; } = string.Empty;
+        public string SubjectSpecialization { get; set; } = string.Empty;
+        public string YearsOfExperience { get; set; } = string.Empty;
+        public string Bio { get; set; } = string.Empty;
+
+        public string PhotoPath { get; set; } = string.Empty;
+
         // Mocked data for display
         public int CurrentLoad { get; set; } = 5;
         public int TotalStudents { get; set; } = 142;
@@ -33,7 +33,7 @@ namespace TuitionCenter.Models.ViewModels
 
     public class AssignedSubjectGroup
     {
-        public string ClassName { get; set; }
-        public string Subjects { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public string Subjects { get; set; } = string.Empty;
     }
 }
