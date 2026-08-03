@@ -1,9 +1,330 @@
-﻿@{
+@model TuitionCenter.Models.ViewModels.Admin.AdminDashboardVM
+
+@{
     ViewData["Title"] = "Admin Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<div class="p-4 bg-light rounded shadow-sm">
-    <h2>Welcome, @User.Identity?.Name!</h2>
-    <p>Prabrsh rimal is.....</p>
-    <p class="text-muted">Role: @User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value</p>
+<head>
+    <link rel="stylesheet" href="~/css/Dashboard.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<div class="dashboard-wrapper">
+
+    <!-- Top Welcome Banner Card -->
+    <div class="welcome-card">
+        <div class="welcome-accent-bar"></div>
+        <div class="welcome-content">
+            <div class="welcome-header">
+                <h1>@Model.Greeting, @Model.AdminName <span class="wave-emoji">👋</span></h1>
+                <div class="welcome-datetime">
+                    <span><i class="bi bi-calendar4-event"></i> @Model.FormattedDate</span>
+                    <span class="dot">&bull;</span>
+                    <span><i class="bi bi-clock"></i> @Model.FormattedTime</span>
+                </div>
+            </div>
+
+            <div class="welcome-metrics">
+                <div class="metric-item">
+                    <span class="metric-label">ACTIVE SESSIONS</span>
+                    <h3 class="metric-value blue">@Model.ActiveSessionsCount.ToString("N0")</h3>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-item">
+                    <span class="metric-label">SYSTEM LOAD</span>
+                    <h3 class="metric-value purple">@Model.SystemLoadPercent%</h3>
+                </div>
+                <div class="metric-divider"></div>
+                <div class="metric-item">
+                    <span class="metric-label">NEW TODAY</span>
+                    <h3 class="metric-value royal">+@Model.NewTodayCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4 KPI Stat Cards Grid -->
+    <div class="kpi-grid">
+
+        <!-- Card 1: Total Students -->
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-icon-badge blue">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+                <span class="kpi-badge growth">
+                    <i class="bi bi-arrow-up-short"></i>12%
+                </span>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-label">Total Students</span>
+                <h2 class="kpi-value">@Model.TotalStudents.ToString("N0")</h2>
+                <span class="kpi-subtext">Updated 5m ago</span>
+            </div>
+        </div>
+
+        <!-- Card 2: Total Teachers -->
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-icon-badge purple">
+                    <i class="bi bi-person-badge-fill"></i>
+                </div>
+                <span class="kpi-badge neutral">Stable</span>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-label">Total Teachers</span>
+                <h2 class="kpi-value">@Model.TotalTeachers.ToString("N0")</h2>
+                <span class="kpi-subtext">Active in last 24h</span>
+            </div>
+        </div>
+
+        <!-- Card 3: Total Courses -->
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-icon-badge indigo">
+                    <i class="bi bi-book-half"></i>
+                </div>
+                <span class="kpi-badge info">+4 New</span>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-label">Total Courses</span>
+                <h2 class="kpi-value">@Model.TotalCourses.ToString("N0")</h2>
+                <span class="kpi-subtext">12 Drafted</span>
+            </div>
+        </div>
+
+        <!-- Card 4: Monthly Revenue -->
+        <div class="kpi-card">
+            <div class="kpi-top">
+                <div class="kpi-icon-badge green">
+                    <i class="bi bi-wallet2"></i>
+                </div>
+                <span class="kpi-badge growth">
+                    <i class="bi bi-arrow-up-short"></i>$2.4k
+                </span>
+            </div>
+            <div class="kpi-body">
+                <span class="kpi-label">Monthly Revenue</span>
+                <h2 class="kpi-value">Rs. @Model.MonthlyRevenue.ToString("N0")</h2>
+                <span class="kpi-subtext">Vs Rs. 51,800 last month</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Analytics Charts Section -->
+    <div class="analytics-grid">
+
+        <!-- Revenue Performance Chart Card -->
+        <div class="chart-card revenue-card">
+            <div class="chart-header">
+                <div>
+                    <h3>Revenue Performance</h3>
+                    <p>Last 6 months comparison</p>
+                </div>
+                <span class="chart-fy-badge">2026 FY</span>
+            </div>
+            <div class="chart-body">
+                <canvas id="revenueChart" height="220"></canvas>
+            </div>
+        </div>
+
+        <!-- Course Distribution Chart Card -->
+        <div class="chart-card distribution-card">
+            <div class="chart-header">
+                <div>
+                    <h3>Course Distribution</h3>
+                </div>
+            </div>
+            <div class="chart-body donut-chart-container">
+                <div class="donut-wrapper">
+                    <canvas id="courseDonutChart" width="180" height="180"></canvas>
+                    <div class="donut-center-text">
+                        <h2>@Model.TotalCourses</h2>
+                        <span>Total</span>
+                    </div>
+                </div>
+
+                <div class="legend-list">
+                    <div class="legend-item">
+                        <span class="legend-dot math"></span>
+                        <span class="legend-name">Mathematics</span>
+                        <span class="legend-value">40%</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot science"></span>
+                        <span class="legend-name">Science</span>
+                        <span class="legend-value">30%</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot english"></span>
+                        <span class="legend-name">English</span>
+                        <span class="legend-value">20%</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot cs"></span>
+                        <span class="legend-name">Computer Sci</span>
+                        <span class="legend-value">10%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Quick Action / Recent Activity Feed -->
+    <div class="dashboard-secondary-grid">
+
+        <!-- Recent Enrollments Table -->
+        <div class="card shadow-sm border-0 rounded-4">
+            <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-4 px-4">
+                <div>
+                    <h5 class="fw-bold mb-1">Recent Student Enrollments</h5>
+                    <p class="text-muted small mb-0">Latest student activity and registrations</p>
+                </div>
+                <a asp-controller="Admin" asp-action="StudentIndex" class="btn btn-sm btn-outline-primary rounded-pill">
+                    View All Students <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Class</th>
+                                <th>Enrolled Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.RecentEnrollments.Any())
+                            {
+                                foreach (var item in Model.RecentEnrollments)
+                                {
+                                    <tr>
+                                        <td class="fw-bold text-dark">@item.StudentName</td>
+                                        <td>@item.ClassName</td>
+                                        <td class="text-muted">@(item.EnrolledDate?.ToString("MMM d, yyyy") ?? "Recent")</td>
+                                        <td>
+                                            @if (item.Status == "Approved" || item.Status == "Active")
+                                            {
+                                                <span class="badge bg-success">Approved</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-info">@item.Status</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center py-4 text-muted">
+                                        <i class="bi bi-info-circle fs-4 d-block mb-2"></i>
+                                        No recent enrollments recorded yet.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Revenue Bar Chart Initialization
+            const ctxRev = document.getElementById('revenueChart').getContext('2d');
+            
+            const gradientActive = ctxRev.createLinearGradient(0, 0, 0, 200);
+            gradientActive.addColorStop(0, '#0284c7');
+            gradientActive.addColorStop(1, '#0369a1');
+
+            const gradientNormal = ctxRev.createLinearGradient(0, 0, 0, 200);
+            gradientNormal.addColorStop(0, '#cbd5e1');
+            gradientNormal.addColorStop(1, '#94a3b8');
+
+            new Chart(ctxRev, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue (Rs.)',
+                        data: [32000, 41000, 38000, 49000, 48000, 54200],
+                        backgroundColor: [
+                            'rgba(203, 213, 225, 0.65)',
+                            'rgba(203, 213, 225, 0.65)',
+                            'rgba(203, 213, 225, 0.65)',
+                            'rgba(203, 213, 225, 0.65)',
+                            'rgba(203, 213, 225, 0.65)',
+                            '#0284c7'
+                        ],
+                        borderRadius: 10,
+                        borderSkipped: false,
+                        barThickness: 38
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Rs. ' + context.parsed.y.toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { family: 'Plus Jakarta Sans', weight: '600' }, color: '#64748b' }
+                        },
+                        y: {
+                            grid: { borderDash: [4, 4], color: '#f1f5f9' },
+                            ticks: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Course Distribution Donut Chart Initialization
+            const ctxDonut = document.getElementById('courseDonutChart').getContext('2d');
+            new Chart(ctxDonut, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Mathematics', 'Science', 'English', 'Computer Sci'],
+                    datasets: [{
+                        data: [40, 30, 20, 10],
+                        backgroundColor: [
+                            '#2563eb',
+                            '#6366f1',
+                            '#38bdf8',
+                            '#e2e8f0'
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    cutout: '76%',
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        });
+    </script>
+}
