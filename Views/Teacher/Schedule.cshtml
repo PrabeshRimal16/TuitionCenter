@@ -1,641 +1,152 @@
 @model TuitionCenter.Models.ViewModels.TeacherScheduleViewModel
 @{
-    Layout = null;
-    ViewData["Title"] = "Teacher Schedule";
+    Layout = "~/Views/Shared/_TeacherLayout.cshtml";
+    ViewData["Title"] = "Weekly Schedule";
+    ViewData["Subtitle"] = "View and manage your weekly teaching calendar and timetable.";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Study Point</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { primary: '#0B4799', secondary: '#4F81C7', background: '#F9FAFB' }
-                }
-            }
-        }
-    </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
-    </style>
-</head>
-<body class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-primary">Study <span class="text-secondary">Point</span></h1>
-            <p class="text-xs text-gray-500 mt-1">Teacher Portal</p>
-        </div>
-        <nav class="flex-1 mt-4">
-            <ul class="space-y-1">
-                <li>
-                    <a href="@Url.Action("Dashboard", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="fas fa-th-large w-5 h-5 mr-3 text-lg"></i> Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("ClassManagement", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="fas fa-users w-5 h-5 mr-3 text-lg"></i> Class Management
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-6 py-3 text-primary bg-[#EBF3FF] border-l-4 border-primary font-medium">
-                        <i class="far fa-calendar-alt w-5 h-5 mr-3 text-lg"></i> Schedule
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("LiveClasses", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="fas fa-video w-5 h-5 mr-3 text-lg"></i> Live Classes
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("Profile", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="far fa-user w-5 h-5 mr-3 text-lg"></i> Profile
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
 
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
-        <!-- Top Navbar -->
-        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
-            <div>
-                <h2 class="text-xl font-bold text-gray-900">Schedule</h2>
-                <p class="text-sm text-gray-500">Your weekly teaching calendar</p>
-            </div>
-            <div class="flex items-center space-x-6">
-                <div class="relative">
-                    <button id="notificationBtn" class="text-gray-500 hover:text-gray-700 relative p-1">
-                        <i class="far fa-bell text-xl"></i>
-                        <span id="notifBadge" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <!-- Notification Dropdown -->
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                        <div class="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-                            <h4 class="text-sm font-bold text-gray-900">Notifications</h4>
-                            <button id="markAllReadBtn" class="text-xs text-[#0B4799] font-semibold hover:underline">Mark all read</button>
-                        </div>
-                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-calendar-check text-[#0B4799] text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 leading-snug">Class session starting soon</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Mathematics - Grade 10 · Batch A · 7:00 AM</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">5 minutes ago</p>
-                                </div>
-                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
-                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-user-plus text-green-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 leading-snug">New student enrolled</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Priya Sharma joined Science - Grade 9</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">32 minutes ago</p>
-                                </div>
-                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
-                                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-link text-amber-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-700 leading-snug">Reminder: Update live class link</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Evening batch · Science - Grade 9 has no link</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">1 hour ago</p>
-                                </div>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
-                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-clipboard-check text-purple-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-700 leading-snug">Attendance report ready</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Weekly report for Accountancy - Grade 12</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">3 hours ago</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-5 py-3 border-t border-gray-100 bg-gray-50">
-                            <button class="w-full text-center text-xs font-semibold text-[#0B4799] hover:underline">View all notifications</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img id="topProfileBtn" src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all" />
-                    <!-- Dropdown Menu -->
-                    <div id="topProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <div class="px-4 py-3 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-900">@Model.TeacherName</p>
-                            <p class="text-xs text-gray-500 truncate">@Model.TeacherEmail</p>
-                        </div>
-                        <a href="@Url.Action("Profile", "Teacher")" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                            <i class="far fa-user w-4 mr-2"></i> My Profile
-                        </a>
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <a href="@Url.Action("Logout", "Account")" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <i class="fas fa-sign-out-alt w-4 mr-2"></i> Logout
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </header>
+<!-- Toast Notification -->
+<div id="scheduleToast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center space-x-3 border border-slate-700 transition-all">
+    <i class="fas fa-check-circle text-emerald-400 text-lg"></i>
+    <span id="scheduleToastMsg" class="text-xs font-semibold">Action completed successfully!</span>
+</div>
 
-        <!-- Scrollable Content -->
-        <div class="flex-1 overflow-y-auto p-8">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <!-- Header with Navigation and Add Button -->
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center space-x-4">
-                        <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                            <a href="@Url.Action("Schedule", "Teacher", new { startDate = Model.CurrentWeekStart.AddDays(-7).ToString("yyyy-MM-dd") })" class="px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors border-r border-gray-200">
-                                <i class="fas fa-chevron-left text-sm"></i>
-                            </a>
-                            <a href="@Url.Action("Schedule", "Teacher", new { startDate = Model.CurrentWeekStart.AddDays(7).ToString("yyyy-MM-dd") })" class="px-3 py-2 text-gray-500 hover:bg-gray-50 hover:text-primary transition-colors">
-                                <i class="fas fa-chevron-right text-sm"></i>
-                            </a>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-900">@Model.WeekDateRangeDisplay</h3>
-                    </div>
-                    <button id="addClassBtn" class="bg-[#0B4799] hover:bg-blue-800 text-white px-5 py-2.5 rounded-lg font-medium transition-colors flex items-center shadow-sm">
-                        <i class="fas fa-plus mr-2"></i> Add Class
-                    </button>
-                </div>
-
-                <!-- Calendar Grid -->
-                <div class="grid grid-cols-7 border-t border-l border-gray-100 rounded-lg overflow-hidden">
-                    <!-- Column Headers -->
-                    @foreach (var day in Model.Days)
-                    {
-                        <div class="text-center py-4 border-r border-b border-gray-100 @(day.IsToday ? "bg-blue-50" : "bg-white")">
-                            <p class="text-xs font-semibold text-gray-500 tracking-wider">@day.DayOfWeek</p>
-                            <p class="text-2xl font-bold @(day.IsToday ? "text-primary" : "text-gray-900") mt-1">@day.DayOfMonth</p>
-                        </div>
-                    }
-
-                    <!-- Grid Cells for Sessions -->
-                    @foreach (var day in Model.Days)
-                    {
-                        <div class="border-r border-b border-gray-100 p-2 min-h-[500px] @(day.IsToday ? "bg-blue-50/30" : "bg-white")" id="grid-col-@day.DayOfWeek">
-                            <div class="space-y-3">
-                                @foreach (var session in day.Sessions)
-                                {
-                                    <div class="@session.ColorTheme rounded-lg p-3 shadow-sm hover:shadow-md transition-shadow cursor-pointer">
-                                        <h4 class="font-bold text-sm leading-tight mb-1">@session.SubjectName - @session.ClassName</h4>
-                                        <p class="text-xs opacity-90">@session.StartTime.ToString("h:mm") - @session.EndTime.ToString("h:mm tt")</p>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <!-- Create Class Modal -->
-    <div id="createClassModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-gray-900 bg-opacity-50 backdrop-blur-sm transition-opacity">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-            <!-- Modal Header -->
-            <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-white">
-                <h3 class="text-lg font-semibold text-[#0B4799]">Create New Class</h3>
-                <button id="closeClassModalBtn" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-lg"></i>
-                </button>
-            </div>
-
-            <!-- Modal Body (Scrollable) -->
-            <div class="flex-1 overflow-y-auto p-6 bg-white">
-                <form id="createClassForm" class="space-y-8">
-                    
-                    <!-- Basic Details Section -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-800 flex items-center mb-4">
-                            <i class="fas fa-info-circle text-[#0B4799] mr-2"></i> Basic Details
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Class Name</label>
-                                <input type="text" id="classNameInput" placeholder="e.g., Math - G10" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] focus:border-transparent text-sm">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Subject</label>
-                                <div class="relative">
-                                    <select id="subjectSelect" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] focus:border-transparent text-sm text-gray-700 bg-white appearance-none">
-                                        <option value="">Mathematics</option>
-                                        <option value="science">Science</option>
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                        <i class="fas fa-chevron-down text-xs"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="md:col-span-2 w-full md:w-1/2 pr-0 md:pr-3">
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Class Level</label>
-                                <div class="relative">
-                                    <select class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] focus:border-transparent text-sm text-gray-700 bg-white appearance-none">
-                                        <option value="">Class 8</option>
-                                        <option value="">Class 9</option>
-                                        <option value="" selected>Class 10</option>
-                                        <option value="">Class 11</option>
-                                        <option value="">Class 12</option>
-                                    </select>
-                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                        <i class="fas fa-chevron-down text-xs"></i>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="md:col-span-2">
-                                <label class="block text-xs font-semibold text-gray-700 mb-1">Class Description</label>
-                                <textarea rows="3" placeholder="Provide a brief overview of the course curriculum..." class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] focus:border-transparent text-sm resize-none"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Schedule Section -->
-                    <div>
-                        <h4 class="text-md font-semibold text-gray-800 flex items-center mb-4">
-                            <i class="far fa-calendar-alt text-[#0B4799] mr-2"></i> Schedule
-                        </h4>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <!-- Left Side: Inputs -->
-                            <div class="md:col-span-2 space-y-5">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Start Date</label>
-                                        <input type="date" id="startDateInput" placeholder="mm/dd/yyyy" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] text-sm text-gray-700">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">End Date</label>
-                                        <input type="date" id="endDateInput" placeholder="mm/dd/yyyy" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] text-sm text-gray-700">
-                                    </div>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-xs font-semibold text-gray-700 mb-2">Class Days</label>
-                                    <div class="flex space-x-2">
-                                        <button type="button" data-day="SUN" class="day-btn flex-1 py-1.5 border border-gray-300 text-gray-600 rounded text-sm hover:bg-gray-50 transition-colors">Sun</button>
-                                        <button type="button" data-day="MON" class="day-btn flex-1 py-1.5 bg-[#2563EB] text-white border border-transparent rounded text-sm transition-colors shadow-sm">Mon</button>
-                                        <button type="button" data-day="TUE" class="day-btn flex-1 py-1.5 border border-gray-300 text-gray-600 rounded text-sm hover:bg-gray-50 transition-colors">Tue</button>
-                                        <button type="button" data-day="WED" class="day-btn flex-1 py-1.5 bg-[#2563EB] text-white border border-transparent rounded text-sm transition-colors shadow-sm">Wed</button>
-                                        <button type="button" data-day="THU" class="day-btn flex-1 py-1.5 border border-gray-300 text-gray-600 rounded text-sm hover:bg-gray-50 transition-colors">Thu</button>
-                                        <button type="button" data-day="FRI" class="day-btn flex-1 py-1.5 bg-[#2563EB] text-white border border-transparent rounded text-sm transition-colors shadow-sm">Fri</button>
-                                        <button type="button" data-day="SAT" class="day-btn flex-1 py-1.5 border border-gray-300 text-gray-600 rounded text-sm hover:bg-gray-50 transition-colors">Sat</button>
-                                    </div>
-                                </div>
-
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Start Time</label>
-                                        <div class="relative">
-                                            <select id="startTimeSelect" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] text-sm text-gray-700 bg-white appearance-none">
-                                                <option value="09:00">09:00 AM</option>
-                                                <option value="09:30">09:30 AM</option>
-                                                <option value="10:00" selected>10:00 AM</option>
-                                                <option value="10:30">10:30 AM</option>
-                                                <option value="11:00">11:00 AM</option>
-                                                <option value="11:30">11:30 AM</option>
-                                                <option value="12:00">12:00 PM</option>
-                                                <option value="12:30">12:30 PM</option>
-                                                <option value="13:00">01:00 PM</option>
-                                            </select>
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                                <i class="fas fa-chevron-down text-xs"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-semibold text-gray-700 mb-1">End Time</label>
-                                        <div class="relative">
-                                            <select id="endTimeSelect" class="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0B4799] text-sm text-gray-700 bg-white appearance-none">
-                                                <option value="09:30">09:30 AM</option>
-                                                <option value="10:00">10:00 AM</option>
-                                                <option value="10:30" selected>10:30 AM</option>
-                                                <option value="11:00">11:00 AM</option>
-                                                <option value="11:30">11:30 AM</option>
-                                                <option value="12:00">12:00 PM</option>
-                                                <option value="12:30">12:30 PM</option>
-                                                <option value="13:00">01:00 PM</option>
-                                                <option value="13:30">01:30 PM</option>
-                                            </select>
-                                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                                                <i class="fas fa-chevron-down text-xs"></i>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="pt-2">
-                                    <span class="block text-xs font-semibold text-gray-700 mb-1">Duration (Minutes)</span>
-                                    <input type="text" id="durationInput" value="30" disabled class="w-1/2 px-4 py-1.5 border border-gray-200 bg-gray-50 rounded-md text-sm text-gray-500">
-                                </div>
-                            </div>
-
-                            <!-- Right Side: Preview -->
-                            <div class="bg-[#F8FAFC] border border-gray-200 rounded-lg p-5 flex flex-col h-full">
-                                <h5 class="text-[11px] font-bold text-gray-600 tracking-wider mb-4 uppercase">Time Slot Preview</h5>
-                                <div class="flex-1 bg-white border border-gray-100 rounded-md p-3 relative text-[10px] text-gray-400 flex flex-col justify-between shadow-sm">
-                                    <div class="flex items-center h-8 border-b border-gray-50">
-                                        <div class="w-14" id="previewTime1">09:00 AM</div>
-                                    </div>
-                                    <div class="flex items-center h-8 border-b border-gray-50">
-                                        <div class="w-14" id="previewTime2">09:30 AM</div>
-                                    </div>
-                                    
-                                    <!-- Active Slot Preview -->
-                                    <div class="relative flex flex-col justify-between py-1.5 bg-[#E8F0FE] my-1.5 rounded-sm border border-[#D2E3FC]">
-                                        <div class="absolute left-0 top-0 bottom-0 w-[3px] bg-[#0B4799] rounded-l-sm"></div>
-                                        <div class="flex items-center h-6 pl-3">
-                                            <div class="w-12 font-bold text-[#0B4799]" id="previewStartTime">10:00 AM</div>
-                                            <span class="font-semibold text-[10px] text-[#0B4799] ml-2">New Class</span>
-                                        </div>
-                                        <div class="flex items-center h-6 pl-3">
-                                            <div class="w-12 font-bold text-[#0B4799]" id="previewEndTime">10:30 AM</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center h-8 border-b border-gray-50">
-                                        <div class="w-14" id="previewTime3">11:00 AM</div>
-                                    </div>
-                                    <div class="flex items-center h-8">
-                                        <div class="w-14" id="previewTime4">11:30 AM</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-
-            <!-- Modal Footer -->
-            <div class="px-6 py-4 border-t border-gray-200 bg-[#F9FAFB] flex justify-end items-center space-x-4 rounded-b-xl">
-                <button type="button" id="cancelClassModalBtn" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors">
-                    Save as Draft
-                </button>
-                <button type="button" id="publishClassBtn" class="px-5 py-2.5 bg-[#0B4799] hover:bg-blue-800 text-white text-sm font-medium rounded-md shadow-sm flex items-center transition-colors">
-                    <i class="fas fa-rocket mr-2"></i> Publish Class
-                </button>
-            </div>
-        </div>
+<!-- Calendar Header Row -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs">
+    <div>
+        <h1 class="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <i class="fas fa-calendar-week text-[#0B4799]"></i> @Model.WeekDateRangeDisplay
+        </h1>
+        <p class="text-xs text-slate-500 mt-0.5">Showing scheduled class lectures and interactive sessions</p>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toastNotification" class="fixed bottom-5 right-5 transform translate-y-20 opacity-0 transition-all duration-300 bg-white border-l-4 border-green-500 shadow-xl rounded flex items-center p-4 z-[200]">
-        <div class="rounded-full bg-green-100 p-1 mr-3 flex-shrink-0">
-            <i class="fas fa-check w-4 h-4 text-green-500 text-xs flex items-center justify-center"></i>
+    <!-- Week Navigation Controls -->
+    <div class="flex items-center gap-2 self-start sm:self-auto">
+        <a href="@Url.Action("Schedule", "Teacher", new { startDate = Model.CurrentWeekStart.AddDays(-7) })" 
+           class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            <i class="fas fa-chevron-left text-[10px]"></i> Prev Week
+        </a>
+        <a href="@Url.Action("Schedule", "Teacher")" 
+           class="px-4 py-2 bg-blue-50 text-[#0B4799] hover:bg-[#0B4799] hover:text-white rounded-xl font-bold text-xs transition-all">
+            This Week
+        </a>
+        <a href="@Url.Action("Schedule", "Teacher", new { startDate = Model.CurrentWeekStart.AddDays(7) })" 
+           class="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all flex items-center gap-1">
+            Next Week <i class="fas fa-chevron-right text-[10px]"></i>
+        </a>
+    </div>
+</div>
+
+<!-- Weekly Days Grid -->
+<div class="grid grid-cols-1 md:grid-cols-7 gap-4 mb-8">
+    @foreach (var day in Model.Days)
+    {
+        <div class="bg-white rounded-2xl border @(day.IsToday ? "border-[#0B4799] ring-2 ring-blue-500/20 shadow-md" : "border-slate-200/80 shadow-xs") flex flex-col min-h-[360px] overflow-hidden">
+            <!-- Day Header -->
+            <div class="p-3.5 text-center border-b border-slate-100 @(day.IsToday ? "bg-[#0B4799] text-white" : "bg-slate-50 text-slate-700")">
+                <p class="text-[10px] font-extrabold tracking-wider uppercase opacity-80">@day.DayOfWeek</p>
+                <h3 class="text-xl font-extrabold leading-none mt-1">@day.DayOfMonth</h3>
+                @if (day.IsToday)
+                {
+                    <span class="inline-block bg-white/20 text-white text-[9px] font-bold px-2 py-0.5 rounded-md uppercase mt-1">
+                        Today
+                    </span>
+                }
+            </div>
+
+            <!-- Sessions List for Day -->
+            <div class="p-3 space-y-2.5 flex-1 overflow-y-auto">
+                @if (day.Sessions.Any())
+                {
+                    foreach (var s in day.Sessions)
+                    {
+                        <div class="p-3 rounded-xl @s.ColorTheme shadow-sm hover:opacity-95 transition-all cursor-pointer group"
+                             onclick="openSessionModal('@s.Title', '@s.ClassName', '@s.SubjectName', '@s.StartTime.ToString("hh:mm tt")', '@s.EndTime.ToString("hh:mm tt")')">
+                            <p class="text-[10px] font-bold opacity-90 flex items-center gap-1">
+                                <i class="far fa-clock text-[9px]"></i> @s.StartTime.ToString("hh:mm tt") - @s.EndTime.ToString("hh:mm tt")
+                            </p>
+                            <h4 class="text-xs font-extrabold mt-1 leading-snug group-hover:underline">@s.Title</h4>
+                            <div class="flex items-center justify-between text-[10px] opacity-90 mt-2 pt-1 border-t border-white/20">
+                                <span class="font-medium">@s.ClassName</span>
+                                <i class="fas fa-[#0B4799] fa-arrow-right text-[8px] group-hover:translate-x-0.5 transition-transform"></i>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-8 text-slate-300 text-[11px] font-medium italic">
+                        No sessions
+                    </div>
+                }
+            </div>
         </div>
-        <div>
-            <h4 id="toastTitle" class="text-sm font-bold text-gray-900">Success</h4>
-            <p id="toastMessage" class="text-xs text-gray-500">Action completed successfully.</p>
+    }
+</div>
+
+<!-- Modal: Session Info -->
+<div id="sessionModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+        <button onclick="closeSessionModal()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+
+        <div class="w-12 h-12 rounded-2xl bg-blue-100 text-[#0B4799] flex items-center justify-center text-xl font-bold mb-3">
+            <i class="fas fa-chalkboard"></i>
+        </div>
+
+        <h3 id="modalSessionTitle" class="text-lg font-extrabold text-slate-900 leading-snug mb-1">Class Session Details</h3>
+        <p id="modalSessionGrade" class="text-xs font-bold text-[#0B4799] mb-4">Grade & Subject</p>
+
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 space-y-2 mb-5 text-xs text-slate-600">
+            <div class="flex justify-between">
+                <span class="font-semibold text-slate-400">Time Window:</span>
+                <span id="modalSessionTime" class="font-bold text-slate-800">10:00 AM - 11:30 AM</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-slate-400">Class Room:</span>
+                <span class="font-bold text-slate-800">Online Live Room</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="font-semibold text-slate-400">Default Link:</span>
+                <span class="font-bold text-blue-600 hover:underline cursor-pointer" onclick="copyMeetingLink('https://meet.google.com/demo-session')">Copy Link</span>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <a href="@Url.Action("LiveClasses", "Teacher")" class="flex-1 text-center py-2.5 bg-[#0B4799] hover:bg-[#083777] text-white rounded-xl font-bold text-xs transition-all shadow-md">
+                Launch Meeting
+            </a>
+            <button onclick="closeSessionModal()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all">
+                Close
+            </button>
         </div>
     </div>
+</div>
 
+@section Scripts {
     <script>
-        const topProfileBtn = document.getElementById('topProfileBtn');
-        const topProfileDropdown = document.getElementById('topProfileDropdown');
-        if (topProfileBtn) {
-            topProfileBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-                topProfileDropdown.classList.toggle('hidden');
-                document.getElementById('notificationDropdown').classList.add('hidden');
-            });
-            document.addEventListener('click', function(e) {
-                if (!topProfileBtn.contains(e.target) && !topProfileDropdown.contains(e.target)) {
-                    topProfileDropdown.classList.add('hidden');
+        function openSessionModal(title, grade, subject, start, end) {
+            document.getElementById('modalSessionTitle').innerText = title;
+            document.getElementById('modalSessionGrade').innerText = grade + " • " + subject;
+            document.getElementById('modalSessionTime').innerText = start + " - " + end;
+            document.getElementById('sessionModal').classList.remove('hidden');
+        }
+
+        function closeSessionModal() {
+            document.getElementById('sessionModal').classList.add('hidden');
+        }
+
+        function copyMeetingLink(link) {
+            navigator.clipboard.writeText(link).then(() => {
+                const toast = document.getElementById('scheduleToast');
+                const msg = document.getElementById('scheduleToastMsg');
+                if (toast && msg) {
+                    msg.innerText = "Meeting link copied!";
+                    toast.classList.remove('hidden');
+                    setTimeout(() => toast.classList.add('hidden'), 3000);
                 }
-                const nb = document.getElementById('notificationBtn');
-                const nd = document.getElementById('notificationDropdown');
-                if (nd && nb && !nb.contains(e.target) && !nd.contains(e.target)) {
-                    nd.classList.add('hidden');
-                }
-            });
-        }
-
-        // Modal Logic
-        const addClassBtn = document.getElementById('addClassBtn');
-        const createClassModal = document.getElementById('createClassModal');
-        const closeClassModalBtn = document.getElementById('closeClassModalBtn');
-
-        if (addClassBtn && createClassModal) {
-            addClassBtn.addEventListener('click', () => {
-                createClassModal.classList.remove('hidden');
-            });
-
-            closeClassModalBtn.addEventListener('click', () => {
-                createClassModal.classList.add('hidden');
-            });
-
-            // Close on outside click
-            createClassModal.addEventListener('click', (e) => {
-                if (e.target === createClassModal) {
-                    createClassModal.classList.add('hidden');
-                }
-            });
-        }
-
-        // Duration and Preview Logic
-        const startTimeSelect = document.getElementById('startTimeSelect');
-        const endTimeSelect = document.getElementById('endTimeSelect');
-        const durationInput = document.getElementById('durationInput');
-        const previewStartTime = document.getElementById('previewStartTime');
-        const previewEndTime = document.getElementById('previewEndTime');
-        const previewTime1 = document.getElementById('previewTime1');
-        const previewTime2 = document.getElementById('previewTime2');
-        const previewTime3 = document.getElementById('previewTime3');
-        const previewTime4 = document.getElementById('previewTime4');
-
-        function formatTime(timeStr) {
-            let [h, m] = timeStr.split(':');
-            let hour = parseInt(h);
-            let ampm = hour >= 12 ? 'PM' : 'AM';
-            hour = hour % 12;
-            hour = hour ? hour : 12; 
-            return `${hour.toString().padStart(2, '0')}:${m} ${ampm}`;
-        }
-
-        function subtractMinutes(timeStr, mins) {
-            let [h, m] = timeStr.split(':');
-            let date = new Date(2000, 0, 1, h, m);
-            date.setMinutes(date.getMinutes() - mins);
-            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-        }
-
-        function addMinutes(timeStr, mins) {
-            let [h, m] = timeStr.split(':');
-            let date = new Date(2000, 0, 1, h, m);
-            date.setMinutes(date.getMinutes() + mins);
-            return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-        }
-
-        function updateTimeLogic() {
-            if(!startTimeSelect || !endTimeSelect) return;
-            let start = startTimeSelect.value;
-            let end = endTimeSelect.value;
-            
-            let [sh, sm] = start.split(':').map(Number);
-            let [eh, em] = end.split(':').map(Number);
-            
-            let startMins = sh * 60 + sm;
-            let endMins = eh * 60 + em;
-            
-            let duration = endMins - startMins;
-            if (duration < 0) {
-                duration = 0;
-                endTimeSelect.value = start;
-                end = start;
-            }
-            if (durationInput) durationInput.value = duration;
-
-            if (previewStartTime) previewStartTime.innerText = formatTime(start);
-            if (previewEndTime) previewEndTime.innerText = formatTime(end);
-            if (previewTime1) previewTime1.innerText = formatTime(subtractMinutes(start, 60));
-            if (previewTime2) previewTime2.innerText = formatTime(subtractMinutes(start, 30));
-            if (previewTime3) previewTime3.innerText = formatTime(addMinutes(end, 30));
-            if (previewTime4) previewTime4.innerText = formatTime(addMinutes(end, 60));
-        }
-
-        if (startTimeSelect) startTimeSelect.addEventListener('change', updateTimeLogic);
-        if (endTimeSelect) endTimeSelect.addEventListener('change', updateTimeLogic);
-
-        // Toast logic
-        const toast = document.getElementById('toastNotification');
-        const toastTitle = document.getElementById('toastTitle');
-        const toastMessage = document.getElementById('toastMessage');
-        
-        function showToast(title, message) {
-            if(toastTitle) toastTitle.innerText = title;
-            if(toastMessage) toastMessage.innerText = message;
-            toast.classList.remove('translate-y-20', 'opacity-0');
-            setTimeout(() => {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }, 3000);
-        }
-
-        // Save & Publish
-        const saveDraftBtn = document.getElementById('cancelClassModalBtn');
-        const publishClassBtn = document.getElementById('publishClassBtn');
-
-        if(saveDraftBtn) {
-            saveDraftBtn.addEventListener('click', () => {
-                createClassModal.classList.add('hidden');
-                showToast('Draft Saved', 'Your class has been saved as a draft.');
-            });
-        }
-        if(publishClassBtn) {
-            publishClassBtn.addEventListener('click', async () => {
-                const className = document.getElementById('classNameInput').value || 'New Class';
-                const subjectEl = document.getElementById('subjectSelect');
-                const subjectName = subjectEl.options[subjectEl.selectedIndex].text || 'Subject';
-                const startDate = document.getElementById('startDateInput').value;
-                const endDate = document.getElementById('endDateInput').value;
-                const startTime = document.getElementById('startTimeSelect').value;
-                const endTime = document.getElementById('endTimeSelect').value;
-                const selectedDays = Array.from(document.querySelectorAll('.day-btn.text-white')).map(btn => btn.getAttribute('data-day'));
-                
-                if (selectedDays.length === 0) {
-                    alert('Please select at least one day for the class.');
-                    return;
-                }
-                
-                if (!startDate || !endDate) {
-                    alert('Please select both start and end dates.');
-                    return;
-                }
-
-                // Show saving state
-                const originalText = publishClassBtn.innerHTML;
-                publishClassBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Publishing...';
-                publishClassBtn.disabled = true;
-
-                try {
-                    const response = await fetch('/Teacher/CreateClass', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            className: className,
-                            subjectName: subjectName,
-                            startDate: startDate,
-                            endDate: endDate,
-                            startTime: startTime,
-                            endTime: endTime,
-                            days: selectedDays
-                        })
-                    });
-
-                    if (response.ok) {
-                        createClassModal.classList.add('hidden');
-                        showToast('Class Published', 'Your class has been published successfully.');
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
-                    } else {
-                        const err = await response.text();
-                        alert('Failed to publish class. ' + err);
-                    }
-                } catch (error) {
-                    console.error('Error:', error);
-                    alert('An error occurred: ' + error.message);
-                } finally {
-                    publishClassBtn.innerHTML = originalText;
-                    publishClassBtn.disabled = false;
-                }
-            });
-        }
-
-        // Toggle day buttons logic
-        document.querySelectorAll('.day-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if(this.classList.contains('bg-[#2563EB]')) {
-                    this.classList.remove('bg-[#2563EB]', 'text-white', 'border-transparent', 'shadow-sm');
-                    this.classList.add('border-gray-300', 'text-gray-600', 'hover:bg-gray-50');
-                } else {
-                    this.classList.remove('border-gray-300', 'text-gray-600', 'hover:bg-gray-50');
-                    this.classList.add('bg-[#2563EB]', 'text-white', 'border-transparent', 'shadow-sm');
-                }
-            });
-        });
-
-        // Notification dropdown
-        const notificationBtn = document.getElementById('notificationBtn');
-        const notificationDropdown = document.getElementById('notificationDropdown');
-        const markAllReadBtn = document.getElementById('markAllReadBtn');
-        const notifBadge = document.getElementById('notifBadge');
-        if (notificationBtn && notificationDropdown) {
-            notificationBtn.addEventListener('click', function(e) {
-                e.stopPropagation();
-                notificationDropdown.classList.toggle('hidden');
-                if (topProfileDropdown) topProfileDropdown.classList.add('hidden');
-            });
-            if (markAllReadBtn) {
-                markAllReadBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    document.querySelectorAll('.notif-dot').forEach(d => d.classList.add('hidden'));
-                    document.querySelectorAll('.notif-item.unread').forEach(i => i.classList.remove('unread'));
-                    if (notifBadge) notifBadge.classList.add('hidden');
-                });
-            }
-            document.querySelectorAll('.notif-item').forEach(function(item) {
-                item.addEventListener('click', function() {
-                    const dot = this.querySelector('.notif-dot');
-                    if (dot) dot.classList.add('hidden');
-                    this.classList.remove('unread');
-                    if (!document.querySelector('.notif-dot:not(.hidden)') && notifBadge) {
-                        notifBadge.classList.add('hidden');
-                    }
-                });
             });
         }
     </script>
-</body>
-</html>
+}
