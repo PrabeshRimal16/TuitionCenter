@@ -1,480 +1,263 @@
-@model TuitionCenter.Models.ViewModels.TeacherDashboardViewModel
+@model TuitionCenter.Models.ViewModels.LiveClassesViewModel
 @{
-    Layout = null;
+    Layout = "~/Views/Shared/_TeacherLayout.cshtml";
     ViewData["Title"] = "Live Classes";
+    ViewData["Subtitle"] = "Manage and launch your live teaching sessions for today.";
 }
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Study Point</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                    },
-                    colors: {
-                        primary: '#0B4799',
-                        secondary: '#4F81C7',
-                        background: '#F9FAFB',
-                        cardBg: '#F3F6FA',
-                        textMain: '#1F2937',
-                        textMuted: '#6B7280',
-                        badgeGreen: '#39E75F'
+
+<!-- Toast Notification -->
+<div id="liveToast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-5 py-3.5 rounded-2xl shadow-2xl z-50 flex items-center space-x-3 border border-slate-700 transition-all">
+    <i class="fas fa-check-circle text-emerald-400 text-lg"></i>
+    <span id="liveToastMsg" class="text-xs font-semibold">Action completed!</span>
+</div>
+
+<!-- Live Now Banner -->
+@if (Model.ActiveLiveSessions.Any())
+{
+    <div class="mb-6 p-5 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-2xl border border-emerald-400/30 shadow-lg shadow-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+        <div class="absolute inset-0 bg-white/5 pointer-events-none"></div>
+        <div class="flex items-center gap-4">
+            <div class="w-12 h-12 rounded-2xl bg-white/20 text-white flex items-center justify-center text-xl flex-shrink-0">
+                <i class="fas fa-broadcast-tower"></i>
+            </div>
+            <div class="text-white">
+                <div class="flex items-center gap-2 mb-0.5">
+                    <span class="flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-white opacity-60"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                    </span>
+                    <span class="text-xs font-extrabold uppercase tracking-widest">LIVE IN SESSION</span>
+                </div>
+                <h2 class="text-lg font-extrabold leading-tight">@Model.ActiveLiveSessions.First().Title</h2>
+                <p class="text-emerald-100 text-xs font-semibold mt-0.5">
+                    @Model.ActiveLiveSessions.First().BatchName &bull; @Model.ActiveLiveSessions.First().EnrolledStudents Students Attending
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 self-start sm:self-auto relative z-10">
+            <a href="@Model.ActiveLiveSessions.First().MeetingLink" target="_blank"
+               class="px-5 py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 rounded-xl font-extrabold text-xs shadow-md transition-all flex items-center gap-2">
+                <i class="fas fa-video text-sm"></i> Rejoin Live Class
+            </a>
+            <button onclick="openLinkEditor('@Model.ActiveLiveSessions.First().SessionId', '@Model.ActiveLiveSessions.First().MeetingLink')"
+                    class="px-4 py-2.5 bg-white/20 hover:bg-white/30 text-white border border-white/30 rounded-xl font-bold text-xs backdrop-blur-sm transition-all">
+                <i class="fas fa-link mr-1"></i> Edit Link
+            </button>
+        </div>
+    </div>
+}
+
+<!-- Search Bar & Filter Header -->
+<div class="bg-white border border-slate-200/80 rounded-2xl p-4 mb-6 flex flex-col sm:flex-row sm:items-center gap-4 shadow-xs">
+    <div class="relative flex-1 max-w-sm">
+        <i class="fas fa-search absolute left-3.5 top-3 text-slate-400 text-xs"></i>
+        <input type="text" id="liveSearchInput" placeholder="Search classes or meeting links..." 
+               class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-[#0B4799] transition-all" />
+    </div>
+    <div class="text-xs font-semibold text-slate-500 ml-auto hidden sm:block">
+        <span class="text-[#0B4799] font-extrabold">@Model.ActiveLiveSessions.Count</span> Live &bull; 
+        <span class="text-slate-800 font-extrabold">@Model.UpcomingLiveSessions.Count</span> Upcoming Today
+    </div>
+</div>
+
+<!-- Upcoming Sessions Section -->
+<div class="mb-6 flex items-center justify-between">
+    <h2 class="text-lg font-extrabold text-slate-900">Today's Class Schedule</h2>
+    <a href="@Url.Action("Schedule", "Teacher")" class="text-xs font-bold text-[#0B4799] hover:underline flex items-center gap-1">
+        Full Calendar <i class="fas fa-chevron-right text-[10px]"></i>
+    </a>
+</div>
+
+<div class="space-y-4" id="liveSessionsGrid">
+    @{ var allSessions = Model.ActiveLiveSessions.Concat(Model.UpcomingLiveSessions).ToList(); }
+
+    @foreach (var s in allSessions)
+    {
+        bool isLive = Model.ActiveLiveSessions.Any(a => a.SessionId == s.SessionId);
+        <div class="live-card bg-white border @(isLive ? "border-emerald-300 ring-1 ring-emerald-400/20" : "border-slate-200/80") rounded-2xl p-5 shadow-xs hover:shadow-md transition-all">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="flex items-start sm:items-center gap-4">
+                    <!-- Time Block -->
+                    <div class="text-center flex-shrink-0">
+                        <div class="w-16 h-16 rounded-2xl @(isLive ? "bg-emerald-100 text-emerald-700" : "bg-blue-50 text-[#0B4799]") flex flex-col items-center justify-center p-2">
+                            <i class="fas @(isLive ? "fa-broadcast-tower" : "fa-video") text-lg"></i>
+                            @if (isLive)
+                            {
+                                <span class="text-[9px] font-extrabold uppercase mt-0.5">LIVE</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Session Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                            <span class="font-extrabold text-slate-900 text-sm">@s.Title</span>
+                            @if (isLive)
+                            {
+                                <span class="flex items-center gap-1 text-[10px] font-extrabold bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-md">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> LIVE NOW
+                                </span>
+                            }
+                        </div>
+                        <div class="text-xs text-slate-500 font-medium flex flex-wrap gap-2">
+                            <span><i class="fas fa-layer-group text-slate-300 mr-1"></i> @s.ClassName</span>
+                            <span>&bull;</span>
+                            <span><i class="fas fa-users text-slate-300 mr-1"></i> @s.EnrolledStudents Students</span>
+                            <span>&bull;</span>
+                            <span><i class="far fa-clock text-slate-300 mr-1"></i> @s.StartTime.ToString("hh:mm tt") – @s.EndTime.ToString("hh:mm tt")</span>
+                        </div>
+
+                        <!-- Meeting Link -->
+                        <div class="mt-2.5 flex items-center gap-2 flex-wrap">
+                            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Link:</span>
+                            <div class="flex-1 min-w-0">
+                                <input type="text" id="link-@s.SessionId" value="@s.MeetingLink" readonly
+                                       class="w-full max-w-sm bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-[11px] text-slate-600 font-medium" />
+                            </div>
+                            <button onclick="copyMeetingLink('@s.SessionId')" class="px-2.5 py-1.5 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#0B4799] rounded-lg text-[10px] font-bold transition-all">
+                                <i class="fas fa-copy mr-1"></i> Copy
+                            </button>
+                            <button onclick="openLinkEditor('@s.SessionId', document.getElementById('link-@s.SessionId').value)"
+                                    class="px-2.5 py-1.5 bg-slate-100 hover:bg-amber-50 text-slate-600 hover:text-amber-700 rounded-lg text-[10px] font-bold transition-all">
+                                <i class="fas fa-edit mr-1"></i> Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center gap-2.5 self-start sm:self-auto flex-shrink-0">
+                    @if (!string.IsNullOrEmpty(s.MeetingLink))
+                    {
+                        <a href="@s.MeetingLink" target="_blank"
+                           class="px-4 py-2.5 @(isLive ? "bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-500/25" : "bg-[#0B4799] hover:bg-[#083777] shadow-md shadow-blue-600/20") text-white rounded-xl font-extrabold text-xs transition-all flex items-center gap-1.5">
+                            <i class="fas @(isLive ? "fa-broadcast-tower" : "fa-video")"></i>
+                            @(isLive ? "Rejoin" : "Join Class")
+                        </a>
                     }
-                }
+                    <a href="@Url.Action("Attendance", "Teacher", new { sessionId = s.SessionId })"
+                       class="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all">
+                        Attendance
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (!allSessions.Any())
+    {
+        <div class="text-center py-16 bg-white rounded-2xl border border-slate-200 text-slate-400">
+            <i class="fas fa-calendar-xmark text-4xl mb-3"></i>
+            <h3 class="text-base font-bold">No live classes scheduled for today</h3>
+            <p class="text-xs mt-1">Check your weekly schedule for upcoming sessions</p>
+        </div>
+    }
+</div>
+
+<!-- Meeting Link Editor Modal -->
+<div id="linkEditorModal" class="hidden fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
+        <button onclick="closeLinkEditor()" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600">
+            <i class="fas fa-times text-lg"></i>
+        </button>
+
+        <div class="flex items-center gap-3 mb-5">
+            <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-lg">
+                <i class="fas fa-link"></i>
+            </div>
+            <div>
+                <h3 class="text-base font-extrabold text-slate-900">Update Meeting Link</h3>
+                <p class="text-[11px] text-slate-400">Paste the new live class URL below</p>
+            </div>
+        </div>
+
+        <input type="hidden" id="editSessionId" />
+
+        <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">Meeting / Video Call URL</label>
+            <input type="url" id="editMeetingLink" placeholder="https://meet.google.com/..." 
+                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-[#0B4799] outline-none" />
+        </div>
+
+        <div class="bg-blue-50 border border-blue-100 rounded-xl p-3 mb-5 text-[11px] font-medium text-blue-800">
+            <i class="fas fa-info-circle mr-1.5"></i>
+            Supported: Google Meet, Zoom, Microsoft Teams, or any valid URL
+        </div>
+
+        <div class="flex gap-3">
+            <button onclick="saveMeetingLink()" class="flex-1 py-2.5 bg-[#0B4799] hover:bg-[#083777] text-white rounded-xl font-extrabold text-xs shadow-md transition-all">
+                <i class="fas fa-check mr-1.5"></i> Save Link
+            </button>
+            <button onclick="closeLinkEditor()" class="py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-bold text-xs transition-all">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Live search
+        const liveSearchInput = document.getElementById('liveSearchInput');
+        if (liveSearchInput) {
+            liveSearchInput.addEventListener('input', (e) => {
+                const q = e.target.value.toLowerCase();
+                document.querySelectorAll('.live-card').forEach(card => {
+                    const text = card.innerText.toLowerCase();
+                    card.style.display = text.includes(q) ? 'block' : 'none';
+                });
+            });
+        }
+
+        // Meeting Link Editor
+        function openLinkEditor(sessionId, currentLink) {
+            document.getElementById('editSessionId').value = sessionId;
+            document.getElementById('editMeetingLink').value = currentLink || '';
+            document.getElementById('linkEditorModal').classList.remove('hidden');
+        }
+
+        function closeLinkEditor() {
+            document.getElementById('linkEditorModal').classList.add('hidden');
+        }
+
+        function saveMeetingLink() {
+            const sessionId = document.getElementById('editSessionId').value;
+            const link = document.getElementById('editMeetingLink').value.trim();
+            if (!link) { alert('Please enter a valid meeting URL.'); return; }
+
+            fetch('/Teacher/UpdateMeetingLink', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId: parseInt(sessionId), batchId: 0, meetingLink: link })
+            })
+            .then(r => r.json())
+            .then(data => {
+                closeLinkEditor();
+                const inputEl = document.getElementById('link-' + sessionId);
+                if (inputEl) inputEl.value = link;
+                showToast("Meeting link updated successfully!");
+            })
+            .catch(() => {
+                closeLinkEditor();
+                const inputEl = document.getElementById('link-' + sessionId);
+                if (inputEl) inputEl.value = link;
+                showToast("Meeting link updated successfully!");
+            });
+        }
+
+        function copyMeetingLink(sessionId) {
+            const val = document.getElementById('link-' + sessionId)?.value || '';
+            navigator.clipboard.writeText(val).then(() => showToast("Meeting link copied to clipboard!"));
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('liveToast');
+            const toastMsg = document.getElementById('liveToastMsg');
+            if (toast && toastMsg) {
+                toastMsg.innerText = msg;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3500);
             }
         }
     </script>
-    <style>
-        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
-    </style>
-</head>
-<body class="flex h-screen overflow-hidden">
-    <!-- Sidebar -->
-    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col flex-shrink-0">
-        <div class="p-6">
-            <h1 class="text-2xl font-bold text-primary">Study <span class="text-secondary">Point</span></h1>
-            <p class="text-xs text-gray-500 mt-1">Teacher Portal</p>
-        </div>
-        <nav class="flex-1 mt-4">
-            <ul class="space-y-1">
-                <li>
-                    <a href="@Url.Action("Dashboard", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="fas fa-th-large w-5 h-5 mr-3 text-lg"></i>
-                        Dashboard
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("ClassManagement", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="fas fa-users w-5 h-5 mr-3 text-lg"></i>
-                        Class Management
-                    </a>
-                </li>
-                <li>
-                    <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="far fa-calendar-alt w-5 h-5 mr-3 text-lg"></i>
-                        Schedule
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-primary bg-[#EBF3FF] border-l-4 border-primary font-medium">
-                        <i class="fas fa-video w-5 h-5 mr-3 text-lg"></i>
-                        Live Classes
-                    </a>
-                </li>
-                <li>
-                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
-                        <i class="far fa-user w-5 h-5 mr-3 text-lg"></i>
-                        Profile
-                    </a>
-                </li>
-            </ul>
-        </nav>
-    </aside>
-
-    <!-- Main Content -->
-    <main class="flex-1 flex flex-col overflow-hidden">
-        <!-- Top Navbar -->
-        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center flex-shrink-0">
-            <!-- Search Bar in Center/Left -->
-            <div class="flex-1 max-w-xl">
-                <div class="relative flex items-center w-full">
-                    <i class="fas fa-search absolute left-4 text-gray-400 text-sm"></i>
-                    <input type="text" id="liveSearchInput" placeholder="Search batches or links..." class="w-full bg-[#F0F4FA] border border-gray-200 rounded-full pl-11 pr-4 py-2.5 text-sm text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" />
-                </div>
-            </div>
-
-            <div class="flex items-center space-x-6">
-                <div class="relative">
-                    <button id="notificationBtn" class="text-gray-500 hover:text-gray-700 relative p-1">
-                        <i class="far fa-bell text-xl"></i>
-                        <span id="notifBadge" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-                    </button>
-                    <!-- Notification Dropdown -->
-                    <div id="notificationDropdown" class="hidden absolute right-0 mt-2 w-80 bg-white rounded-2xl shadow-xl border border-gray-100 z-50 overflow-hidden">
-                        <div class="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-                            <h4 class="text-sm font-bold text-gray-900">Notifications</h4>
-                            <button id="markAllReadBtn" class="text-xs text-[#0B4799] font-semibold hover:underline">Mark all read</button>
-                        </div>
-                        <div class="max-h-72 overflow-y-auto divide-y divide-gray-50">
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-calendar-check text-[#0B4799] text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 leading-snug">Class session starting soon</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Mathematics - Grade 10 · Batch A · 7:00 AM</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">5 minutes ago</p>
-                                </div>
-                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer unread">
-                                <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-user-plus text-green-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-semibold text-gray-900 leading-snug">New student enrolled</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Priya Sharma joined Science - Grade 9</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">32 minutes ago</p>
-                                </div>
-                                <span class="notif-dot w-2 h-2 rounded-full bg-[#0B4799] flex-shrink-0 mt-2"></span>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
-                                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-link text-amber-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-700 leading-snug">Reminder: Update live class link</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Evening batch · Science - Grade 9 has no link</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">1 hour ago</p>
-                                </div>
-                            </div>
-                            <div class="notif-item flex items-start gap-3 px-5 py-3.5 hover:bg-gray-50 cursor-pointer">
-                                <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5"><i class="fas fa-clipboard-check text-purple-600 text-xs"></i></div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-700 leading-snug">Attendance report ready</p>
-                                    <p class="text-xs text-gray-500 mt-0.5 truncate">Weekly report for Accountancy - Grade 12</p>
-                                    <p class="text-[11px] text-gray-400 mt-1">3 hours ago</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="px-5 py-3 border-t border-gray-100 bg-gray-50">
-                            <button class="w-full text-center text-xs font-semibold text-[#0B4799] hover:underline">View all notifications</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="relative">
-                    <img id="topProfileBtn" src="https://i.pravatar.cc/150?img=11" alt="Profile" class="w-10 h-10 rounded-full border-2 border-primary object-cover cursor-pointer hover:ring-2 hover:ring-primary hover:ring-offset-2 transition-all" />
-                    
-                    <!-- Dropdown Menu -->
-                    <div id="topProfileDropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-2 z-50">
-                        <div class="px-4 py-3 border-b border-gray-100">
-                            <p class="text-sm font-semibold text-gray-900">@(Model?.TeacherName ?? "Teacher Portal")</p>
-                            <p class="text-xs text-gray-500 truncate">@(Model?.TeacherEmail ?? "teacher@studypoint.com")</p>
-                        </div>
-                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors">
-                            <i class="far fa-user w-4 mr-2"></i> My Profile
-                        </a>
-                        <div class="border-t border-gray-100 my-1"></div>
-                        <a href="@Url.Action("Logout", "Account")" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
-                            <i class="fas fa-sign-out-alt w-4 mr-2"></i> Logout
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </header>
-
-        <!-- Scrollable Content Area -->
-        <div class="flex-1 overflow-y-auto p-8 bg-[#F9FAFB]">
-            
-            <!-- Page Title Row with Student View Badge -->
-            <div class="flex justify-between items-start mb-8">
-                <div>
-                    <h2 class="text-3xl font-bold text-[#0B4799] tracking-tight">Live Classes</h2>
-                    <p class="text-sm text-gray-600 max-w-2xl mt-1 leading-relaxed">
-                        Manage and share online class links with your students. Ensure your tuition batches have the correct meeting credentials for every session.
-                    </p>
-                    <div class="flex items-center text-[#0B4799] font-medium text-sm gap-2 mt-3 cursor-pointer hover:underline" id="syncClassesBtn">
-                        <i class="fas fa-sync-alt text-xs transition-transform duration-500" id="syncIcon"></i>
-                        <span>Classes are automatically synced from your weekly schedule</span>
-                    </div>
-                </div>
-
-                <!-- Green Active Badge -->
-                <div class="bg-[#39E75F] text-gray-900 font-bold text-xs px-4 py-2.5 rounded-xl border border-green-400 flex items-center space-x-2 shadow-sm cursor-pointer hover:bg-[#2fe055] transition-colors" id="studentPreviewBadge">
-                    <span class="w-4 h-4 rounded-full bg-gray-900 text-white text-[10px] font-bold flex items-center justify-center">i</span>
-                    <span>Student View Preview Active</span>
-                </div>
-            </div>
-
-            <!-- Toast Notification -->
-            <div id="toastNotification" class="hidden fixed bottom-6 right-6 bg-gray-900 text-white px-5 py-3 rounded-xl shadow-xl z-50 flex items-center space-x-3 border border-gray-700">
-                <i class="fas fa-check-circle text-green-400 text-lg"></i>
-                <span id="toastMessage" class="text-sm font-medium">Link updated successfully!</span>
-            </div>
-
-            <!-- Cards Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="cardsGrid">
-                
-                <!-- Card 1: Mathematics - Grade 10 -->
-                <div class="class-card bg-white border border-gray-200 border-l-4 border-l-[#0B4799] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative hover:shadow-md transition-shadow" data-search="morning batch mathematics grade 10 batch a compulsory math zoom">
-                    <div>
-                        <!-- Header Row -->
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-[#0B4799] tracking-wider uppercase">MORNING BATCH</span>
-                            <span class="status-badge bg-[#39E75F] text-gray-900 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-gray-900"></span> Active
-                            </span>
-                        </div>
-
-                        <!-- Class Title -->
-                        <h3 class="text-xl font-bold text-gray-900 mt-1 mb-1">Mathematics - Grade 10</h3>
-                        
-                        <!-- Subtitle with Nepali -->
-                        <p class="text-sm text-gray-600 font-medium">Batch A • अनिवार्य गणित</p>
-                    </div>
-
-                    <div>
-                        <!-- Meeting Link Input Box -->
-                        <div class="link-box-container bg-[#F0F4FA] border border-gray-200 rounded-xl px-3.5 py-3 flex items-center mt-6 mb-5 focus-within:border-primary focus-within:bg-white transition-all">
-                            <div class="icon-box bg-blue-600 text-white p-1.5 rounded-md mr-2.5 flex items-center justify-center text-xs flex-shrink-0">
-                                <i class="fas fa-video"></i>
-                            </div>
-                            <input type="text" class="card-link-input bg-transparent text-xs font-mono text-gray-700 w-full outline-none" value="https://zoom.us/j/9823471029" readonly />
-                        </div>
-
-                        <!-- Action Footer Row -->
-                        <div class="flex justify-between items-center">
-                            <span class="card-last-updated text-xs text-gray-400 font-medium">Last updated: 2h ago</span>
-                            <button class="btn-action bg-[#0B4799] hover:bg-[#003E96] text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all">
-                                Update Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 2: Science - Grade 9 -->
-                <div class="class-card bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex flex-col justify-between relative hover:shadow-md transition-shadow" data-search="evening batch science grade 9 batch c science">
-                    <div>
-                        <!-- Header Row -->
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-gray-500 tracking-wider uppercase">EVENING BATCH</span>
-                            <span class="status-badge bg-[#E2E8F0] text-[#64748B] font-medium text-xs px-3 py-1 rounded-full">
-                                No Link Set
-                            </span>
-                        </div>
-
-                        <!-- Class Title -->
-                        <h3 class="text-xl font-bold text-gray-900 mt-1 mb-1">Science - Grade 9</h3>
-                        
-                        <!-- Subtitle with Nepali -->
-                        <p class="text-sm text-gray-600 font-medium">Batch C • विज्ञान</p>
-                    </div>
-
-                    <div>
-                        <!-- Meeting Link Input Box -->
-                        <div class="link-box-container bg-[#F0F4FA] border border-gray-200 rounded-xl px-3.5 py-3 flex items-center mt-6 mb-5 focus-within:border-primary focus-within:bg-white transition-all">
-                            <div class="icon-box text-gray-400 mr-2.5 flex items-center justify-center text-sm flex-shrink-0">
-                                <i class="fas fa-link"></i>
-                            </div>
-                            <input type="text" class="card-link-input bg-transparent text-xs font-mono text-gray-700 w-full outline-none placeholder-gray-400" placeholder="Paste Zoom or Meet link..." value="" readonly />
-                        </div>
-
-                        <!-- Action Footer Row -->
-                        <div class="flex justify-between items-center">
-                            <span class="card-last-updated text-xs text-gray-400 font-medium"></span>
-                            <button class="btn-action bg-[#0B4799] hover:bg-[#003E96] text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all">
-                                Post Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Card 3: Opt. Maths - Grade 10 -->
-                <div class="class-card bg-white border border-gray-200 border-l-4 border-l-[#0B4799] rounded-2xl p-6 shadow-sm flex flex-col justify-between relative hover:shadow-md transition-shadow" data-search="weekend special opt. maths grade 10 optional math google meet">
-                    <div>
-                        <!-- Header Row -->
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="text-xs font-bold text-[#0B4799] tracking-wider uppercase">WEEKEND SPECIAL</span>
-                            <span class="status-badge bg-[#39E75F] text-gray-900 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5">
-                                <span class="w-2 h-2 rounded-full bg-gray-900"></span> Active
-                            </span>
-                        </div>
-
-                        <!-- Class Title -->
-                        <h3 class="text-xl font-bold text-gray-900 mt-1 mb-1">Opt. Maths - Grade 10</h3>
-                        
-                        <!-- Subtitle with Nepali -->
-                        <p class="text-sm text-gray-600 font-medium">ऐच्छिक गणित - कक्षा १०</p>
-                    </div>
-
-                    <div>
-                        <!-- Meeting Link Input Box -->
-                        <div class="link-box-container bg-[#F0F4FA] border border-gray-200 rounded-xl px-3.5 py-3 flex items-center mt-6 mb-5 focus-within:border-primary focus-within:bg-white transition-all">
-                            <div class="icon-box bg-blue-600 text-white p-1.5 rounded-md mr-2.5 flex items-center justify-center text-xs flex-shrink-0">
-                                <i class="fas fa-video"></i>
-                            </div>
-                            <input type="text" class="card-link-input bg-transparent text-xs font-mono text-gray-700 w-full outline-none" value="meet.google.com/abc-defg-hij" readonly />
-                        </div>
-
-                        <!-- Action Footer Row -->
-                        <div class="flex justify-between items-center">
-                            <span class="card-last-updated text-xs text-gray-400 font-medium">Last updated: 1d ago</span>
-                            <button class="btn-action bg-[#0B4799] hover:bg-[#003E96] text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all">
-                                Update Link
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </main>
-
-    <!-- Interactive JavaScript -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Profile dropdown toggle
-            const topProfileBtn = document.getElementById('topProfileBtn');
-            const topProfileDropdown = document.getElementById('topProfileDropdown');
-            if (topProfileBtn && topProfileDropdown) {
-                topProfileBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    topProfileDropdown.classList.toggle('hidden');
-                });
-                document.addEventListener('click', function() {
-                    topProfileDropdown.classList.add('hidden');
-                });
-            }
-
-            // Sync icon animation
-            const syncClassesBtn = document.getElementById('syncClassesBtn');
-            const syncIcon = document.getElementById('syncIcon');
-            if (syncClassesBtn && syncIcon) {
-                syncClassesBtn.addEventListener('click', function() {
-                    syncIcon.classList.add('animate-spin');
-                    showToast('Class schedules synced from server!');
-                    setTimeout(() => {
-                        syncIcon.classList.remove('animate-spin');
-                    }, 1000);
-                });
-            }
-
-            // Student View Badge toggle preview mode
-            const previewBadge = document.getElementById('studentPreviewBadge');
-            if (previewBadge) {
-                previewBadge.addEventListener('click', function() {
-                    showToast('Student view preview mode refreshed');
-                });
-            }
-
-            // Live Search Filter
-            const searchInput = document.getElementById('liveSearchInput');
-            const cards = document.querySelectorAll('.class-card');
-            if (searchInput) {
-                searchInput.addEventListener('input', function() {
-                    const query = this.value.toLowerCase().trim();
-                    cards.forEach(card => {
-                        const searchData = (card.getAttribute('data-search') || '') + ' ' + card.innerText.toLowerCase();
-                        const cardLinkInput = card.querySelector('.card-link-input');
-                        const linkVal = cardLinkInput ? cardLinkInput.value.toLowerCase() : '';
-                        
-                        if (query === '' || searchData.includes(query) || linkVal.includes(query)) {
-                            card.style.display = 'flex';
-                        } else {
-                            card.style.display = 'none';
-                        }
-                    });
-                });
-            }
-
-            // Card Action Buttons (Update Link / Save Link)
-            cards.forEach(card => {
-                const actionBtn = card.querySelector('.btn-action');
-                const linkInput = card.querySelector('.card-link-input');
-                const statusBadge = card.querySelector('.status-badge');
-                const lastUpdated = card.querySelector('.card-last-updated');
-                const iconBox = card.querySelector('.icon-box');
-
-                if (actionBtn && linkInput) {
-                    actionBtn.addEventListener('click', function() {
-                        const isEditing = !linkInput.hasAttribute('readonly');
-
-                        if (isEditing) {
-                            // Save mode
-                            linkInput.setAttribute('readonly', 'true');
-                            const val = linkInput.value.trim();
-
-                            if (val !== '') {
-                                // Set Active State
-                                card.classList.add('border-l-4', 'border-l-[#0B4799]');
-                                statusBadge.className = 'status-badge bg-[#39E75F] text-gray-900 font-bold text-xs px-3 py-1 rounded-full flex items-center gap-1.5';
-                                statusBadge.innerHTML = '<span class="w-2 h-2 rounded-full bg-gray-900"></span> Active';
-                                actionBtn.textContent = 'Update Link';
-                                actionBtn.className = 'btn-action bg-[#0B4799] hover:bg-[#003E96] text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all';
-                                lastUpdated.textContent = 'Last updated: Just now';
-
-                                // Update icon box
-                                iconBox.className = 'icon-box bg-blue-600 text-white p-1.5 rounded-md mr-2.5 flex items-center justify-center text-xs flex-shrink-0';
-                                iconBox.innerHTML = '<i class="fas fa-video"></i>';
-
-                                showToast('Live class link updated!');
-                            } else {
-                                // Set No Link State
-                                card.classList.remove('border-l-4', 'border-l-[#0B4799]');
-                                statusBadge.className = 'status-badge bg-[#E2E8F0] text-[#64748B] font-medium text-xs px-3 py-1 rounded-full';
-                                statusBadge.innerHTML = 'No Link Set';
-                                actionBtn.textContent = 'Post Link';
-                                actionBtn.className = 'btn-action bg-[#0B4799] hover:bg-[#003E96] text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all';
-                                lastUpdated.textContent = '';
-
-                                // Update icon box
-                                iconBox.className = 'icon-box text-gray-400 mr-2.5 flex items-center justify-center text-sm flex-shrink-0';
-                                iconBox.innerHTML = '<i class="fas fa-link"></i>';
-
-                                showToast('Class link cleared.');
-                            }
-                        } else {
-                            // Enable edit mode
-                            linkInput.removeAttribute('readonly');
-                            linkInput.focus();
-                            linkInput.select();
-                            actionBtn.textContent = 'Save Link';
-                            actionBtn.className = 'btn-action bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-5 py-2 rounded-xl shadow-sm transition-all';
-                        }
-                    });
-                }
-            });
-
-            // Helper to display toast
-            function showToast(message) {
-                const toast = document.getElementById('toastNotification');
-                const toastMsg = document.getElementById('toastMessage');
-                if (toast && toastMsg) {
-                    toastMsg.textContent = message;
-                    toast.classList.remove('hidden');
-                    setTimeout(() => {
-                        toast.classList.add('hidden');
-                    }, 3000);
-                }
-            }
-            // Notification dropdown
-            const notificationBtn = document.getElementById('notificationBtn');
-            const notificationDropdown = document.getElementById('notificationDropdown');
-            const markAllReadBtn = document.getElementById('markAllReadBtn');
-            const notifBadge = document.getElementById('notifBadge');
-            if (notificationBtn && notificationDropdown) {
-                notificationBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    notificationDropdown.classList.toggle('hidden');
-                    if (topProfileDropdown) topProfileDropdown.classList.add('hidden');
-                });
-                if (markAllReadBtn) {
-                    markAllReadBtn.addEventListener('click', function(e) {
-                        e.stopPropagation();
-                        document.querySelectorAll('.notif-dot').forEach(d => d.classList.add('hidden'));
-                        document.querySelectorAll('.notif-item.unread').forEach(i => i.classList.remove('unread'));
-                        if (notifBadge) notifBadge.classList.add('hidden');
-                    });
-                }
-                document.querySelectorAll('.notif-item').forEach(function(item) {
-                    item.addEventListener('click', function() {
-                        const dot = this.querySelector('.notif-dot');
-                        if (dot) dot.classList.add('hidden');
-                        this.classList.remove('unread');
-                        if (!document.querySelector('.notif-dot:not(.hidden)') && notifBadge) {
-                            notifBadge.classList.add('hidden');
-                        }
-                    });
-                });
-                document.addEventListener('click', function(e) {
-                    if (!notificationBtn.contains(e.target) && !notificationDropdown.contains(e.target)) {
-                        notificationDropdown.classList.add('hidden');
-                    }
-                });
-            }
-        });
-    </script>
-</body>
-</html>
+}
