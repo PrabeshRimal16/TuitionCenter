@@ -32,9 +32,14 @@
                     class="bg-white/10 border border-white/20 text-white font-bold text-xs px-3 py-2 rounded-xl backdrop-blur-sm focus:outline-none focus:border-white/40 cursor-pointer">
                 @foreach (var s in Model.TeacherSessions)
                 {
-                    <option value="@s.SessionId" @(s.SessionId == Model.SelectedSessionId ? "selected" : "") class="text-slate-900">
-                        @s.Title (@s.StartTime.ToString("hh:mm tt"))
-                    </option>
+                    if (s.SessionId == Model.SelectedSessionId)
+                    {
+                        <option value="@s.SessionId" selected="selected">@s.Title (@s.StartTime.ToString("hh:mm tt"))</option>
+                    }
+                    else
+                    {
+                        <option value="@s.SessionId">@s.Title (@s.StartTime.ToString("hh:mm tt"))</option>
+                    }
                 }
             </select>
         </div>

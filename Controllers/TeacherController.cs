@@ -248,7 +248,7 @@ namespace TuitionCenter.Controllers
                         ClassName = b.Class?.ClassName ?? "General Class",
                         SubjectName = b.Subject?.SubjectName ?? "General Subject",
                         TimeSlot = b.TimeSlot?.Days ?? "7:00 AM - 8:30 AM",
-                        Capacity = b.Capacity ?? 40,
+                        Capacity = b.Capacity > 0 ? b.Capacity : 40,
                         EnrolledStudentsCount = b.EnrollmentSubjects.Count(),
                         AcademicLevel = level,
                         AcademicLevelBadge = badge,
