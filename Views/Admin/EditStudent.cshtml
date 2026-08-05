@@ -1,7 +1,7 @@
-﻿@model TuitionCenter.Models.ViewModels.Admin.StudentVM
+@model TuitionCenter.Models.ViewModels.Admin.StudentVM
 
 @{
-    ViewData["Title"] = "Edit Student";
+    ViewData["Title"] = "EditStudent";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -22,8 +22,8 @@
 
     <div class="card-body">
 
-        <form asp-action="Edit"
-              asp-controller="StudentManagement"
+        <form asp-action="EditStudent"
+              asp-controller="Admin"
               asp-route-id="@Model.UserId"
               method="post">
 
@@ -99,6 +99,27 @@
 
                 <div class="col-md-6 mb-3">
 
+                    <label asp-for="Password"
+                           class="form-label">
+
+                        New Password
+
+                    </label>
+
+                    <input asp-for="Password"
+                           type="password"
+                           class="form-control"
+                           placeholder="Leave blank to keep current password" />
+
+                    <span asp-validation-for="Password"
+                          class="text-danger">
+                    </span>
+
+                </div>
+
+
+                <div class="col-md-6 mb-3">
+
                     <label class="form-label">
 
                         Account Status
@@ -134,8 +155,8 @@
                 </button>
 
 
-                <a asp-action="Index"
-                   asp-controller="StudentManagement"
+                <a asp-action="StudentIndex"
+                   asp-controller="Admin"
                    class="btn btn-secondary">
 
                     Cancel

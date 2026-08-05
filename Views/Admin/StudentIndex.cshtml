@@ -1,7 +1,7 @@
-﻿@model List<TuitionCenter.Models.ViewModels.Admin.StudentVM>
+@model List<TuitionCenter.Models.ViewModels.Admin.StudentVM>
 
 @{
-    ViewData["Title"] = "Student Management";
+    ViewData["Title"] = "StudentIndex";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -120,28 +120,30 @@
 
                                     <div class="btn-group">
 
-                                        <a asp-controller="StudentManagement"
-                                           asp-action="Details"
+                                        <a asp-controller="Admin"
+                                           asp-action="StudentDetails"
                                            asp-route-id="@student.UserId"
-                                           class="btn btn-sm btn-outline-info">
+                                           class="btn btn-sm btn-outline-info"
+                                           title="View Details">
 
                                             <i class="bi bi-eye"></i>
 
                                         </a>
 
 
-                                        <a asp-controller="StudentManagement"
-                                           asp-action="Edit"
+                                        <a asp-controller="Admin"
+                                           asp-action="EditStudent"
                                            asp-route-id="@student.UserId"
-                                           class="btn btn-sm btn-outline-primary">
+                                           class="btn btn-sm btn-outline-primary"
+                                           title="Edit Student">
 
                                             <i class="bi bi-pencil"></i>
 
                                         </a>
 
 
-                                        <form asp-controller="StudentManagement"
-                                              asp-action="ToggleActive"
+                                        <form asp-controller="Admin"
+                                              asp-action="ToggleStudentStatus"
                                               asp-route-id="@student.UserId"
                                               method="post"
                                               class="d-inline">
@@ -149,7 +151,8 @@
                                             @Html.AntiForgeryToken()
 
                                             <button type="submit"
-                                                    class="btn btn-sm btn-outline-warning">
+                                                    class="btn btn-sm btn-outline-warning"
+                                                    title="Toggle Active Status">
 
                                                 <i class="bi bi-power"></i>
 

@@ -3,261 +3,327 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Teacher Portal</title>
+    <title>@ViewData["Title"] - Teacher Portal | Study Point</title>
 
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome 6 Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Bootstrap Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#0B4799',
+                        primaryHover: '#083777',
+                        secondary: '#4F81C7',
+                        accentGreen: '#10B981',
+                        accentAmber: '#F59E0B',
+                        accentPurple: '#8B5CF6',
+                        bgMain: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-
-            body {
-                margin: 0;
-                font-family: "Segoe UI", sans-serif;
-                background: #f5f7fb;
-            }
-
-            /* ================= Sidebar ================= */
-
-            .sidebar {
-                width: 280px;
-                height: 100vh;
-                position: fixed;
-                left: 0;
-                top: 0;
-                background: #fff;
-                border-right: 1px solid #e5e7eb;
-            }
-
-            .logo {
-                padding: 35px 30px;
-            }
-
-                .logo h2 {
-                    color: #0056c7;
-                    font-weight: 700;
-                    font-size: 42px;
-                    margin-bottom: 0;
-                }
-
-                .logo span {
-                    color: #003e96;
-                }
-
-                .logo p {
-                    color: #666;
-                    font-size: 22px;
-                    margin-top: 5px;
-                }
-
-            .menu {
-                list-style: none;
-                padding: 0;
-                margin-top: 15px;
-            }
-
-                .menu li {
-                    margin-bottom: 8px;
-                }
-
-                    .menu li a {
-                        display: flex;
-                        align-items: center;
-                        gap: 18px;
-                        padding: 18px 30px;
-                        text-decoration: none;
-                        color: #555;
-                        font-size: 22px;
-                        transition: .3s;
-                    }
-
-                    .menu li.active a {
-                        background: #edf3ff;
-                        color: #0056c7;
-                        border-left: 5px solid #0056c7;
-                        font-weight: 600;
-                    }
-
-                    .menu li a:hover {
-                        background: #f5f8ff;
-                        color: #0056c7;
-                    }
-
-                .menu i {
-                    font-size: 24px;
-                }
-
-            /* ================= Main ================= */
-
-            .main {
-                margin-left: 280px;
-            }
-
-            /* ================= Navbar ================= */
-
-            .navbar-custom {
-                height: 95px;
-                background: white;
-                border-bottom: 1px solid #e5e7eb;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0 45px;
-            }
-
-                .navbar-custom h2 {
-                    font-weight: 700;
-                    margin: 0;
-                }
-
-                .navbar-custom p {
-                    margin: 0;
-                    color: gray;
-                }
-
-            .right-menu {
-                display: flex;
-                align-items: center;
-                gap: 25px;
-            }
-
-            .notification {
-                font-size: 28px;
-                cursor: pointer;
-            }
-
-            .profile {
-                width: 55px;
-                height: 55px;
-                border-radius: 50%;
-                border: 3px solid #0056c7;
-            }
-
-            .content {
-                padding: 30px;
-            }
-
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        .glass-card { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px); }
     </style>
-
 </head>
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800">
+    <!-- Mobile Sidebar Backdrop -->
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/50 z-40 hidden md:hidden transition-opacity"></div>
 
-<body>
-
-    <!-- Sidebar -->
-
-    <aside class="sidebar">
-
-        <div class="logo">
-
-            <h2>Study <span>Point</span></h2>
-
-            <p>Teacher Portal</p>
-
+    <!-- Sidebar Navigation -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col flex-shrink-0 fixed md:static inset-y-0 left-0 z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg md:shadow-none">
+        <!-- Logo Section -->
+        <div class="p-6 border-b border-slate-100 flex items-center justify-between">
+            <a href="@Url.Action("Dashboard", "Teacher")" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#0B4799] to-[#3B82F6] flex items-center justify-center text-white shadow-md shadow-blue-500/20 font-extrabold text-xl">
+                    S
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold text-[#0B4799] leading-none tracking-tight">Study <span class="text-blue-500">Point</span></h1>
+                    <p class="text-[11px] font-semibold text-slate-400 tracking-wider uppercase mt-1">Teacher Portal</p>
+                </div>
+            </a>
+            <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-slate-600 p-1">
+                <i class="fas fa-times text-lg"></i>
+            </button>
         </div>
 
-        <ul class="menu">
-
-            <li class="active">
-                <a asp-controller="Teacher" asp-action="Dashboard">
-                    <i class="bi bi-grid"></i>
+        <!-- Menu Navigation -->
+        <nav class="flex-1 overflow-y-auto px-4 py-5 custom-scrollbar">
+            @{
+                string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+            }
+            <div class="space-y-1">
+                <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Main Menu</p>
+                
+                <a href="@Url.Action("Dashboard", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "Dashboard" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-th-large w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "Dashboard" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
                     Dashboard
                 </a>
-            </li>
 
-            <li>
-                <a asp-controller="Teacher" asp-action="Classes">
-                    <i class="bi bi-people"></i>
+                <a href="@Url.Action("ClassManagement", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "ClassManagement" || currentAction == "Classes" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-users-gear w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "ClassManagement" || currentAction == "Classes" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
                     Class Management
                 </a>
-            </li>
 
-            <li>
-                <a asp-controller="Teacher" asp-action="Schedule">
-                    <i class="bi bi-calendar3"></i>
+                <a href="@Url.Action("Schedule", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "Schedule" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-calendar-days w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "Schedule" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
                     Schedule
                 </a>
-            </li>
 
-            <li>
-                <a asp-controller="Teacher" asp-action="LiveClasses">
-                    <i class="bi bi-camera-video"></i>
+                <a href="@Url.Action("LiveClasses", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "LiveClasses" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <div class="relative w-5 mr-3">
+                        <i class="fas fa-video text-lg transition-transform group-hover:scale-110 @(currentAction == "LiveClasses" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
+                        <span class="absolute -top-1 -right-1 flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                    </div>
                     Live Classes
                 </a>
-            </li>
 
-            <li>
-                <a asp-controller="Teacher" asp-action="Students">
-                    <i class="bi bi-mortarboard"></i>
+                <a href="@Url.Action("Students", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "Students" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-graduation-cap w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "Students" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
                     Students
                 </a>
-            </li>
 
-            <li>
-                <a asp-controller="Teacher" asp-action="Attendance">
-                    <i class="bi bi-clipboard-check"></i>
+                <a href="@Url.Action("Attendance", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "Attendance" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-clipboard-check w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "Attendance" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
                     Attendance
                 </a>
-            </li>
-
-            <li>
-                <a asp-controller="Teacher" asp-action="Assignments">
-                    <i class="bi bi-journal-text"></i>
-                    Assignments
-                </a>
-            </li>
-
-            <li>
-                <a asp-controller="Teacher" asp-action="Profile">
-                    <i class="bi bi-person-circle"></i>
-                    Profile
-                </a>
-            </li>
-
-        </ul>
-
-    </aside>
-
-    <!-- Main -->
-
-    <div class="main">
-
-        <!-- Navbar -->
-
-        <nav class="navbar-custom">
-
-            <div>
-
-                <h2>Dashboard</h2>
-
-                <p>Here's what's happening with your classes today</p>
-
             </div>
 
-            <div class="right-menu">
+            <div class="pt-6 mt-6 border-t border-slate-100 space-y-1">
+                <p class="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Account</p>
 
-                <i class="bi bi-bell notification"></i>
+                <a href="@Url.Action("Profile", "Teacher")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold transition-all group @(currentAction == "Profile" ? "bg-blue-50 text-[#0B4799] border-r-4 border-[#0B4799] shadow-sm" : "text-slate-600 hover:bg-slate-50 hover:text-[#0B4799]")">
+                    <i class="fas fa-user-gear w-5 text-lg mr-3 transition-transform group-hover:scale-110 @(currentAction == "Profile" ? "text-[#0B4799]" : "text-slate-400 group-hover:text-[#0B4799]")"></i>
+                    Profile & Settings
+                </a>
 
-                <img src="https://i.pravatar.cc/150?img=12"
-                     class="profile"
-                     alt="Teacher">
-
+                <a href="@Url.Action("Logout", "Account")" 
+                   class="flex items-center px-4 py-3 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 transition-all group mt-2">
+                    <i class="fas fa-right-from-bracket w-5 text-lg mr-3 transition-transform group-hover:scale-110 text-rose-500"></i>
+                    Sign Out
+                </a>
             </div>
-
         </nav>
 
-        <!-- Page Content -->
-
-        <div class="content">
-
-            @RenderBody()
-
+        <!-- Sidebar Footer Card -->
+        <div class="p-4 m-4 rounded-2xl bg-gradient-to-br from-[#0B4799] to-[#1E3A8A] text-white">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center">
+                    <i class="fas fa-headset text-sm"></i>
+                </div>
+                <h4 class="text-xs font-bold">Need assistance?</h4>
+            </div>
+            <p class="text-[11px] text-blue-100 leading-snug mb-3">Reach out to school admin support for portal help.</p>
+            <a href="mailto:support@studypoint.edu.np" class="inline-block w-full text-center py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-semibold backdrop-blur-sm transition-all">
+                Contact Support
+            </a>
         </div>
+    </aside>
 
+    <!-- Main Workspace Container -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Top Header Navbar -->
+        <header class="bg-white border-b border-slate-200 px-4 md:px-8 py-3.5 flex items-center justify-between flex-shrink-0 z-30 shadow-xs">
+            <div class="flex items-center gap-4">
+                <button id="openSidebarBtn" class="md:hidden p-2 rounded-xl text-slate-500 hover:bg-slate-100 transition-colors">
+                    <i class="fas fa-bars text-lg"></i>
+                </button>
+                <div>
+                    <h2 class="text-lg md:text-xl font-extrabold text-slate-900 tracking-tight">
+                        @(ViewData["Title"] ?? "Teacher Dashboard")
+                    </h2>
+                    @if (ViewData["Subtitle"] != null)
+                    {
+                        <p class="text-xs text-slate-500 hidden sm:block">@ViewData["Subtitle"]</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Header Right Menu -->
+            <div class="flex items-center space-x-3 md:space-x-5">
+                <!-- Notifications Dropdown -->
+                <div class="relative">
+                    <button id="navNotifBtn" class="w-10 h-10 rounded-xl bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-[#0B4799] flex items-center justify-center relative transition-all focus:outline-none">
+                        <i class="far fa-bell text-lg"></i>
+                        <span id="navNotifBadge" class="absolute top-2 right-2 w-2.5 h-2.5 bg-rose-500 rounded-full border-2 border-white"></span>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="navNotifDropdown" class="hidden absolute right-0 mt-2 w-80 md:w-96 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                        <div class="flex justify-between items-center px-5 py-4 border-b border-slate-100 bg-slate-50">
+                            <div class="flex items-center gap-2">
+                                <h4 class="text-sm font-bold text-slate-900">Notifications</h4>
+                                <span class="bg-blue-100 text-[#0B4799] text-[10px] font-bold px-2 py-0.5 rounded-full">4 New</span>
+                            </div>
+                            <button id="navMarkAllReadBtn" class="text-xs font-semibold text-[#0B4799] hover:underline">Mark all read</button>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-100 custom-scrollbar">
+                            <div class="notif-item p-4 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 unread">
+                                <div class="w-9 h-9 rounded-xl bg-blue-100 text-[#0B4799] flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-video text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-bold text-slate-900">Upcoming Live Class Session</p>
+                                    <p class="text-xs text-slate-500 mt-0.5 truncate">Mathematics - Grade 10 starts at 10:00 AM</p>
+                                    <p class="text-[10px] text-slate-400 mt-1 font-medium"><i class="far fa-clock mr-1"></i> 10 mins ago</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1.5 notif-dot"></span>
+                            </div>
+
+                            <div class="notif-item p-4 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 unread">
+                                <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-user-plus text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-bold text-slate-900">New Student Enrolled</p>
+                                    <p class="text-xs text-slate-500 mt-0.5 truncate">Priya Sharma joined Science - Grade 9</p>
+                                    <p class="text-[10px] text-slate-400 mt-1 font-medium"><i class="far fa-clock mr-1"></i> 45 mins ago</p>
+                                </div>
+                                <span class="w-2 h-2 rounded-full bg-blue-600 flex-shrink-0 mt-1.5 notif-dot"></span>
+                            </div>
+
+                            <div class="notif-item p-4 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3">
+                                <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <i class="fas fa-link text-sm"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-xs font-semibold text-slate-800">Meeting Link Updated</p>
+                                    <p class="text-xs text-slate-500 mt-0.5 truncate">Accountancy Grade 12 meeting URL refreshed</p>
+                                    <p class="text-[10px] text-slate-400 mt-1 font-medium"><i class="far fa-clock mr-1"></i> 2 hours ago</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 bg-slate-50 text-center border-t border-slate-100">
+                            <span class="text-xs font-bold text-slate-500">All updates up to date</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Dropdown -->
+                <div class="relative">
+                    <button id="navProfileBtn" class="flex items-center gap-3 focus:outline-none group">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Teacher Avatar" class="w-10 h-10 rounded-xl border-2 border-[#0B4799]/30 object-cover group-hover:border-[#0B4799] transition-all shadow-sm" />
+                        <div class="text-left hidden lg:block">
+                            <p class="text-xs font-extrabold text-slate-800 leading-tight">Teacher Account</p>
+                            <p class="text-[11px] text-slate-400 font-medium">Faculty Member</p>
+                        </div>
+                        <i class="fas fa-chevron-down text-xs text-slate-400 group-hover:text-slate-600 transition-transform"></i>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div id="navProfileDropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                        <div class="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+                            <p class="text-xs font-bold text-slate-900">Faculty Portal</p>
+                            <p class="text-[11px] text-slate-500 truncate">teacher@studypoint.edu.np</p>
+                        </div>
+                        <a href="@Url.Action("Profile", "Teacher")" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#0B4799] transition-colors">
+                            <i class="fas fa-user-gear w-4 mr-2 text-slate-400"></i> Edit Profile
+                        </a>
+                        <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-blue-50 hover:text-[#0B4799] transition-colors">
+                            <i class="fas fa-calendar-alt w-4 mr-2 text-slate-400"></i> My Schedule
+                        </a>
+                        <div class="border-t border-slate-100 my-1"></div>
+                        <a href="@Url.Action("Logout", "Account")" class="flex items-center px-4 py-2.5 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors">
+                            <i class="fas fa-right-from-bracket w-4 mr-2 text-rose-500"></i> Sign Out
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Page Content -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-[#F8FAFC] custom-scrollbar">
+            @RenderBody()
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Layout Interactivity Scripts -->
+    <script>
+        // Sidebar Toggle for Mobile
+        const openSidebarBtn = document.getElementById('openSidebarBtn');
+        const closeSidebarBtn = document.getElementById('closeSidebarBtn');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarBackdrop = document.getElementById('sidebarBackdrop');
 
+        function toggleSidebar() {
+            if (sidebar && sidebarBackdrop) {
+                sidebar.classList.toggle('-translate-x-full');
+                sidebarBackdrop.classList.toggle('hidden');
+            }
+        }
+
+        if (openSidebarBtn) openSidebarBtn.addEventListener('click', toggleSidebar);
+        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', toggleSidebar);
+        if (sidebarBackdrop) sidebarBackdrop.addEventListener('click', toggleSidebar);
+
+        // Header Dropdowns
+        const navNotifBtn = document.getElementById('navNotifBtn');
+        const navNotifDropdown = document.getElementById('navNotifDropdown');
+        const navProfileBtn = document.getElementById('navProfileBtn');
+        const navProfileDropdown = document.getElementById('navProfileDropdown');
+        const navMarkAllReadBtn = document.getElementById('navMarkAllReadBtn');
+        const navNotifBadge = document.getElementById('navNotifBadge');
+
+        if (navNotifBtn && navNotifDropdown) {
+            navNotifBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navNotifDropdown.classList.toggle('hidden');
+                if (navProfileDropdown) navProfileDropdown.classList.add('hidden');
+            });
+        }
+
+        if (navProfileBtn && navProfileDropdown) {
+            navProfileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                navProfileDropdown.classList.toggle('hidden');
+                if (navNotifDropdown) navNotifDropdown.classList.add('hidden');
+            });
+        }
+
+        if (navMarkAllReadBtn) {
+            navMarkAllReadBtn.addEventListener('click', () => {
+                document.querySelectorAll('.notif-dot').forEach(dot => dot.classList.add('hidden'));
+                document.querySelectorAll('.notif-item.unread').forEach(item => item.classList.remove('unread'));
+                if (navNotifBadge) navNotifBadge.classList.add('hidden');
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (navNotifDropdown && !navNotifDropdown.contains(e.target) && navNotifBtn && !navNotifBtn.contains(e.target)) {
+                navNotifDropdown.classList.add('hidden');
+            }
+            if (navProfileDropdown && !navProfileDropdown.contains(e.target) && navProfileBtn && !navProfileBtn.contains(e.target)) {
+                navProfileDropdown.classList.add('hidden');
+            }
+        });
+    </script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

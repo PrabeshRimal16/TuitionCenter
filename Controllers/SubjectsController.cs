@@ -13,11 +13,11 @@ public class SubjectsController : Controller
     }
 
     // GET: SUBJECTS
-    public async Task<IActionResult> Index()
+    public IActionResult Index()
     {
-        var subjects = _context.Subjects.Include(s => s.Class);
-        return View(await subjects.ToListAsync());
+        return RedirectToAction("CourseManagement", "Admin");
     }
+
 
     // GET: SUBJECTS/Details/5
     public async Task<IActionResult> Details(int? id)
@@ -76,7 +76,7 @@ public class SubjectsController : Controller
         return View(subject);
     }
 
-    
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(int? id, [Bind("SubjectId,ClassId,SubjectName,IsActive")] Subject subject)

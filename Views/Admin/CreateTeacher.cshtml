@@ -1,0 +1,109 @@
+@model TuitionCenter.Models.ViewModels.Admin.TeacherVM
+
+@{
+    ViewData["Title"] = "Add Teacher";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/Admin/TeacherManagement.css" />
+</head>
+
+<div class="admin-page">
+
+    <div class="page-header">
+        <div>
+            <a asp-controller="Admin" asp-action="TeacherIndex" class="back-link">
+                <i class="bi bi-arrow-left"></i>
+                Back to Teachers
+            </a>
+            <h1 class="mt-2">Add New Teacher</h1>
+            <p>Create a new teacher account and credentials.</p>
+        </div>
+    </div>
+
+    <div class="form-layout">
+        <div class="content-card">
+
+            <div class="content-card-header">
+                <div>
+                    <h3>Teacher Information</h3>
+                    <p>Enter the teacher's personal details and login password.</p>
+                </div>
+            </div>
+
+            <div class="form-content">
+                <form asp-controller="Admin" asp-action="CreateTeacher" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="FullName">Full Name</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-person"></i>
+                                <input asp-for="FullName" placeholder="e.g. Dr. Sarah Jenkins" />
+                            </div>
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Email">Email Address</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-envelope"></i>
+                                <input asp-for="Email" placeholder="sarah.jenkins@example.com" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label asp-for="Phone">Phone Number</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-telephone"></i>
+                                <input asp-for="Phone" placeholder="+977 9800000000" />
+                            </div>
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label asp-for="Password">Initial Password</label>
+                            <div class="input-wrapper">
+                                <i class="bi bi-lock"></i>
+                                <input asp-for="Password" type="password" placeholder="Create temporary password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="form-info-box">
+                        <i class="bi bi-info-circle"></i>
+                        <div>
+                            <strong>Teacher Credentials Notice</strong>
+                            <p>This account will be created with Teacher role access. Share the login email and temporary password securely with the teacher.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <a asp-controller="Admin" asp-action="TeacherIndex" class="btn-secondary-custom">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="btn-primary-custom">
+                            <i class="bi bi-person-plus"></i>
+                            Create Teacher Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

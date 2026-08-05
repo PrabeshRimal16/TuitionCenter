@@ -16,7 +16,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\Teacher\" />
     <Folder Include="wwwroot\css\Teacher\" />
   </ItemGroup>
 

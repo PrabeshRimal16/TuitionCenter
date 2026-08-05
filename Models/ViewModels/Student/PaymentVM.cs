@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TuitionCenter.Models;
 
-public partial class Payment
+public partial class PaymentVM
 {
     public int PaymentId { get; set; }
 
