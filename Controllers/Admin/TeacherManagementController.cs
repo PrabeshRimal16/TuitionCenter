@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TuitionCenter.Models;
-usieng TuitionCenter.Models.ViewModels.Admin;
+using TuitionCenter.Models.ViewModels.Admin;
  
 namespace TuitionCenter.Controllers.Admin;
 

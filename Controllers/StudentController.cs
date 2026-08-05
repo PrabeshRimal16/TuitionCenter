@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TuitionCenter.Models;
 using System.Text.Json;
 using TuitionCenter.Models;
 
@@ -8,7 +7,6 @@ namespace TuitionCenter.Controllers
 {
     public class StudentController : Controller
     {
-        private const string CurrentClassSessionKey = "CurrentClassSessionId";
         private readonly TuitionCenterDbContext _context;
         private const string CurrentClassSessionKey = "EnrollCurrentClassId";
 
@@ -303,7 +301,6 @@ namespace TuitionCenter.Controllers
             Description = "Explore this subject with an experienced teacher.",
             IconText = "?"
         };
-
         [HttpGet]
         public IActionResult Subject(int classId = 0)
         {
@@ -418,6 +415,8 @@ namespace TuitionCenter.Controllers
             return RedirectToAction("Intake", new { classId });
         }
 
+
+
         // ============================================================
         // Enroll: Intake
         // ============================================================
@@ -425,99 +424,113 @@ namespace TuitionCenter.Controllers
         [HttpGet]
         public IActionResult Intake(int classId = 0)
         {
-            var resolvedClassId = ResolveClassId(classId);
-            if (resolvedClassId == null)
+            try
             {
-                TempData["EnrollError"] = "Please select a class first.";
-                return RedirectToAction("EnrollClass");
-            }
-            classId = resolvedClassId.Value;
-
-            var selectedSubjectIds = GetSelectedSubjectIds(classId);
-            if (selectedSubjectIds.Count == 0)
-            {
-                return RedirectToAction("Subject", new { classId });
-            }
-
-            var classEntity = _context.Classes.FirstOrDefault(c => c.ClassId == classId);
-            if (classEntity == null) return NotFound();
-
-            var courseTypes = _context.CourseTypes.ToList();
-            var timeSlots = _context.TimeSlots.ToList();
-
-            var subjects = _context.Subjects
-                .Where(s => selectedSubjectIds.Contains(s.SubjectId))
-                .Include(s => s.Batches.Where(b => b.IsActive)).ThenInclude(b => b.Teacher)
-                .Include(s => s.Batches.Where(b => b.IsActive)).ThenInclude(b => b.TimeSlot)
-                .ToList();
-
-            var batchIds = subjects.SelectMany(s => s.Batches).Select(b => b.BatchId).ToList();
-
-            var enrolledCounts = _context.EnrollmentSubjects
-                .Where(es => es.AssignedBatchId != null && batchIds.Contains(es.AssignedBatchId.Value))
-                .GroupBy(es => es.AssignedBatchId!.Value)
-                .ToDictionary(g => g.Key, g => g.Count());
-
-            var (savedCourseTypeId, savedTimeSlotId, savedBatches) = GetIntakeSelections(classId);
-
-            var model = new IntakeViewModel
-            {
-                ClassId = classId,
-                ClassName = classEntity.ClassName,
-                CourseTypes = courseTypes.Select(ct => new CourseTypeOption
+                var resolvedClassId = ResolveClassId(classId);
+                if (resolvedClassId == null)
                 {
-                    CourseTypeId = ct.CourseTypeId,
-                    TypeName = ct.CourseTypeName
-                }).ToList(),
-                TimeSlots = timeSlots.Select(t => new TimeSlotOption
-                {
-                    TimeSlotId = t.TimeSlotId,
-                    Label = $"{t.Days}, {t.StartTime:h:mm tt} - {t.EndTime:h:mm tt}"
-                }).ToList(),
-                SelectedCourseTypeId = savedCourseTypeId,
-                SelectedTimeSlotId = savedTimeSlotId,
+                    TempData["EnrollError"] = "Please select a class first.";
+                    return RedirectToAction("EnrollClass");
+                }
 
-                IntakeMonths = NepaliIntakeMonths,
-                SelectedIntakeMonth = HttpContext.Session.GetString($"EnrollIntakeMonth_{classId}"),
+                classId = resolvedClassId.Value;
 
-                Subjects = subjects.Select(s => new IntakeSubjectViewModel
+                var selectedSubjectIds = GetSelectedSubjectIds(classId);
+                if (selectedSubjectIds.Count == 0)
                 {
-                    SubjectId = s.SubjectId,
-                    Name = s.SubjectName,
-                    SelectedBatchId = savedBatches.TryGetValue(s.SubjectId, out var bId) ? bId : null,
-                    Batches = s.Batches.Select(b => new IntakeBatchOption
+                    return RedirectToAction("Subject", new { classId });
+                }
+
+                var classEntity = _context.Classes.FirstOrDefault(c => c.ClassId == classId);
+                if (classEntity == null)
+                    return NotFound();
+
+                var courseTypes = _context.CourseTypes.ToList();
+                var timeSlots = _context.TimeSlots.ToList();
+
+                var subjects = _context.Subjects
+                    .Where(s => selectedSubjectIds.Contains(s.SubjectId))
+                    .Include(s => s.Batches.Where(b => b.IsActive))
+                        .ThenInclude(b => b.Teacher)
+                    .Include(s => s.Batches.Where(b => b.IsActive))
+                        .ThenInclude(b => b.TimeSlot)
+                    .ToList();
+
+                var batchIds = subjects
+                    .SelectMany(s => s.Batches)
+                    .Select(b => b.BatchId)
+                    .ToList();
+
+                var enrolledCounts = _context.EnrollmentSubjects
+                    .Where(es => es.AssignedBatchId != null &&
+                                 batchIds.Contains(es.AssignedBatchId.Value))
+                    .GroupBy(es => es.AssignedBatchId!.Value)
+                    .ToDictionary(g => g.Key, g => g.Count());
+
+                var (savedCourseTypeId, savedTimeSlotId, savedBatches) = GetIntakeSelections(classId);
+
+                // Prevent null dictionary
+                savedBatches ??= new Dictionary<int, int>();
+
+                var model = new IntakeViewModel
+                {
+                    ClassId = classId,
+                    ClassName = classEntity.ClassName,
+
+                    CourseTypes = courseTypes.Select(ct => new CourseTypeOption
                     {
-                        BatchId = b.BatchId,
-                        CourseTypeId = b.CourseTypeId,
-                        TeacherName = b.Teacher.FullName,
-                        TimeLabel = $"{b.TimeSlot.Days}, {b.TimeSlot.StartTime:h:mm tt} - {b.TimeSlot.EndTime:h:mm tt}",
-                        SeatsLeft = Math.Max(b.Capacity - (enrolledCounts.TryGetValue(b.BatchId, out var c) ? c : 0), 0)
+                        CourseTypeId = ct.CourseTypeId,
+                        TypeName = ct.CourseTypeName
+                    }).ToList(),
+
+                    TimeSlots = timeSlots.Select(t => new TimeSlotOption
+                    {
+                        TimeSlotId = t.TimeSlotId,
+                        Label = $"{t.Days}, {t.StartTime:h:mm tt} - {t.EndTime:h:mm tt}"
+                    }).ToList(),
+
+                    SelectedCourseTypeId = savedCourseTypeId,
+                    SelectedTimeSlotId = savedTimeSlotId,
+
+                    IntakeMonths = NepaliIntakeMonths,
+                    SelectedIntakeMonth = HttpContext.Session.GetString($"EnrollIntakeMonth_{classId}"),
+
+                    Subjects = subjects.Select(s => new IntakeSubjectViewModel
+                    {
+                        SubjectId = s.SubjectId,
+                        Name = s.SubjectName,
+
+                        SelectedBatchId = savedBatches.TryGetValue(s.SubjectId, out var bId)
+                            ? bId
+                            : null,
+
+                        Batches = s.Batches.Select(b => new IntakeBatchOption
+                        {
+                            BatchId = b.BatchId,
+                            CourseTypeId = b.CourseTypeId,
+
+                            // NULL SAFE
+                            TeacherName = b.Teacher?.FullName ?? "TBA",
+
+                            // NULL SAFE
+                            TimeLabel = b.TimeSlot == null
+                                ? "Not Assigned"
+                                : $"{b.TimeSlot.Days}, {b.TimeSlot.StartTime:h:mm tt} - {b.TimeSlot.EndTime:h:mm tt}",
+
+                            SeatsLeft = Math.Max(
+                                b.Capacity -
+                                (enrolledCounts.TryGetValue(b.BatchId, out var c) ? c : 0),
+                                0)
+                        }).ToList()
                     }).ToList()
-                }).ToList()
-            };
+                };
 
-            return View(model);
-        }
-
-        [HttpPost]
-        public IActionResult Intake(int classId, string? intakeMonth, int courseTypeId, int preferredTimeSlotId, Dictionary<int, int> selectedBatches)
-        {
-            if (string.IsNullOrEmpty(intakeMonth))
-            {
-                TempData["EnrollError"] = "Please choose an intake month.";
-                return RedirectToAction("Intake", new { classId });
+                return View(model);
             }
-            var selectedSubjectIds = GetSelectedSubjectIds(classId);
-            if (selectedBatches == null || selectedSubjectIds.Any(id => !selectedBatches.ContainsKey(id)))
+            catch (Exception ex)
             {
-                TempData["EnrollError"] = "Please choose a batch for every selected subject.";
-                return RedirectToAction("Intake", new { classId });
+                return Content(ex.ToString());
             }
-            HttpContext.Session.SetString($"EnrollIntakeMonth_{classId}", intakeMonth);
-            HttpContext.Session.SetInt32($"EnrollCourseType_{classId}", courseTypeId);
-            HttpContext.Session.SetInt32($"EnrollTimeSlot_{classId}", preferredTimeSlotId);
-            HttpContext.Session.SetString($"EnrollBatches_{classId}", JsonSerializer.Serialize(selectedBatches));
-            return RedirectToAction("Pricing", new { classId });
         }
 
         // ============================================================

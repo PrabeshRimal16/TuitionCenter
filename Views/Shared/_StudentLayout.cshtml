@@ -1,8 +1,12 @@
 ﻿@{
     var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+
     string IsActive(string action) =>
-        string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase) ? "active" : "";
+        string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "active"
+            : "";
 }
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -19,12 +23,10 @@
 
 <body>
 
-
     <aside class="sidebar">
 
         <div class="logo">
-            
-           
+            <!-- Logo -->
         </div>
 
         <ul class="menu">
@@ -77,15 +79,14 @@
                     Payments
                 </a>
             </li>
+
         </ul>
 
     </aside>
 
-
     <div class="main-content">
 
-        <!-- ================= Navbar ================= -->
-
+        <!-- Top Navbar -->
         <nav class="top-navbar">
 
             <h2 class="page-title">@ViewData["Title"]</h2>
@@ -99,20 +100,32 @@
                 <button class="icon-btn">
                     <i class="bi bi-bell"></i>
                 </button>
-                <img src="https://i.pravatar.cc/100?img=15" class="profile-img" alt="Student">
+
+                <img src="https://i.pravatar.cc/100?img=15"
+                     class="profile-img"
+                     alt="Student" />
             </div>
 
         </nav>
 
-        <!-- ================= Content ================= -->
-
+        <!-- Main Content -->
         <main class="content">
             @RenderBody()
         </main>
 
+        <!-- Footer Actions -->
+        @if (IsSectionDefined("FooterActions"))
+        {
+            <div class="footer-actions">
+                @RenderSection("FooterActions", required: false)
+            </div>
+        }
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
 
 </body>
 </html>

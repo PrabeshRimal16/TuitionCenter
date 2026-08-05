@@ -5,6 +5,10 @@
     Layout = "_EnrollmentLayout";
     ViewData["ShowSidebar"] = false;
 }
+@if (TempData["EnrollError"] != null)
+{
+    <div class="enroll-alert">@TempData["EnrollError"]</div>
+}
 
 <div class="overview-stats">
     <div class="overview-card">
