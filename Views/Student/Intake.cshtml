@@ -1,33 +1,111 @@
+
 @model TuitionCenter.Models.IntakeViewModel
-@{
-    ViewData["Title"] = "Select Course Type";
+
+@* @{
+    ViewData["Title"] = "Intake Details";
+    Layout = "_EnrollmentLayout";
+    ViewData["ActiveStep"] = "Intake";
+} *@
+
+@if (TempData["EnrollError"] != null)
+{
+    <div class="enroll-alert">@TempData["EnrollError"]</div>
 }
 
-<div class="intake-container">
-    <h2>Select Course Plan</h2>
-    <form id="intakeForm" method="post">
-        <input type="hidden" asp-for="ClassId" />
-        
-        <div class="course-types-group">
-            @if (Model?.CourseTypes != null)
-            {
-                foreach (var ct in Model.CourseTypes)
-                {
-                    <div class="course-type-card">
-                        <input type="radio" asp-for="SelectedCourseTypeId" value="@ct.CourseTypeId" id="ct_@ct.CourseTypeId" class="course-type-radio" onchange="filterBatchesByCourseType()" />
-                        <label for="ct_@ct.CourseTypeId">
-                            <h4>@ct.TypeName</h4>
-                        </label>
-                    </div>
-                }
-            }
+<form asp-action="Intake" method="post" id="intakeForm">
+    <input type="hidden" name="classId" value="@Model.ClassId" />
+
+    <h3 class="intake-section-title" style="margin-top:0;">Choose your intake month</h3>
+    <div class="intake-month-grid">
+        @foreach (var m in Model.IntakeMonths)
+        {
+            <label class="intake-month-card @(Model.SelectedIntakeMonth == m.Value ? "selected" : "")" data-start="@m.StartDate.ToString("yyyy-MM-dd")" data-duration="@m.DurationMonths">
+                <input type="radio" name="intakeMonth" value="@m.Value" checked="@(Model.SelectedIntakeMonth == m.Value)" />
+                <div class="intake-month-top">
+                    <div class="intake-month-icon"><i class="bi bi-calendar3"></i></div>
+                    @if (m.IsPopular)
+                    {
+                        <span class="intake-month-badge">Popular</span>
+                    }
+                </div>
+                <h4>@m.MonthName @m.Year</h4>
+                <p>Starts: @m.StartDateLabel</p>
+                <div class="intake-month-duration"><i class="bi bi-clock-history"></i> @m.DurationMonths Months Duration</div>
+            </label>
+        }
+    </div>
+
+    <div class="timeline-card">
+        <h4><i class="bi bi-graph-up"></i> Course Timeline Overview</h4>
+        <div class="timeline-track">
+            <div class="timeline-fill" id="timelineFill"></div>
+            <div class="timeline-dot" style="left:0%;"></div>
+            <div class="timeline-dot" id="midDot" style="left:50%;"></div>
+            <div class="timeline-dot" id="endDot" style="left:100%;"></div>
         </div>
-    </form>
-</div>
+        <div class="timeline-labels">
+            <div><strong>START</strong><span id="startLabel">-</span></div>
+            <div><strong>MIDTERM</strong><span id="midLabel">-</span></div>
+            <div><strong>GRADUATION</strong><span id="endLabel">-</span></div>
+        </div>
+        <p class="timeline-note">* Course duration includes all examinations and project submissions.</p>
+    </div>
 
-@section FooterActions {
-    <button type="submit" form="intakeForm" class="btn-next">Next <i class="bi bi-arrow-right"></i></button>
-}
+    <h3 class="intake-section-title">Choose your plan</h3>
+    <div class="course-type-grid">
+        @foreach (var ct in Model.CourseTypes)
+        {
+            <label class="course-type-card">
+                <input type="radio" name="courseTypeId" value="@ct.CourseTypeId"
+                       class="course-type-radio"
+                       checked="@(Model.SelectedCourseTypeId == ct.CourseTypeId)" required />
+                @ct.TypeName
+            </label>
+        }
+    </div>
+
+    <h3 class="intake-section-title">Preferred general time slot</h3>
+    <select name="preferredTimeSlotId" class="intake-select" required>
+        <option value="">-- Select a time slot --</option>
+        @foreach (var ts in Model.TimeSlots)
+        {
+            <option value="@ts.TimeSlotId" selected="@(Model.SelectedTimeSlotId == ts.TimeSlotId)">@ts.Label</option>
+        }
+    </select>
+
+    <h3 class="intake-section-title">Choose a batch for each subject</h3>
+
+    @foreach (var s in Model.Subjects)
+    {
+        <div class="intake-subject-block">
+            <h4>@s.Name</h4>
+
+            @if (!s.Batches.Any())
+            {
+                <p style="color:#dc2626;">No batches are available for this subject yet.</p>
+            }
+
+            <div class="batch-options">
+                @foreach (var b in s.Batches)
+                {
+                    <label class="batch-option" data-coursetype="@b.CourseTypeId">
+                        <input type="radio" name="selectedBatches[@s.SubjectId]" value="@b.BatchId"
+                               checked="@(s.SelectedBatchId == b.BatchId)" />
+                        <div>
+                            <strong>@b.TeacherName</strong>
+                            <span>@b.TimeLabel</span>
+                        </div>
+                        <span class="batch-seats">@b.SeatsLeft seats left</span>
+                    </label>
+                }
+            </div>
+        </div>
+    }
+
+    @section FooterActions {
+        <button type="submit" form="intakeForm" class="btn-next">Next <i class="bi bi-arrow-right"></i></button>
+    }
+</form>
 
 <script>
     function filterBatchesByCourseType() {
@@ -39,9 +117,46 @@
             var match = opt.dataset.coursetype === courseTypeId;
             opt.style.display = match ? 'flex' : 'none';
             if (!match) {
-                var radio = opt.querySelector('input[type="radio"]');
-                if (radio) radio.checked = false;
+                var input = opt.querySelector('input[type=radio]');
+                if (input.checked) input.checked = false;
             }
         });
     }
+
+    document.querySelectorAll('.course-type-radio').forEach(function(r) {
+        r.addEventListener('change', filterBatchesByCourseType);
+    });
+
+    if (document.querySelector('.course-type-radio:checked')) {
+        filterBatchesByCourseType();
+    }
+
+    function updateTimeline() {
+        var checked = document.querySelector('input[name=intakeMonth]:checked');
+        document.querySelectorAll('.intake-month-card').forEach(function(c) {
+            c.classList.toggle('selected', c.querySelector('input').checked);
+        });
+        if (!checked) return;
+
+        var card = checked.closest('.intake-month-card');
+        var start = new Date(card.dataset.start);
+        var duration = parseInt(card.dataset.duration, 10);
+
+        var mid = new Date(start);
+        mid.setMonth(mid.getMonth() + Math.floor(duration / 2));
+
+        var end = new Date(start);
+        end.setMonth(end.getMonth() + duration);
+
+        var opts = { month: 'short', year: 'numeric' };
+        document.getElementById('startLabel').textContent = start.toLocaleDateString('en-US', opts);
+        document.getElementById('midLabel').textContent = mid.toLocaleDateString('en-US', opts);
+        document.getElementById('endLabel').textContent = end.toLocaleDateString('en-US', opts);
+    }
+
+    document.querySelectorAll('input[name=intakeMonth]').forEach(function(r) {
+        r.addEventListener('change', updateTimeline);
+    });
+
+    updateTimeline();
 </script>
