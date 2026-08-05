@@ -1,129 +1,209 @@
 ﻿@{
-    var currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
-
-    string IsActive(string action) =>
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string NavClass(string action) =>
         string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
-            ? "active"
-            : "";
-}
+            ? "bg-indigo-50 text-indigo-700 border-r-[3px] border-indigo-600 font-semibold shadow-sm"
+            : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600";
+    string NavIcon(string action) =>
+        string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
+            ? "text-indigo-600"
+            : "text-slate-400 group-hover:text-indigo-500";
 
+    var studentName = User.Identity?.Name ?? "Student";
+    var initial = string.IsNullOrWhiteSpace(studentName) ? "S" : studentName.Trim()[0].ToString().ToUpper();
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Student Portal</title>
-
-    <link rel="stylesheet"
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
-
-    <link rel="stylesheet" href="~/css/student.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+    <title>@ViewData["Title"] - Student Portal | Study Point</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: '#4F46E5',
+                        primaryHover: '#4338CA',
+                        secondary: '#818CF8',
+                        bgMain: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+        .sidebar-transition { transition: transform 0.3s ease-in-out; }
+        .footer-actions {
+            position: sticky; bottom: 0; background: #fff;
+            border-top: 1px solid #e5e7eb; padding: 14px 24px;
+            display: flex; justify-content: flex-end; z-index: 100;
+        }
+    </style>
+    @RenderSection("Styles", required: false)
 </head>
+<body class="flex h-screen overflow-hidden bg-slate-50 text-slate-800">
 
-<body>
+    <div id="sidebarBackdrop" class="fixed inset-0 bg-slate-900/40 z-40 hidden md:hidden transition-opacity duration-300"></div>
 
-    <aside class="sidebar">
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+           class="w-64 bg-white border-r border-slate-100 flex flex-col flex-shrink-0
+                  fixed md:static inset-y-0 left-0 z-50 sidebar-transition
+                  -translate-x-full md:translate-x-0 shadow-xl md:shadow-none">
 
-        <div class="logo">
-            <!-- Logo -->
+        <!-- Logo -->
+        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+            <a href="@Url.Action("Dashboard", "Student")" class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500
+                            flex items-center justify-center text-white font-extrabold text-base shadow-md shadow-indigo-500/25">
+                    S
+                </div>
+                <div>
+                    <h1 class="text-[18px] font-extrabold text-indigo-700 leading-none tracking-tight">
+                        Study <span class="text-violet-500">Point</span>
+                    </h1>
+                    <p class="text-[10px] font-semibold text-slate-400 tracking-widest uppercase mt-0.5">Student Portal</p>
+                </div>
+            </a>
+            <button id="closeSidebarBtn" class="md:hidden text-slate-400 hover:text-slate-600 p-1 rounded-lg">
+                <i class="fas fa-times text-base"></i>
+            </button>
         </div>
 
-        <ul class="menu">
+        <!-- Student Profile Card -->
+        <div class="px-5 py-4 border-b border-slate-100">
+            <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
+                            flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                    @initial
+                </div>
+                <div class="min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 truncate">@studentName</p>
+                    <p class="text-[10px] font-medium text-indigo-500 uppercase tracking-wider">Student</p>
+                </div>
+            </div>
+        </div>
 
-            <li class="@IsActive("Dashboard")">
-                <a asp-controller="Student" asp-action="Dashboard">
-                    <i class="bi bi-house"></i>
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar">
+            <div class="space-y-1">
+                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Main</p>
+                <a href="@Url.Action("Dashboard", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Dashboard")">
+                    <i class="fas fa-th-large w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Dashboard")"></i>
                     Dashboard
                 </a>
-            </li>
-
-            <li class="@IsActive("EnrollClass")">
-                <a asp-controller="Student" asp-action="EnrollClass">
-                    <i class="bi bi-grid"></i>
-                    Class
+                <a href="@Url.Action("EnrollClass", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("EnrollClass")">
+                    <i class="fas fa-graduation-cap w-4 text-base transition-transform group-hover:scale-110 @NavIcon("EnrollClass")"></i>
+                    My Classes
                 </a>
-            </li>
-
-            <li class="@IsActive("Subject")">
-                <a asp-controller="Student" asp-action="Subject">
-                    <i class="bi bi-globe"></i>
+            </div>
+            <div class="space-y-1">
+                <p class="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Enrollment</p>
+                <a href="@Url.Action("Subject", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Subject")">
+                    <i class="fas fa-book-open w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Subject")"></i>
                     Choose Subjects
                 </a>
-            </li>
-
-            <li class="@IsActive("Intake")">
-                <a asp-controller="Student" asp-action="Intake">
-                    <i class="bi bi-clock-history"></i>
-                    Intake
+                <a href="@Url.Action("Intake", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Intake")">
+                    <i class="fas fa-calendar-alt w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Intake")"></i>
+                    Intake Details
                 </a>
-            </li>
-
-            <li class="@IsActive("Pricing")">
-                <a asp-controller="Student" asp-action="Pricing">
-                    <i class="bi bi-journal-bookmark"></i>
+                <a href="@Url.Action("Pricing", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Pricing")">
+                    <i class="fas fa-tags w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Pricing")"></i>
                     Pricing
                 </a>
-            </li>
-
-            <li class="@IsActive("Timing")">
-                <a asp-controller="Student" asp-action="Timing">
-                    <i class="bi bi-calendar-check"></i>
-                    Timing
-                </a>
-            </li>
-
-            <li class="@IsActive("Payments")">
-                <a asp-controller="Student" asp-action="Payments">
-                    <i class="bi bi-credit-card"></i>
+                <a href="@Url.Action("Payments", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Payments")">
+                    <i class="fas fa-credit-card w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Payments")"></i>
                     Payments
                 </a>
-            </li>
-
-        </ul>
-
-    </aside>
-
-    <div class="main-content">
-
-        <!-- Top Navbar -->
-        <nav class="top-navbar">
-
-            <h2 class="page-title">@ViewData["Title"]</h2>
-
-            <div class="search-box">
-                <i class="bi bi-search"></i>
-                <input type="text" placeholder="Search Courses or material..." />
             </div>
-
-            <div class="right-menu">
-                <button class="icon-btn">
-                    <i class="bi bi-bell"></i>
-                </button>
-
-                <img src="https://i.pravatar.cc/100?img=15"
-                     class="profile-img"
-                     alt="Student" />
-            </div>
-
         </nav>
 
-        <!-- Main Content -->
-        <main class="content">
+        <!-- Logout -->
+        <div class="px-4 py-4 border-t border-slate-100">
+            <a asp-controller="Account" asp-action="Logout"
+               class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-slate-500
+                      hover:bg-red-50 hover:text-red-600 transition-all duration-150 group w-full">
+                <i class="fas fa-sign-out-alt w-4 text-base text-slate-400 group-hover:text-red-500 transition-transform group-hover:scale-110"></i>
+                Sign Out
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+
+        <!-- Top Navbar -->
+        <header class="h-[68px] bg-white border-b border-slate-100 flex items-center px-6 gap-4 flex-shrink-0 shadow-sm">
+            <button id="openSidebarBtn" class="md:hidden text-slate-400 hover:text-indigo-600 mr-1 transition-colors">
+                <i class="fas fa-bars text-lg"></i>
+            </button>
+            <h2 class="text-xl font-bold text-slate-800 min-w-0 truncate">@ViewData["Title"]</h2>
+            <div class="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl
+                        px-4 py-2 w-72 ml-2 transition-all focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100">
+                <i class="fas fa-search text-slate-400 text-sm"></i>
+                <input type="text" placeholder="Search courses or materials…"
+                       class="bg-transparent border-none outline-none text-sm text-slate-600 placeholder:text-slate-400 w-full" />
+            </div>
+            <div class="ml-auto flex items-center gap-3">
+                <button class="relative w-9 h-9 rounded-xl bg-slate-50 border border-slate-200
+                               flex items-center justify-center text-slate-500
+                               hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all duration-150">
+                    <i class="fas fa-bell text-sm"></i>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
+                </button>
+                <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
+                                flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-indigo-300/40">
+                        @initial
+                    </div>
+                    <div class="hidden md:block">
+                        <p class="text-sm font-semibold text-slate-800 leading-none">@studentName</p>
+                        <p class="text-[11px] text-indigo-500 font-medium mt-0.5">Student</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <main class="flex-1 overflow-y-auto p-6 custom-scrollbar">
             @RenderBody()
         </main>
 
-        <!-- Footer Actions -->
         @if (IsSectionDefined("FooterActions"))
         {
             <div class="footer-actions">
                 @RenderSection("FooterActions", required: false)
             </div>
         }
-
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const openBtn  = document.getElementById('openSidebarBtn');
+        const closeBtn = document.getElementById('closeSidebarBtn');
+        function openSidebar()  { sidebar.classList.remove('-translate-x-full'); backdrop.classList.remove('hidden'); }
+        function closeSidebar() { sidebar.classList.add('-translate-x-full');    backdrop.classList.add('hidden'); }
+        openBtn?.addEventListener('click', openSidebar);
+        closeBtn?.addEventListener('click', closeSidebar);
+        backdrop?.addEventListener('click', closeSidebar);
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 
