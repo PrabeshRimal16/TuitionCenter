@@ -1,0 +1,277 @@
+@model TuitionCenter.Models.ViewModels.TeacherProfileViewModel
+@{
+    Layout = null;
+    ViewData["Title"] = "My Profile";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Study Point</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: { primary: '#0B4799', secondary: '#4F81C7', background: '#F9FAFB' }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F9FAFB; }
+        .form-input {
+            width: 100%; border: 1px solid #E5E7EB; border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem;
+            color: #1F2937; outline: none; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-input:focus { border-color: #0B4799; box-shadow: 0 0 0 2px rgba(11, 71, 153, 0.2); }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex flex-col">
+        <div class="p-6">
+            <h1 class="text-2xl font-bold text-primary">Study <span class="text-secondary">Point</span></h1>
+            <p class="text-xs text-gray-500 mt-1">Teacher Portal</p>
+        </div>
+        <nav class="flex-1 mt-4">
+            <ul class="space-y-1">
+                <li>
+                    <a href="@Url.Action("Dashboard", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="fas fa-th-large w-5 h-5 mr-3 text-lg"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="fas fa-users w-5 h-5 mr-3 text-lg"></i> Class Management
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Schedule", "Teacher")" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="far fa-calendar-alt w-5 h-5 mr-3 text-lg"></i> Schedule
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 hover:text-primary transition-colors">
+                        <i class="fas fa-video w-5 h-5 mr-3 text-lg"></i> Live Classes
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Profile", "Teacher")" class="flex items-center px-6 py-3 text-primary bg-[#EBF3FF] border-l-4 border-primary font-medium">
+                        <i class="far fa-user w-5 h-5 mr-3 text-lg"></i> Profile
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("Logout", "Account")" class="flex items-center px-6 py-3 text-red-600 hover:bg-red-50 transition-colors mt-4">
+                        <i class="fas fa-sign-out-alt w-5 h-5 mr-3 text-lg"></i> Sign Out
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-[#F4F7FA]">
+        <!-- Top Navbar -->
+        <header class="bg-white border-b border-gray-200 px-8 py-4 flex justify-between items-center">
+            <div>
+                <h2 class="text-xl font-bold text-gray-900">My Profile</h2>
+            </div>
+            <div class="flex items-center space-x-6">
+                <button class="text-gray-500 hover:text-gray-700 relative">
+                    <i class="far fa-bell text-xl"></i>
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                </button>
+                <button class="text-gray-500 hover:text-gray-700 relative">
+                    <i class="fas fa-cog text-xl"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <!-- Profile Card -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
+                        <div class="relative inline-block mb-4">
+                            <img src="@Model.PhotoPath" alt="Profile Photo" class="w-28 h-28 rounded-full border-4 border-white shadow-md object-cover" />
+                            <div class="absolute bottom-0 right-0 bg-[#0B4799] text-white p-2 rounded-full cursor-pointer hover:bg-blue-800 transition shadow-sm border-2 border-white flex items-center justify-center w-8 h-8">
+                                <i class="fas fa-camera text-xs"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-900 mb-1">@Model.FullName</h3>
+                        <p class="text-sm text-primary font-medium mb-4">Mathematics Teacher</p>
+                        
+                        <button type="button" class="block w-full py-2 bg-[#0B4799] hover:bg-blue-800 text-white font-medium rounded-lg text-sm transition-colors mb-4">
+                            Change Photo
+                        </button>
+                        
+                        @if(Model.IsVerified)
+                        {
+                            <div class="flex items-center justify-center text-gray-500 text-xs font-medium">
+                                <i class="fas fa-shield-alt text-[#34D399] mr-1.5"></i> Verified Educator
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Teaching Summary -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-5 py-4 border-b border-gray-50">
+                            <h4 class="font-semibold text-gray-800 text-sm">Teaching Summary</h4>
+                        </div>
+                        <div class="p-5 space-y-4">
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Current Load</span>
+                                <span class="font-bold text-gray-900">@Model.CurrentLoad Classes</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Total Students</span>
+                                <span class="font-bold text-gray-900">@Model.TotalStudents Students</span>
+                            </div>
+                            <div class="flex justify-between items-center text-sm">
+                                <span class="text-gray-500">Rating</span>
+                                <span class="font-bold text-primary flex items-center"><i class="fas fa-star text-xs mr-1"></i> @Model.Rating</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Personal Details -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50 bg-[#F8FAFC] flex items-center">
+                            <i class="far fa-user text-primary mr-2"></i>
+                            <h4 class="font-semibold text-gray-800">Personal Details</h4>
+                        </div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Full Name</label>
+                                <input type="text" value="@Model.FullName" class="form-input" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Email Address</label>
+                                <input type="email" value="@Model.Email" class="form-input" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Phone Number</label>
+                                <input type="text" value="@Model.Phone" class="form-input" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Date of Birth</label>
+                                <input type="text" value="@Model.DateOfBirth" placeholder="YYYY/MM/DD" class="form-input" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Academic Qualifications -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50 bg-[#F8FAFC] flex items-center">
+                            <i class="fas fa-graduation-cap text-primary mr-2"></i>
+                            <h4 class="font-semibold text-gray-800">Academic Qualifications</h4>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Highest Degree</label>
+                                <input type="text" value="@Model.HighestDegree" class="form-input" />
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Institution</label>
+                                    <input type="text" value="@Model.Institution" class="form-input" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Year of Graduation</label>
+                                    <input type="text" value="@Model.YearOfGraduation" class="form-input" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Expertise & Grades -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50 bg-[#F8FAFC] flex items-center justify-between">
+                            <div class="flex items-center">
+                                <i class="far fa-star text-primary mr-2"></i>
+                                <h4 class="font-semibold text-gray-800">Expertise & Grades</h4>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-sm font-medium text-gray-600">Teaching Levels</label>
+                                    <a href="#" class="text-xs text-primary font-medium hover:underline"><i class="fas fa-pen text-[10px] mr-1"></i> Edit Levels</a>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    @foreach(var level in Model.TeachingLevels)
+                                    {
+                                        <span class="px-3 py-1 bg-[#EEF2F6] text-[#2B568A] text-xs font-medium rounded-full">@level</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between items-center mb-3">
+                                    <label class="text-sm font-medium text-gray-600">Assigned Subjects</label>
+                                    <a href="#" class="text-xs text-primary font-medium hover:underline"><i class="fas fa-cog text-[10px] mr-1"></i> Manage Subjects</a>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    @foreach(var group in Model.AssignedSubjects)
+                                    {
+                                        <div class="border border-gray-200 rounded-lg p-4">
+                                            <h5 class="text-sm text-primary font-medium mb-1">@group.ClassName</h5>
+                                            <p class="text-xs text-gray-600">@group.Subjects</p>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teaching Profile -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-50 bg-[#F8FAFC] flex items-center">
+                            <i class="fas fa-book-open text-primary mr-2"></i>
+                            <h4 class="font-semibold text-gray-800">Teaching Profile</h4>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Subject Specialization</label>
+                                    <input type="text" value="@Model.SubjectSpecialization" class="form-input" />
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 mb-1.5">Years of Experience</label>
+                                    <input type="text" value="@Model.YearsOfExperience" class="form-input" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-500 mb-1.5">Bio</label>
+                                <textarea class="form-input h-24 resize-none">@Model.Bio</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex justify-end items-center gap-4 mt-8 pt-4">
+                        <button type="button" class="px-6 py-2 bg-[#E2E8F0] text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-300 transition-colors">
+                            Cancel
+                        </button>
+                        <button type="button" class="px-6 py-2 bg-[#0B4799] text-white text-sm font-medium rounded-lg hover:bg-blue-800 transition-colors shadow-sm">
+                            Save Changes
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

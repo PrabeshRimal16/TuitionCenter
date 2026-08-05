@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using TuitionCenter.Models;
 using System.Text.Json;
 using TuitionCenter.Models;
 
@@ -7,6 +8,7 @@ namespace TuitionCenter.Controllers
 {
     public class StudentController : Controller
     {
+        private const string CurrentClassSessionKey = "CurrentClassSessionId";
         private readonly TuitionCenterDbContext _context;
         private const string CurrentClassSessionKey = "EnrollCurrentClassId";
 
