@@ -467,22 +467,6 @@ namespace TuitionCenter.Controllers
                     .GroupBy(es => es.AssignedBatchId!.Value)
                     .ToDictionary(g => g.Key, g => g.Count());
 
-            var model = new IntakeViewModel
-            {
-                ClassId = classId,
-                ClassName = classEntity.ClassName,
-                CourseTypes = courseTypes.Select(ct => new CourseTypeOption
-                {
-                    CourseTypeId = ct.CourseTypeId,
-                    TypeName = ct.TypeName
-                }).ToList(),
-                TimeSlots = timeSlots.Select(t => new TimeSlotOption
-                {
-                    TimeSlotId = t.TimeSlotId,
-                    Label = $"{t.Days}, {t.StartTime:h:mm tt} - {t.EndTime:h:mm tt}"
-                }).ToList(),
-                SelectedCourseTypeId = savedCourseTypeId,
-                SelectedTimeSlotId = savedTimeSlotId,
                 var (savedCourseTypeId, savedTimeSlotId, savedBatches) = GetIntakeSelections(classId);
 
                 // Prevent null dictionary
@@ -496,7 +480,7 @@ namespace TuitionCenter.Controllers
                     CourseTypes = courseTypes.Select(ct => new CourseTypeOption
                     {
                         CourseTypeId = ct.CourseTypeId,
-                        TypeName = ct.CourseTypeName
+                        TypeName = ct.TypeName
                     }).ToList(),
 
                     TimeSlots = timeSlots.Select(t => new TimeSlotOption
