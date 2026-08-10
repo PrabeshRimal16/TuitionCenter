@@ -1,61 +1,156 @@
-﻿@model TuitionCenter.Models.UserListEdit
+@model TuitionCenter.Models.UserListEdit
 
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account — TuitionCenter";
+    ViewData["BodyClass"] = "auth-page";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="card-title mb-4 text-center">Create an Account</h3>
+<div class="auth-wrapper">
 
-                <form asp-controller="Account" asp-action="Register" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <!-- ── LEFT: Branding Panel ── -->
+    <div class="auth-brand-panel">
+        <!-- Floating shapes -->
+        <div class="brand-shape brand-shape-1"></div>
+        <div class="brand-shape brand-shape-2"></div>
+        <div class="brand-shape brand-shape-3"></div>
+        <div class="brand-shape brand-shape-4"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label"></label>
-                        <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
-                    </div>
+        <!-- Logo -->
+        <a class="auth-logo-link" asp-controller="Home" asp-action="Index">
+            <div class="auth-logo-icon">🎓</div>
+            <span class="auth-logo-text">TuitionCenter</span>
+        </a>
 
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter your email" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
+        <h2 class="auth-brand-headline">
+            Start Your <span class="gtext">Academic</span><br />
+            Success Story Today
+        </h2>
+        <p class="auth-brand-sub">
+            Join thousands of students and educators on the most trusted tuition platform in Nepal.
+        </p>
 
-                    <div class="mb-3">
-                        <label asp-for="Phone" class="form-label"></label>
-                        <input asp-for="Phone" class="form-control" placeholder="Enter your phone number" />
-                        <span asp-validation-for="Phone" class="text-danger"></span>
-                    </div>
+        <ul class="auth-brand-features">
+            <li>
+                <span class="auth-feature-icon">🚀</span>
+                Free to register, no credit card needed
+            </li>
+            <li>
+                <span class="auth-feature-icon">🎯</span>
+                Personalized learning paths
+            </li>
+            <li>
+                <span class="auth-feature-icon">👩‍🏫</span>
+                85+ verified expert teachers
+            </li>
+            <li>
+                <span class="auth-feature-icon">📈</span>
+                Real-time progress tracking
+            </li>
+        </ul>
+    </div>
 
-                    <div class="mb-3">
-                        <label asp-for="PasswordHash" class="form-label">Password</label>
-                        <input asp-for="PasswordHash" class="form-control" placeholder="Create a password" />
-                        <span asp-validation-for="PasswordHash" class="text-danger"></span>
-                    </div>
+    <!-- ── RIGHT: Form Panel ── -->
+    <div class="auth-form-panel">
+        <div class="auth-form-container">
 
-                    <div class="mb-3">
-                        <label asp-for="Role" class="form-label"></label>
-                        <select asp-for="Role" class="form-select">
-                            <option value="">-- Select Role --</option>
-                            <option value="Student">Student</option>
-                            <option value="Teacher">Teacher</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                        <span asp-validation-for="Role" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
-
-                    <p class="text-center mt-3 mb-0">
-                        Already have an account?
-                        <a asp-controller="Account" asp-action="Login">Login here</a>
-                    </p>
-                </form>
+            <div class="auth-form-header">
+                <div class="auth-form-eyebrow">✦ Join TuitionCenter</div>
+                <h1 class="auth-form-title">Create Account</h1>
+                <p class="auth-form-subtitle">Fill in the details below to get started for free</p>
             </div>
+
+            <form asp-controller="Account" asp-action="Register" method="post" class="auth-form" id="registerForm">
+
+                <div asp-validation-summary="ModelOnly" class="validation-summary text-danger mb-3"></div>
+
+                <!-- Full Name -->
+                <div class="form-group">
+                    <label asp-for="FullName">Full Name</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">👤</span>
+                        <input asp-for="FullName"
+                               class="form-control"
+                               placeholder="Your full name"
+                               autocomplete="name"
+                               id="regFullName" />
+                    </div>
+                    <span asp-validation-for="FullName" class="text-danger"></span>
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label asp-for="Email">Email Address</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">✉</span>
+                        <input asp-for="Email"
+                               class="form-control"
+                               placeholder="you@example.com"
+                               autocomplete="email"
+                               id="regEmail" />
+                    </div>
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <!-- Phone -->
+                <div class="form-group">
+                    <label asp-for="Phone">Phone Number</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">📱</span>
+                        <input asp-for="Phone"
+                               class="form-control"
+                               placeholder="98XXXXXXXX"
+                               autocomplete="tel"
+                               id="regPhone" />
+                    </div>
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label asp-for="PasswordHash">Password</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">🔒</span>
+                        <input asp-for="PasswordHash"
+                               class="form-control has-toggle"
+                               placeholder="Create a strong password"
+                               type="password"
+                               autocomplete="new-password"
+                               id="regPassword" />
+                        <button type="button" class="auth-pw-toggle" onclick="togglePassword('regPassword', this)" aria-label="Show/hide password" id="regPwToggle">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </button>
+                    </div>
+                    <span asp-validation-for="PasswordHash" class="text-danger"></span>
+                </div>
+
+                <!-- Role -->
+                <div class="form-group">
+                    <label asp-for="Role">I am a</label>
+                    <div class="auth-input-wrap">
+                        <span class="auth-input-icon">🎭</span>
+                        <select asp-for="Role" class="form-select" id="regRole">
+                            <option value="">— Select your role —</option>
+                            <option value="Student">📖 Student</option>
+                            <option value="Teacher">👩‍🏫 Teacher</option>
+                            <option value="Admin">⚙️ Admin</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Role" class="text-danger"></span>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" class="auth-submit-btn" id="registerSubmitBtn">
+                    Create My Account
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+
+            </form>
+
+            <div class="auth-alt-link">
+                Already have an account?
+                <a asp-controller="Account" asp-action="Login" id="switchToLogin">Sign in instead →</a>
+            </div>
+
         </div>
     </div>
 </div>
@@ -64,4 +159,14 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+    <script>
+        function togglePassword(inputId, btn) {
+            const input = document.getElementById(inputId);
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.innerHTML = isHidden
+                ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+                : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        }
+    </script>
 }
