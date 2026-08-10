@@ -58,8 +58,6 @@ namespace TuitionCenter.Controllers
 
             int totalStudents = teacherBatches.Sum(b => b.EnrollmentSubjects.Count());
             int activeClasses = teacherBatches.Count(b => b.IsActive);
-            if (totalStudents == 0) totalStudents = 142; // Demo display fallback if empty
-            if (activeClasses == 0) activeClasses = 5;
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             var upcomingSessions = _context.ClassSessions
@@ -268,7 +266,7 @@ namespace TuitionCenter.Controllers
             var viewModel = new TeacherBatchManagementViewModel
             {
                 TeacherName = teacher?.FullName ?? "Teacher",
-                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com",
+                TeacherEmail = teacher?.Email ?? "",
                 Batches = batchList
             };
 
@@ -348,7 +346,7 @@ namespace TuitionCenter.Controllers
             var viewModel = new LiveClassesViewModel
             {
                 TeacherName = teacher?.FullName ?? "Teacher",
-                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com",
+                TeacherEmail = teacher?.Email ?? "",
                 ActiveLiveSessions = activeList,
                 UpcomingLiveSessions = upcomingList
             };
@@ -361,30 +359,51 @@ namespace TuitionCenter.Controllers
         {
             var (teacherId, teacher) = GetCurrentTeacher();
 
+            var teacherBatches = _context.Batches
+                .Include(b => b.Class)
+                .Include(b => b.Subject)
+                .Include(b => b.EnrollmentSubjects)
+                .Where(b => b.TeacherId == teacherId && b.IsActive)
+                .ToList();
+
+            int currentLoad = teacherBatches.Count;
+            int totalStudents = teacherBatches.Sum(b => b.EnrollmentSubjects.Count);
+
+            var assignedGroups = teacherBatches
+                .GroupBy(b => b.Class?.ClassName ?? "General Class")
+                .Select(g => new AssignedSubjectGroup
+                {
+                    ClassName = g.Key,
+                    Subjects = string.Join(", ", g.Select(b => b.Subject?.SubjectName).Where(s => !string.IsNullOrEmpty(s)).Distinct())
+                })
+                .ToList();
+
+            var teachingLevels = teacherBatches
+                .Select(b => b.Class?.ClassName)
+                .Where(c => !string.IsNullOrEmpty(c))
+                .Distinct()
+                .Cast<string>()
+                .ToList();
+
             var viewModel = new TeacherProfileViewModel
             {
                 FullName = teacher?.FullName ?? "Teacher Profile",
-                Email = teacher?.Email ?? "teacher@studypoint.com",
-                Phone = teacher?.Phone ?? "+977 9841234567",
-                DateOfBirth = "1990-05-15",
-                HighestDegree = "Master of Science in Physics / Education",
-                Institution = "Tribhuvan University",
-                YearOfGraduation = "2015",
-                SubjectSpecialization = "Mathematics & Physics",
-                YearsOfExperience = "8 Years",
-                Bio = "Passionate educator with over 8 years of experience empowering high school and university students to master STEM subjects.",
-                PhotoPath = teacher?.ProfilePictureUrl ?? "https://i.pravatar.cc/150?img=11",
-                CurrentLoad = 5,
-                TotalStudents = 142,
-                Rating = 4.9m,
+                Email = teacher?.Email ?? "",
+                Phone = teacher?.Phone ?? "",
+                DateOfBirth = "",
+                HighestDegree = "Faculty Member",
+                Institution = "Study Point Center",
+                YearOfGraduation = "",
+                SubjectSpecialization = teacherBatches.FirstOrDefault()?.Subject?.SubjectName ?? "Faculty Educator",
+                YearsOfExperience = "Experienced Educator",
+                Bio = "Dedicated educator providing instruction and support for enrolled students at Study Point.",
+                PhotoPath = teacher?.ProfilePictureUrl ?? "",
+                CurrentLoad = currentLoad,
+                TotalStudents = totalStudents,
+                Rating = 5.0m,
                 IsVerified = true,
-                TeachingLevels = new List<string> { "Grade 10", "Grade 12", "Bachelor's" },
-                AssignedSubjects = new List<AssignedSubjectGroup>
-                {
-                    new AssignedSubjectGroup { ClassName = "Grade 10", Subjects = "Mathematics, Science" },
-                    new AssignedSubjectGroup { ClassName = "Grade 12", Subjects = "Accountancy, Advanced Physics" },
-                    new AssignedSubjectGroup { ClassName = "Bachelor's", Subjects = "Financial Management" }
-                }
+                TeachingLevels = teachingLevels.Any() ? teachingLevels : new List<string> { "Enrolled Courses" },
+                AssignedSubjects = assignedGroups
             };
 
             return View(viewModel);
@@ -489,7 +508,7 @@ namespace TuitionCenter.Controllers
             var viewModel = new TeacherStudentsViewModel
             {
                 TeacherName = teacher?.FullName ?? "Teacher",
-                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com",
+                TeacherEmail = teacher?.Email ?? "",
                 SelectedBatchId = batchId ?? 0,
                 TeacherBatches = teacherBatches,
                 Students = studentsList
@@ -518,7 +537,7 @@ namespace TuitionCenter.Controllers
             var viewModel = new TeacherAttendanceViewModel
             {
                 TeacherName = teacher?.FullName ?? "Teacher",
-                TeacherEmail = teacher?.Email ?? "teacher@studypoint.com",
+                TeacherEmail = teacher?.Email ?? "",
                 SelectedSessionId = selectedSession.SessionId,
                 SessionTitle = selectedSession.Title,
                 BatchName = selectedSession.BatchName,

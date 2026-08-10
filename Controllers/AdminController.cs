@@ -51,7 +51,7 @@ namespace TuitionCenter.Controllers
             int totalCourses = await _context.Subjects.CountAsync();
             decimal totalRevenue = await _context.Payments
                 .Where(p => p.Status == "Approved" || p.Status == "Completed")
-                .SumAsync(p => (decimal?)p.Amount) ?? 54200m;
+                .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
             var recentEnrollments = await _context.Enrollments
                 .Include(e => e.Student)
