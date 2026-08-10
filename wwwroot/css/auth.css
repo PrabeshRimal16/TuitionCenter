@@ -3,9 +3,9 @@
    ============================================================ */
 
 :root {
-    --auth-primary: #4f46e5;
-    --auth-primary-dark: #3730a3;
-    --auth-primary-light: #eef2ff;
+    --auth-primary: #2563eb;
+    --auth-primary-dark: #1d4ed8;
+    --auth-primary-light: #eff6ff;
     --auth-text: #111827;
     --auth-secondary: #6b7280;
     --auth-light: #9ca3af;
@@ -133,7 +133,7 @@ body.auth-page > div > main {
 .auth-form .form-control:focus,
 .auth-form .form-select:focus {
     border-color: var(--auth-primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 /* Password input with toggle */
