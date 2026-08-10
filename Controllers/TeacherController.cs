@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using TuitionCenter.Models;
@@ -27,7 +28,6 @@ namespace TuitionCenter.Controllers
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!int.TryParse(userIdString, out int teacherId))
             {
-                // Fallback for dev mode / testing if claim not present
                 var fallbackTeacher = _context.Users.FirstOrDefault(u => u.Role == "Teacher");
                 return (fallbackTeacher?.UserId ?? 0, fallbackTeacher);
             }
@@ -50,32 +50,44 @@ namespace TuitionCenter.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
-            // Batches for this teacher
             var teacherBatches = _context.Batches
                 .Include(b => b.EnrollmentSubjects)
                 .Where(b => b.TeacherId == teacherId)
                 .ToList();
 
-            int totalStudents = teacherBatches.Sum(b => b.EnrollmentSubjects.Count());
+            int totalStudents = teacherBatches.Sum(b => b.EnrollmentSubjects.Count);
             int activeClasses = teacherBatches.Count(b => b.IsActive);
 
             var today = DateOnly.FromDateTime(DateTime.Today);
             var upcomingSessions = _context.ClassSessions
-                .Include(cs => cs.Batch)
-                    .ThenInclude(b => b.Subject)
-                .Include(cs => cs.Batch)
-                    .ThenInclude(b => b.Class)
-                .Include(cs => cs.Batch)
-                    .ThenInclude(b => b.EnrollmentSubjects)
+                .Include(cs => cs.Batch).ThenInclude(b => b.Subject)
+                .Include(cs => cs.Batch).ThenInclude(b => b.Class)
+                .Include(cs => cs.Batch).ThenInclude(b => b.EnrollmentSubjects)
                 .Where(cs => cs.TeacherId == teacherId && cs.SessionDate >= today)
                 .OrderBy(cs => cs.SessionDate)
                 .ThenBy(cs => cs.StartTime)
                 .Take(6)
                 .ToList();
 
-            // Fallback sessions if DB has none for current date
             var nextSession = upcomingSessions.FirstOrDefault();
             var otherUpcoming = upcomingSessions.Skip(1).ToList();
+
+            // Dynamic attendance calculation for this teacher
+            var teacherSessionIds = _context.ClassSessions
+                .Where(cs => cs.TeacherId == teacherId)
+                .Select(cs => cs.SessionId)
+                .ToList();
+
+            double averageAttendance = 0;
+            if (teacherSessionIds.Any())
+            {
+                var totalAttendanceRecords = _context.Attendances.Count(a => teacherSessionIds.Contains(a.SessionId));
+                if (totalAttendanceRecords > 0)
+                {
+                    var presentCount = _context.Attendances.Count(a => teacherSessionIds.Contains(a.SessionId) && a.IsPresent);
+                    averageAttendance = Math.Round((double)presentCount / totalAttendanceRecords * 100, 1);
+                }
+            }
 
             var viewModel = new TeacherDashboardViewModel
             {
@@ -83,45 +95,34 @@ namespace TuitionCenter.Controllers
                 TeacherEmail = teacher.Email,
                 TotalStudents = totalStudents,
                 ActiveClasses = activeClasses,
-                AverageAttendance = 94.2,
+                AverageAttendance = averageAttendance,
                 CurrentAcademicYear = $"{DateTime.Now.Year}-{DateTime.Now.Year + 1}",
 
                 NextClass = nextSession != null ? new UpcomingClassViewModel
                 {
                     SessionId = nextSession.SessionId,
                     Title = nextSession.Title,
-                    BatchName = nextSession.Batch?.BatchName ?? "Batch A",
-                    SubjectName = nextSession.Batch?.Subject?.SubjectName ?? "Mathematics",
-                    ClassName = nextSession.Batch?.Class?.ClassName ?? "Grade 10",
+                    BatchName = nextSession.Batch?.BatchName ?? "Batch",
+                    SubjectName = nextSession.Batch?.Subject?.SubjectName ?? "Subject",
+                    ClassName = nextSession.Batch?.Class?.ClassName ?? "Class",
                     StartTime = nextSession.StartTime,
                     EndTime = nextSession.EndTime,
-                    EnrolledStudents = nextSession.Batch?.EnrollmentSubjects.Count ?? 35,
+                    EnrolledStudents = nextSession.Batch?.EnrollmentSubjects.Count ?? 0,
                     MeetingLink = string.IsNullOrEmpty(nextSession.MeetingLink) ? "https://meet.google.com/new" : nextSession.MeetingLink
-                } : new UpcomingClassViewModel
-                {
-                    SessionId = 101,
-                    Title = "Mathematics - Grade 10",
-                    BatchName = "Batch A",
-                    SubjectName = "Mathematics",
-                    ClassName = "Grade 10",
-                    StartTime = new TimeOnly(10, 0),
-                    EndTime = new TimeOnly(11, 30),
-                    EnrolledStudents = 38,
-                    MeetingLink = "https://meet.google.com/xyz-teacher-demo"
-                },
+                } : null,
 
-                UpcomingClasses = otherUpcoming.Any() ? otherUpcoming.Select(s => new UpcomingClassViewModel
+                UpcomingClasses = otherUpcoming.Select(s => new UpcomingClassViewModel
                 {
                     SessionId = s.SessionId,
                     Title = s.Title,
-                    BatchName = s.Batch?.BatchName ?? "Batch A",
-                    SubjectName = s.Batch?.Subject?.SubjectName ?? "Science",
-                    ClassName = s.Batch?.Class?.ClassName ?? "Grade 10",
+                    BatchName = s.Batch?.BatchName ?? "Batch",
+                    SubjectName = s.Batch?.Subject?.SubjectName ?? "Subject",
+                    ClassName = s.Batch?.Class?.ClassName ?? "Class",
                     StartTime = s.StartTime,
                     EndTime = s.EndTime,
-                    EnrolledStudents = s.Batch?.EnrollmentSubjects.Count ?? 28,
+                    EnrolledStudents = s.Batch?.EnrollmentSubjects.Count ?? 0,
                     MeetingLink = string.IsNullOrEmpty(s.MeetingLink) ? "https://meet.google.com/new" : s.MeetingLink
-                }).ToList() : GetFallbackUpcomingClasses()
+                }).ToList()
             };
 
             return View(viewModel);
@@ -139,10 +140,8 @@ namespace TuitionCenter.Controllers
             DateTime endOfWeek = startOfWeek.AddDays(6).Date;
 
             var sessions = _context.ClassSessions
-                .Include(cs => cs.Batch)
-                    .ThenInclude(b => b.Subject)
-                .Include(cs => cs.Batch)
-                    .ThenInclude(b => b.Class)
+                .Include(cs => cs.Batch).ThenInclude(b => b.Subject)
+                .Include(cs => cs.Batch).ThenInclude(b => b.Class)
                 .Where(cs => cs.TeacherId == teacherId
                         && cs.SessionDate >= DateOnly.FromDateTime(startOfWeek)
                         && cs.SessionDate <= DateOnly.FromDateTime(endOfWeek))
@@ -177,31 +176,6 @@ namespace TuitionCenter.Controllers
                         ColorTheme = colorThemes[Math.Abs(s.BatchId) % colorThemes.Length]
                     }).ToList();
 
-                // If DB empty, provide interactive fallback items
-                if (!daySessions.Any() && (currentDate.DayOfWeek == DayOfWeek.Monday || currentDate.DayOfWeek == DayOfWeek.Wednesday || currentDate.DayOfWeek == DayOfWeek.Friday))
-                {
-                    daySessions.Add(new ClassSessionViewModel
-                    {
-                        SessionId = 200 + i,
-                        Title = "Accountancy - Grade 12",
-                        SubjectName = "Accountancy",
-                        ClassName = "Grade 12",
-                        StartTime = new TimeOnly(7, 0),
-                        EndTime = new TimeOnly(8, 30),
-                        ColorTheme = "bg-blue-600 text-white"
-                    });
-                    daySessions.Add(new ClassSessionViewModel
-                    {
-                        SessionId = 300 + i,
-                        Title = "Mathematics - Grade 10",
-                        SubjectName = "Mathematics",
-                        ClassName = "Grade 10",
-                        StartTime = new TimeOnly(16, 30),
-                        EndTime = new TimeOnly(18, 0),
-                        ColorTheme = "bg-emerald-600 text-white"
-                    });
-                }
-
                 viewModel.Days.Add(new DayScheduleViewModel
                 {
                     Date = currentDate,
@@ -230,37 +204,29 @@ namespace TuitionCenter.Controllers
 
             var batchList = new List<TeacherBatchItemViewModel>();
 
-            if (dbBatches.Any())
+            foreach (var b in dbBatches)
             {
-                foreach (var b in dbBatches)
-                {
-                    string classNameLower = (b.Class?.ClassName ?? "").ToLower();
-                    string level = "secondary";
-                    string badge = "SECONDARY";
-                    if (classNameLower.Contains("12") || classNameLower.Contains("higher")) { level = "class12"; badge = "HIGHER SECONDARY"; }
-                    else if (classNameLower.Contains("10")) { level = "class10"; badge = "SECONDARY"; }
-                    else if (classNameLower.Contains("bachelor") || classNameLower.Contains("bbs")) { level = "bachelors"; badge = "UNIVERSITY"; }
+                string classNameLower = (b.Class?.ClassName ?? "").ToLower();
+                string level = "secondary";
+                string badge = "SECONDARY";
+                if (classNameLower.Contains("12") || classNameLower.Contains("higher")) { level = "class12"; badge = "HIGHER SECONDARY"; }
+                else if (classNameLower.Contains("10")) { level = "class10"; badge = "SECONDARY"; }
+                else if (classNameLower.Contains("bachelor") || classNameLower.Contains("bbs")) { level = "bachelors"; badge = "UNIVERSITY"; }
 
-                    batchList.Add(new TeacherBatchItemViewModel
-                    {
-                        BatchId = b.BatchId,
-                        BatchName = b.BatchName,
-                        ClassName = b.Class?.ClassName ?? "General Class",
-                        SubjectName = b.Subject?.SubjectName ?? "General Subject",
-                        TimeSlot = b.TimeSlot?.Days ?? "7:00 AM - 8:30 AM",
-                        Capacity = b.Capacity > 0 ? b.Capacity : 40,
-                        EnrolledStudentsCount = b.EnrollmentSubjects.Count(),
-                        AcademicLevel = level,
-                        AcademicLevelBadge = badge,
-                        Shift = b.BatchId % 2 == 0 ? "evening" : "morning",
-                        IsActive = b.IsActive
-                    });
-                }
-            }
-            else
-            {
-                // Fallback display batches
-                batchList = GetFallbackBatches();
+                batchList.Add(new TeacherBatchItemViewModel
+                {
+                    BatchId = b.BatchId,
+                    BatchName = b.BatchName,
+                    ClassName = b.Class?.ClassName ?? "General Class",
+                    SubjectName = b.Subject?.SubjectName ?? "General Subject",
+                    TimeSlot = b.TimeSlot?.Days ?? "7:00 AM - 8:30 AM",
+                    Capacity = b.Capacity > 0 ? b.Capacity : 40,
+                    EnrolledStudentsCount = b.EnrollmentSubjects.Count(),
+                    AcademicLevel = level,
+                    AcademicLevelBadge = badge,
+                    Shift = b.BatchId % 2 == 0 ? "evening" : "morning",
+                    IsActive = b.IsActive
+                });
             }
 
             var viewModel = new TeacherBatchManagementViewModel
@@ -295,52 +261,30 @@ namespace TuitionCenter.Controllers
             var activeList = new List<UpcomingClassViewModel>();
             var upcomingList = new List<UpcomingClassViewModel>();
 
-            if (liveSessions.Any())
+            var now = TimeOnly.FromDateTime(DateTime.Now);
+            foreach (var s in liveSessions)
             {
-                var now = TimeOnly.FromDateTime(DateTime.Now);
-                foreach (var s in liveSessions)
+                var item = new UpcomingClassViewModel
                 {
-                    var item = new UpcomingClassViewModel
-                    {
-                        SessionId = s.SessionId,
-                        Title = s.Title,
-                        BatchName = s.Batch?.BatchName ?? "Batch A",
-                        SubjectName = s.Batch?.Subject?.SubjectName ?? "Subject",
-                        ClassName = s.Batch?.Class?.ClassName ?? "Class",
-                        StartTime = s.StartTime,
-                        EndTime = s.EndTime,
-                        EnrolledStudents = s.Batch?.EnrollmentSubjects.Count ?? 30,
-                        MeetingLink = string.IsNullOrEmpty(s.MeetingLink) ? "https://meet.google.com/new" : s.MeetingLink
-                    };
+                    SessionId = s.SessionId,
+                    Title = s.Title,
+                    BatchName = s.Batch?.BatchName ?? "Batch",
+                    SubjectName = s.Batch?.Subject?.SubjectName ?? "Subject",
+                    ClassName = s.Batch?.Class?.ClassName ?? "Class",
+                    StartTime = s.StartTime,
+                    EndTime = s.EndTime,
+                    EnrolledStudents = s.Batch?.EnrollmentSubjects.Count ?? 0,
+                    MeetingLink = string.IsNullOrEmpty(s.MeetingLink) ? "https://meet.google.com/new" : s.MeetingLink
+                };
 
-                    if (s.Status == "Live" || (now >= s.StartTime && now <= s.EndTime))
-                    {
-                        activeList.Add(item);
-                    }
-                    else
-                    {
-                        upcomingList.Add(item);
-                    }
+                if (s.Status == "Live" || (now >= s.StartTime && now <= s.EndTime))
+                {
+                    activeList.Add(item);
                 }
-            }
-
-            if (!activeList.Any() && !upcomingList.Any())
-            {
-                // Fallback live sessions
-                activeList.Add(new UpcomingClassViewModel
+                else
                 {
-                    SessionId = 501,
-                    Title = "Accountancy - Grade 12 (Live Stream)",
-                    BatchName = "Morning Batch A",
-                    SubjectName = "Accountancy",
-                    ClassName = "Grade 12",
-                    StartTime = TimeOnly.FromDateTime(DateTime.Now.AddMinutes(-15)),
-                    EndTime = TimeOnly.FromDateTime(DateTime.Now.AddMinutes(45)),
-                    EnrolledStudents = 42,
-                    MeetingLink = "https://meet.google.com/acc-12-live"
-                });
-
-                upcomingList = GetFallbackUpcomingClasses();
+                    upcomingList.Add(item);
+                }
             }
 
             var viewModel = new LiveClassesViewModel
@@ -455,8 +399,8 @@ namespace TuitionCenter.Controllers
                     new Claim("Email", teacher.Email),
                     new Claim("Phone", teacher.Phone ?? "")
                 };
-                var identity = new ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
-                await HttpContext.SignInAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
                 TempData["SuccessMessage"] = "Profile details updated successfully!";
             }
@@ -482,28 +426,59 @@ namespace TuitionCenter.Controllers
                 SubjectName = b.Subject?.SubjectName ?? "Subject"
             }).ToList();
 
-            if (!teacherBatches.Any())
-            {
-                teacherBatches = GetFallbackBatches();
-            }
-
-            var studentsList = new List<TeacherStudentItemViewModel>
-            {
-                new TeacherStudentItemViewModel { StudentId = 1, FullName = "Aarav Sharma", Email = "aarav.sharma@example.com", Phone = "9841001122", BatchName = "Batch A", ClassName = "Grade 12", SubjectName = "Accountancy", EnrollmentDate = DateTime.Now.AddMonths(-3), AttendancePercentage = 96.5, Status = "Active" },
-                new TeacherStudentItemViewModel { StudentId = 2, FullName = "Priya Adhikari", Email = "priya.a@example.com", Phone = "9841003344", BatchName = "Batch A", ClassName = "Grade 12", SubjectName = "Accountancy", EnrollmentDate = DateTime.Now.AddMonths(-2), AttendancePercentage = 92.0, Status = "Active" },
-                new TeacherStudentItemViewModel { StudentId = 3, FullName = "Rohan Shrestha", Email = "rohan.s@example.com", Phone = "9841005566", BatchName = "Batch B", ClassName = "Grade 10", SubjectName = "Mathematics", EnrollmentDate = DateTime.Now.AddMonths(-4), AttendancePercentage = 88.0, Status = "Active" },
-                new TeacherStudentItemViewModel { StudentId = 4, FullName = "Sita Thapa", Email = "sita.t@example.com", Phone = "9841007788", BatchName = "Batch B", ClassName = "Grade 10", SubjectName = "Mathematics", EnrollmentDate = DateTime.Now.AddMonths(-1), AttendancePercentage = 98.2, Status = "Active" },
-                new TeacherStudentItemViewModel { StudentId = 5, FullName = "Bikash Gurung", Email = "bikash.g@example.com", Phone = "9841009900", BatchName = "Batch C", ClassName = "BBS", SubjectName = "Financial Mgmt", EnrollmentDate = DateTime.Now.AddMonths(-5), AttendancePercentage = 94.0, Status = "Active" }
-            };
+            // Fetch real enrolled students from database
+            var enrollmentSubjectsQuery = _context.EnrollmentSubjects
+                .Include(es => es.Enrollment).ThenInclude(e => e.Student)
+                .Include(es => es.AssignedBatch).ThenInclude(b => b!.Class)
+                .Include(es => es.AssignedBatch).ThenInclude(b => b!.Subject)
+                .Where(es => es.AssignedBatch != null && es.AssignedBatch.TeacherId == teacherId);
 
             if (batchId.HasValue && batchId.Value > 0)
             {
-                var selectedB = teacherBatches.FirstOrDefault(b => b.BatchId == batchId.Value);
-                if (selectedB != null)
-                {
-                    studentsList = studentsList.Where(s => s.BatchName == selectedB.BatchName || s.ClassName == selectedB.ClassName).ToList();
-                }
+                enrollmentSubjectsQuery = enrollmentSubjectsQuery.Where(es => es.AssignedBatchId == batchId.Value);
             }
+
+            var enrolledItems = enrollmentSubjectsQuery.ToList();
+
+            var teacherSessionIds = _context.ClassSessions
+                .Where(cs => cs.TeacherId == teacherId)
+                .Select(cs => cs.SessionId)
+                .ToList();
+
+            var attendanceRecords = teacherSessionIds.Any() 
+                ? _context.Attendances.Where(a => teacherSessionIds.Contains(a.SessionId)).ToList() 
+                : new List<Attendance>();
+
+            var studentsList = enrolledItems
+                .Where(es => es.Enrollment?.Student != null)
+                .Select(es =>
+                {
+                    var st = es.Enrollment.Student;
+                    var b = es.AssignedBatch;
+                    var studentAttendances = attendanceRecords.Where(a => a.StudentId == st.UserId).ToList();
+                    double attPct = 100.0;
+                    if (studentAttendances.Any())
+                    {
+                        attPct = Math.Round((double)studentAttendances.Count(a => a.IsPresent) / studentAttendances.Count * 100, 1);
+                    }
+
+                    return new TeacherStudentItemViewModel
+                    {
+                        StudentId = st.UserId,
+                        FullName = st.FullName,
+                        Email = st.Email,
+                        Phone = st.Phone ?? "",
+                        BatchName = b?.BatchName ?? "Batch",
+                        ClassName = b?.Class?.ClassName ?? "Class",
+                        SubjectName = b?.Subject?.SubjectName ?? "Subject",
+                        EnrollmentDate = es.Enrollment.EnrolledDate,
+                        AttendancePercentage = attPct,
+                        Status = (st.IsActive ?? true) ? "Active" : "Inactive"
+                    };
+                })
+                .GroupBy(s => s.StudentId)
+                .Select(g => g.First())
+                .ToList();
 
             var viewModel = new TeacherStudentsViewModel
             {
@@ -522,27 +497,66 @@ namespace TuitionCenter.Controllers
         {
             var (teacherId, teacher) = GetCurrentTeacher();
 
-            var sessions = GetFallbackUpcomingClasses();
-            var selectedSession = sessions.FirstOrDefault(s => s.SessionId == sessionId) ?? sessions.First();
+            var today = DateOnly.FromDateTime(DateTime.Today);
+            var dbSessions = _context.ClassSessions
+                .Include(cs => cs.Batch).ThenInclude(b => b.Subject)
+                .Include(cs => cs.Batch).ThenInclude(b => b.Class)
+                .Where(cs => cs.TeacherId == teacherId)
+                .OrderByDescending(cs => cs.SessionDate)
+                .ThenBy(cs => cs.StartTime)
+                .ToList();
 
-            var enrolledStudents = new List<AttendanceStudentItemViewModel>
+            var teacherSessionVMs = dbSessions.Select(s => new UpcomingClassViewModel
             {
-                new AttendanceStudentItemViewModel { StudentId = 1, FullName = "Aarav Sharma", Email = "aarav@example.com", RollNo = "STU-101", IsPresent = true },
-                new AttendanceStudentItemViewModel { StudentId = 2, FullName = "Priya Adhikari", Email = "priya@example.com", RollNo = "STU-102", IsPresent = true },
-                new AttendanceStudentItemViewModel { StudentId = 3, FullName = "Rohan Shrestha", Email = "rohan@example.com", RollNo = "STU-103", IsPresent = false, Remarks = "Medical leave" },
-                new AttendanceStudentItemViewModel { StudentId = 4, FullName = "Sita Thapa", Email = "sita@example.com", RollNo = "STU-104", IsPresent = true },
-                new AttendanceStudentItemViewModel { StudentId = 5, FullName = "Bikash Gurung", Email = "bikash@example.com", RollNo = "STU-105", IsPresent = true }
-            };
+                SessionId = s.SessionId,
+                Title = s.Title,
+                BatchName = s.Batch?.BatchName ?? "Batch",
+                SubjectName = s.Batch?.Subject?.SubjectName ?? "Subject",
+                ClassName = s.Batch?.Class?.ClassName ?? "Class",
+                StartTime = s.StartTime,
+                EndTime = s.EndTime
+            }).ToList();
+
+            var selectedSession = dbSessions.FirstOrDefault(s => s.SessionId == sessionId) ?? dbSessions.FirstOrDefault();
+
+            var enrolledStudents = new List<AttendanceStudentItemViewModel>();
+
+            if (selectedSession != null)
+            {
+                var existingAttendances = _context.Attendances
+                    .Where(a => a.SessionId == selectedSession.SessionId)
+                    .ToList();
+
+                var batchStudents = _context.EnrollmentSubjects
+                    .Include(es => es.Enrollment).ThenInclude(e => e.Student)
+                    .Where(es => es.AssignedBatchId == selectedSession.BatchId && es.Enrollment != null && es.Enrollment.Student != null)
+                    .Select(es => es.Enrollment.Student)
+                    .Distinct()
+                    .ToList();
+
+                enrolledStudents = batchStudents.Select((st, idx) =>
+                {
+                    var att = existingAttendances.FirstOrDefault(a => a.StudentId == st.UserId);
+                    return new AttendanceStudentItemViewModel
+                    {
+                        StudentId = st.UserId,
+                        FullName = st.FullName,
+                        Email = st.Email,
+                        RollNo = $"STU-{st.UserId:D3}",
+                        IsPresent = att?.IsPresent ?? true
+                    };
+                }).ToList();
+            }
 
             var viewModel = new TeacherAttendanceViewModel
             {
                 TeacherName = teacher?.FullName ?? "Teacher",
                 TeacherEmail = teacher?.Email ?? "",
-                SelectedSessionId = selectedSession.SessionId,
-                SessionTitle = selectedSession.Title,
-                BatchName = selectedSession.BatchName,
-                SessionDate = DateOnly.FromDateTime(DateTime.Today),
-                TeacherSessions = sessions,
+                SelectedSessionId = selectedSession?.SessionId ?? 0,
+                SessionTitle = selectedSession?.Title ?? "No Active Session",
+                BatchName = selectedSession?.Batch?.BatchName ?? "No Batch",
+                SessionDate = selectedSession?.SessionDate ?? today,
+                TeacherSessions = teacherSessionVMs,
                 EnrolledStudents = enrolledStudents
             };
 
@@ -552,7 +566,39 @@ namespace TuitionCenter.Controllers
         [HttpPost]
         public IActionResult MarkAttendance([FromBody] MarkAttendanceRequest request)
         {
-            return Json(new { success = true, message = $"Attendance marked successfully for {request.AttendanceList.Count} students!" });
+            try
+            {
+                if (request != null && request.SessionId > 0 && request.AttendanceList != null)
+                {
+                    foreach (var item in request.AttendanceList)
+                    {
+                        var attendanceRecord = _context.Attendances.FirstOrDefault(a => a.SessionId == request.SessionId && a.StudentId == item.StudentId);
+                        if (attendanceRecord == null)
+                        {
+                            attendanceRecord = new Attendance
+                            {
+                                SessionId = request.SessionId,
+                                StudentId = item.StudentId,
+                                IsPresent = item.IsPresent,
+                                MarkedDate = DateTime.Now
+                            };
+                            _context.Attendances.Add(attendanceRecord);
+                        }
+                        else
+                        {
+                            attendanceRecord.IsPresent = item.IsPresent;
+                            attendanceRecord.MarkedDate = DateTime.Now;
+                        }
+                    }
+                    _context.SaveChanges();
+                    return Json(new { success = true, message = $"Attendance marked successfully in database for {request.AttendanceList.Count} students!" });
+                }
+                return Json(new { success = false, message = "Invalid request payload." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
         }
 
         [HttpPost]
@@ -660,114 +706,6 @@ namespace TuitionCenter.Controllers
                 return StatusCode(500, ex.InnerException?.Message ?? ex.Message);
             }
         }
-
-        #region Helper Fallback Methods
-        private List<UpcomingClassViewModel> GetFallbackUpcomingClasses()
-        {
-            return new List<UpcomingClassViewModel>
-            {
-                new UpcomingClassViewModel
-                {
-                    SessionId = 102,
-                    Title = "Mathematics - Grade 10 (Advanced Algebra)",
-                    BatchName = "Batch A",
-                    SubjectName = "Mathematics",
-                    ClassName = "Grade 10",
-                    StartTime = new TimeOnly(7, 0),
-                    EndTime = new TimeOnly(8, 30),
-                    EnrolledStudents = 38,
-                    MeetingLink = "https://meet.google.com/math-10-demo"
-                },
-                new UpcomingClassViewModel
-                {
-                    SessionId = 103,
-                    Title = "Accountancy - Grade 12 (Financial Accounting)",
-                    BatchName = "Batch Morning A",
-                    SubjectName = "Accountancy",
-                    ClassName = "Grade 12",
-                    StartTime = new TimeOnly(9, 0),
-                    EndTime = new TimeOnly(10, 30),
-                    EnrolledStudents = 42,
-                    MeetingLink = "https://meet.google.com/acc-12-demo"
-                },
-                new UpcomingClassViewModel
-                {
-                    SessionId = 104,
-                    Title = "Science - Grade 9 (Physics Lab & Quiz)",
-                    BatchName = "Batch Evening",
-                    SubjectName = "Science",
-                    ClassName = "Grade 9",
-                    StartTime = new TimeOnly(16, 0),
-                    EndTime = new TimeOnly(17, 30),
-                    EnrolledStudents = 31,
-                    MeetingLink = "https://meet.google.com/sci-9-demo"
-                }
-            };
-        }
-
-        private List<TeacherBatchItemViewModel> GetFallbackBatches()
-        {
-            return new List<TeacherBatchItemViewModel>
-            {
-                new TeacherBatchItemViewModel
-                {
-                    BatchId = 1,
-                    BatchName = "Batch A",
-                    ClassName = "Grade 12",
-                    SubjectName = "Accountancy",
-                    TimeSlot = "7:00 AM - 8:30 AM",
-                    Capacity = 50,
-                    EnrolledStudentsCount = 42,
-                    AcademicLevel = "class12",
-                    AcademicLevelBadge = "HIGHER SECONDARY",
-                    Shift = "morning",
-                    IsActive = true
-                },
-                new TeacherBatchItemViewModel
-                {
-                    BatchId = 2,
-                    BatchName = "Batch C",
-                    ClassName = "Grade 10",
-                    SubjectName = "Mathematics",
-                    TimeSlot = "4:30 PM - 6:00 PM",
-                    Capacity = 40,
-                    EnrolledStudentsCount = 31,
-                    AcademicLevel = "class10",
-                    AcademicLevelBadge = "SECONDARY",
-                    Shift = "evening",
-                    IsActive = true
-                },
-                new TeacherBatchItemViewModel
-                {
-                    BatchId = 3,
-                    BatchName = "Batch B",
-                    ClassName = "BBS",
-                    SubjectName = "Financial Mgmt",
-                    TimeSlot = "6:30 AM - 8:00 AM",
-                    Capacity = 25,
-                    EnrolledStudentsCount = 18,
-                    AcademicLevel = "bachelors",
-                    AcademicLevelBadge = "UNIVERSITY",
-                    Shift = "morning",
-                    IsActive = true
-                },
-                new TeacherBatchItemViewModel
-                {
-                    BatchId = 4,
-                    BatchName = "Evening Shift",
-                    ClassName = "Grade 9",
-                    SubjectName = "Science",
-                    TimeSlot = "5:00 PM - 6:30 PM",
-                    Capacity = 35,
-                    EnrolledStudentsCount = 29,
-                    AcademicLevel = "secondary",
-                    AcademicLevelBadge = "SECONDARY",
-                    Shift = "evening",
-                    IsActive = true
-                }
-            };
-        }
-        #endregion
     }
 
     public class CreateClassRequest
