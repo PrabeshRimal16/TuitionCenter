@@ -471,7 +471,7 @@ namespace TuitionCenter.Controllers
                         BatchName = b?.BatchName ?? "Batch",
                         ClassName = b?.Class?.ClassName ?? "Class",
                         SubjectName = b?.Subject?.SubjectName ?? "Subject",
-                        EnrollmentDate = es.Enrollment.EnrolledDate,
+                        EnrollmentDate = es.Enrollment.EnrolledDate ?? DateTime.Now,
                         AttendancePercentage = attPct,
                         Status = (st.IsActive ?? true) ? "Active" : "Inactive"
                     };
