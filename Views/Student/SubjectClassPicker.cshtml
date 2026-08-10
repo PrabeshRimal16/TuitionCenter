@@ -1,4 +1,4 @@
-﻿@model List<TuitionCenter.Models.ClassPickerItem>
+@model List<TuitionCenter.Models.ClassPickerItem>
 
 @{
     ViewData["Title"] = "Select Class";
@@ -8,25 +8,40 @@
 
 @if (TempData["EnrollError"] != null)
 {
-    <div class="enroll-alert">@TempData["EnrollError"]</div>
+    <div class="enroll-alert" style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626; padding: 12px 16px; border-radius: 12px; font-weight: 600; margin-bottom: 20px;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["EnrollError"]
+    </div>
 }
 
-<h3 class="intake-section-title" style="margin-top:0;">Select a class to choose subjects</h3>
+<div style="margin-bottom: 28px;">
+    <span style="font-size: 11px; font-weight: 800; color: #2563eb; letter-spacing: 1.2px; text-transform: uppercase;">Step 1 of 4 &bull; Academic Level</span>
+    <h2 style="font-size: 24px; font-weight: 800; color: #0f172a; margin: 4px 0 6px;">Select your class to explore subjects</h2>
+    <p style="font-size: 14px; color: #64748b; margin: 0;">Choose your current grade level or degree course to view available tuition subjects and batch timings.</p>
+</div>
 
 <div class="class-picker-grid">
     @foreach (var c in Model)
     {
-        <a class="class-tile @(c.IsEnrolled ? "my-enrolled" : "")" asp-action="Subject" asp-route-classId="@c.ClassId">
+        <a class="class-tile @(c.IsEnrolled ? "my-enrolled" : "")" asp-action="Subject" asp-route-classId="@c.ClassId" style="text-decoration:none;">
             <div class="class-tile-top">
                 <div class="class-tile-num @(c.Label.Length > 2 ? "wide" : "")">@c.Label</div>
-                <span class="class-tile-count"><i class="bi bi-people-fill"></i> @c.EnrolledStudentCount enrolled</span>
+                <span class="class-tile-count"><i class="bi bi-people-fill"></i> @c.EnrolledStudentCount Students</span>
             </div>
             <h4>@c.ClassName</h4>
             <p class="class-tile-subtitle">@c.Subtitle</p>
-            @if (c.IsEnrolled)
-            {
-                <p class="class-tile-mystatus">You: @c.EnrollmentStatusLabel</p>
-            }
+
+            <div style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; pt-3; border-top: 1px solid #f1f5f9;">
+                @if (c.IsEnrolled)
+                {
+                    <span style="font-size: 11px; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 4px 10px; border-radius: 999px;">
+                        <i class="bi bi-check-circle-fill me-1"></i> Enrolled (@c.EnrollmentStatusLabel)
+                    </span>
+                }
+                else
+                {
+                    <span style="font-size: 11px; font-weight: 700; color: #2563eb;">View Subjects &rarr;</span>
+                }
+            </div>
         </a>
     }
 </div>
