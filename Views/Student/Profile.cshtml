@@ -1,0 +1,102 @@
+@model TuitionCenter.Models.User
+@{
+    Layout = "~/Views/Shared/_StudentLayout.cshtml";
+    ViewData["Title"] = "My Profile & Settings";
+    var profileImg = Model.ProfilePictureUrl;
+    var nameParts = Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var initial = nameParts.Length > 1 ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpper() : (nameParts.Length == 1 ? nameParts[0][0].ToString().ToUpper() : "S");
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="mb-6 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-800 px-5 py-3.5 rounded-2xl text-xs font-semibold">
+        <i class="fas fa-check-circle text-emerald-600 text-base"></i>
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header Banner Card -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="h-32 bg-gradient-to-r from-blue-600 to-blue-500 relative">
+            <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle, white 1px, transparent 1px); background-size: 16px 16px;"></div>
+        </div>
+        <div class="px-6 pb-6 -mt-12 flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4">
+            <div class="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                <div class="relative">
+                    @if (!string.IsNullOrEmpty(profileImg))
+                    {
+                        <img src="@profileImg" alt="@Model.FullName" class="w-24 h-24 rounded-2xl border-4 border-white object-cover shadow-lg bg-white" />
+                    }
+                    else
+                    {
+                        <div class="w-24 h-24 rounded-2xl border-4 border-white bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-extrabold text-2xl shadow-lg">
+                            @initial
+                        </div>
+                    }
+                </div>
+                <div>
+                    <h2 class="text-2xl font-extrabold text-slate-900 leading-tight">@Model.FullName</h2>
+                    <p class="text-xs text-slate-500 font-medium mt-1">
+                        <i class="fas fa-envelope text-slate-400 mr-1"></i> @Model.Email
+                    </p>
+                    <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 border border-blue-200 text-[11px] font-bold px-3 py-0.5 rounded-full mt-2">
+                        <i class="fas fa-user-graduate text-[10px]"></i> Student Account
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile Form -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 sm:p-8">
+        <h3 class="text-lg font-extrabold text-slate-900 mb-1">Edit Personal Information</h3>
+        <p class="text-xs text-slate-500 mb-6">Update your real display name, contact phone, and profile photo.</p>
+
+        <form method="post" action="@Url.Action("Profile", "Student")" enctype="multipart/form-data" class="space-y-6">
+            @Html.AntiForgeryToken()
+
+            <!-- Photo Upload Field -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Upload Profile Photo</label>
+                <div class="flex items-center gap-4">
+                    <input type="file" name="photoFile" accept="image/*"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs font-medium text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all" />
+                </div>
+                <p class="text-[11px] text-slate-400 mt-1.5">Selected picture will immediately update your avatar across the top navigation bar and sidebar.</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Full Name (Real Name)</label>
+                    <input type="text" name="fullName" value="@Model.FullName" required
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email Address</label>
+                    <input type="email" value="@Model.Email" readonly
+                           class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold text-slate-400 outline-none cursor-not-allowed" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Phone Number</label>
+                    <input type="tel" name="phone" value="@Model.Phone" placeholder="+977 98XXXXXXXX"
+                           class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600 outline-none transition-all" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Account Role</label>
+                    <input type="text" value="Student" readonly
+                           class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-xs font-semibold text-slate-400 outline-none cursor-not-allowed" />
+                </div>
+            </div>
+
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-xl shadow-sm hover:shadow transition-all flex items-center gap-2">
+                    <i class="fas fa-save"></i> Save Profile Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

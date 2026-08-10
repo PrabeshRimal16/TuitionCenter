@@ -56,9 +56,44 @@
                         </li>
                     </ul>
 
+@using System.Security.Claims
+@inject TuitionCenter.Models.TuitionCenterDbContext DbContext
+
                     <ul class="navbar-nav ms-auto align-items-center gap-2">
                         @if (User.Identity != null && User.Identity.IsAuthenticated)
                         {
+                            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                            int.TryParse(userIdClaim, out int loggedInUserId);
+                            var loggedInUser = loggedInUserId > 0 ? DbContext.Users.FirstOrDefault(u => u.UserId == loggedInUserId) : null;
+                            var displayName = loggedInUser?.FullName ?? User.Identity?.Name ?? "User";
+                            var userRole = loggedInUser?.Role ?? User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+                            var profileImg = loggedInUser?.ProfilePictureUrl;
+                            var nameParts = displayName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            var initial = nameParts.Length > 1 ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpper() : (nameParts.Length == 1 ? nameParts[0][0].ToString().ToUpper() : "U");
+
+                            var dashController = userRole switch
+                            {
+                                "Admin" => "Admin",
+                                "Teacher" => "Teacher",
+                                "Student" => "Student",
+                                _ => "Home"
+                            };
+
+                            <li class="nav-item me-2">
+                                <a asp-controller="@dashController" asp-action="Dashboard" class="d-flex align-items-center gap-2 text-decoration-none fw-semibold text-dark">
+                                    @if (!string.IsNullOrEmpty(profileImg))
+                                    {
+                                        <img src="@profileImg" alt="@displayName" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #2563eb;" />
+                                    }
+                                    else
+                                    {
+                                        <span style="width:32px;height:32px;border-radius:50%;background:#2563eb;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;">
+                                            @initial
+                                        </span>
+                                    }
+                                    <span>@displayName</span>
+                                </a>
+                            </li>
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()

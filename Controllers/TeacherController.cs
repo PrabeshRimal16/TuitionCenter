@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -371,7 +373,7 @@ namespace TuitionCenter.Controllers
                 SubjectSpecialization = "Mathematics & Physics",
                 YearsOfExperience = "8 Years",
                 Bio = "Passionate educator with over 8 years of experience empowering high school and university students to master STEM subjects.",
-                PhotoPath = "https://i.pravatar.cc/150?img=11",
+                PhotoPath = teacher?.ProfilePictureUrl ?? "https://i.pravatar.cc/150?img=11",
                 CurrentLoad = 5,
                 TotalStudents = 142,
                 Rating = 4.9m,
@@ -389,14 +391,54 @@ namespace TuitionCenter.Controllers
         }
 
         [HttpPost]
-        public IActionResult Profile(TeacherProfileViewModel model)
+        public async Task<IActionResult> Profile(TeacherProfileViewModel model, IFormFile? photoFile)
         {
             var (teacherId, teacher) = GetCurrentTeacher();
             if (teacher != null)
             {
-                teacher.FullName = model.FullName ?? teacher.FullName;
+                if (!string.IsNullOrWhiteSpace(model.FullName))
+                {
+                    teacher.FullName = model.FullName;
+                }
                 teacher.Phone = model.Phone ?? teacher.Phone;
+
+                if (photoFile != null && photoFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var extension = Path.GetExtension(photoFile.FileName).ToLower();
+                    if (string.IsNullOrEmpty(extension) || (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".gif" && extension != ".webp"))
+                    {
+                        extension = ".jpg";
+                    }
+
+                    var filePath = Path.Combine(uploadsFolder, $"user_{teacher.UserId}{extension}");
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photoFile.CopyToAsync(stream);
+                    }
+
+                    teacher.ProfileImage = $"/uploads/profiles/user_{teacher.UserId}{extension}";
+                }
+
                 _context.SaveChanges();
+
+                // Refresh auth claims
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, teacher.FullName),
+                    new Claim(ClaimTypes.NameIdentifier, teacher.UserId.ToString()),
+                    new Claim(ClaimTypes.Role, teacher.Role),
+                    new Claim("Email", teacher.Email),
+                    new Claim("Phone", teacher.Phone ?? "")
+                };
+                var identity = new ClaimsIdentity(claims, Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
                 TempData["SuccessMessage"] = "Profile details updated successfully!";
             }
             return RedirectToAction("Profile");
