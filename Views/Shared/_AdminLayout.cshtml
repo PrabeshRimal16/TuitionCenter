@@ -93,6 +93,12 @@
                     </a>
                 </li>
 
+                <li class="@(currentController == "Admin" && (currentAction == "Enrollments" || currentAction == "EnrollmentDetails") ? "active" : "")">
+                    <a asp-controller="Admin" asp-action="Enrollments">
+                        <i class="bi bi-journal-check"></i>
+                        <span>Enrollments</span>
+                    </a>
+                </li>
 
                 <li class="@(currentController == "Admin" && currentAction == "Payments" ? "active" : "")">
                     <a asp-controller="Admin" asp-action="Payments">
