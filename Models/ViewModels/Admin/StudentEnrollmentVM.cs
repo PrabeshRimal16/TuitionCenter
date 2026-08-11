@@ -11,6 +11,11 @@ public class StudentEnrollmentVM
     public string? StudentEmail { get; set; }
     public string? ClassName { get; set; }
     public string? SubjectsSummary { get; set; }
+    public string? SubjectName
+    {
+        get => SubjectsSummary;
+        set => SubjectsSummary = value;
+    }
     public string? CourseType { get; set; }
     public string? TimeSlotLabel { get; set; }
     public decimal Amount { get; set; }
