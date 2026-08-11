@@ -1258,5 +1258,157 @@ namespace TuitionCenter.Controllers
 
             return RedirectToAction("Profile");
         }
+
+        // =====================================================
+        // ENROLLMENT MANAGEMENT
+        // =====================================================
+
+        [HttpGet]
+        [Route("Enrollments")]
+        public async Task<IActionResult> Enrollments(string filter = "All")
+        {
+            var query = _context.Enrollments
+                .Include(e => e.Student)
+                .Include(e => e.Class)
+                .Include(e => e.CourseType)
+                .Include(e => e.PreferredTimeSlot)
+                .Include(e => e.EnrollmentSubjects).ThenInclude(es => es.Subject)
+                .Include(e => e.Payments)
+                .AsQueryable();
+
+            var filtered = filter switch
+            {
+                "Pending"  => query.Where(e => e.Status == "Pending"),
+                "Approved" => query.Where(e => e.Status == "Approved"),
+                "Rejected" => query.Where(e => e.Status == "Rejected"),
+                _          => query
+            };
+
+            var all = await query.ToListAsync();
+            var list = await filtered.OrderByDescending(e => e.EnrolledDate).ToListAsync();
+
+            var vm = new EnrollmentsListVM
+            {
+                ActiveFilter   = filter,
+                TotalCount    = all.Count,
+                PendingCount  = all.Count(e => e.Status == "Pending"),
+                ApprovedCount = all.Count(e => e.Status == "Approved"),
+                RejectedCount = all.Count(e => e.Status == "Rejected"),
+                Enrollments   = list.Select(e => new StudentEnrollmentVM
+                {
+                    EnrollmentId      = e.EnrollmentId,
+                    EnrollmentNumber  = e.EnrollmentNumber,
+                    StudentName       = e.Student.FullName,
+                    StudentEmail      = e.Student.Email,
+                    ClassName         = e.Class.ClassName,
+                    SubjectsSummary   = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
+                    CourseType        = e.CourseType.TypeName,
+                    TimeSlotLabel     = e.PreferredTimeSlot != null
+                        ? $"{e.PreferredTimeSlot.Days}, {e.PreferredTimeSlot.StartTime:h:mm tt}"
+                        : "–",
+                    Amount            = e.ExpectedAmount,
+                    EnrollmentStatus  = e.Status,
+                    PaymentStatus     = e.Payments.FirstOrDefault()?.Status ?? "–",
+                    PaymentMethod     = e.Payments.FirstOrDefault()?.Method,
+                    TransactionId     = e.Payments.FirstOrDefault()?.TransactionId,
+                    ScreenshotPath    = e.Payments.FirstOrDefault()?.ScreenshotPath,
+                    RejectionReason   = e.RejectionReason,
+                    EnrollmentDate    = e.EnrolledDate
+                }).ToList()
+            };
+
+            return View("~/Views/Admin/Enrollments.cshtml", vm);
+        }
+
+        [HttpGet]
+        [Route("Enrollments/{id:int}")]
+        public async Task<IActionResult> EnrollmentDetails(int id)
+        {
+            var e = await _context.Enrollments
+                .Include(x => x.Student)
+                .Include(x => x.Class)
+                .Include(x => x.CourseType)
+                .Include(x => x.PreferredTimeSlot)
+                .Include(x => x.EnrollmentSubjects).ThenInclude(es => es.Subject)
+                .Include(x => x.EnrollmentSubjects).ThenInclude(es => es.AssignedBatch).ThenInclude(b => b!.Teacher)
+                .Include(x => x.Payments)
+                .FirstOrDefaultAsync(x => x.EnrollmentId == id);
+
+            if (e == null) return NotFound();
+
+            var vm = new StudentEnrollmentVM
+            {
+                EnrollmentId      = e.EnrollmentId,
+                EnrollmentNumber  = e.EnrollmentNumber,
+                StudentName       = e.Student.FullName,
+                StudentEmail      = e.Student.Email,
+                ClassName         = e.Class.ClassName,
+                SubjectsSummary   = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
+                CourseType        = e.CourseType.TypeName,
+                TimeSlotLabel     = e.PreferredTimeSlot != null
+                    ? $"{e.PreferredTimeSlot.Days}, {e.PreferredTimeSlot.StartTime:h:mm tt} – {e.PreferredTimeSlot.EndTime:h:mm tt}"
+                    : "–",
+                Amount            = e.ExpectedAmount,
+                EnrollmentStatus  = e.Status,
+                PaymentStatus     = e.Payments.FirstOrDefault()?.Status ?? "–",
+                PaymentMethod     = e.Payments.FirstOrDefault()?.Method,
+                TransactionId     = e.Payments.FirstOrDefault()?.TransactionId,
+                ScreenshotPath    = e.Payments.FirstOrDefault()?.ScreenshotPath,
+                RejectionReason   = e.RejectionReason,
+                EnrollmentDate    = e.EnrolledDate
+            };
+
+            return View("~/Views/Admin/EnrollmentDetails.cshtml", vm);
+        }
+
+        [HttpPost]
+        [Route("Enrollments/{id:int}/Approve")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveEnrollment(int id)
+        {
+            var enrollment = await _context.Enrollments
+                .Include(e => e.Payments)
+                .FirstOrDefaultAsync(e => e.EnrollmentId == id);
+
+            if (enrollment == null) return NotFound();
+
+            var adminIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(adminIdClaim, out var adminId);
+
+            enrollment.Status      = "Approved";
+            enrollment.ApprovedBy  = adminId > 0 ? adminId : null;
+            enrollment.ApprovalDate = DateTime.Now;
+
+            foreach (var payment in enrollment.Payments)
+                payment.Status = "Approved";
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = $"Enrollment #{enrollment.EnrollmentNumber} has been approved.";
+            return RedirectToAction("Enrollments");
+        }
+
+        [HttpPost]
+        [Route("Enrollments/{id:int}/Reject")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectEnrollment(int id, string? rejectionReason)
+        {
+            var enrollment = await _context.Enrollments
+                .Include(e => e.Payments)
+                .FirstOrDefaultAsync(e => e.EnrollmentId == id);
+
+            if (enrollment == null) return NotFound();
+
+            enrollment.Status          = "Rejected";
+            enrollment.RejectionReason = rejectionReason;
+
+            foreach (var payment in enrollment.Payments)
+                payment.Status = "Rejected";
+
+            await _context.SaveChangesAsync();
+
+            TempData["ErrorMessage"] = $"Enrollment #{enrollment.EnrollmentNumber} has been rejected.";
+            return RedirectToAction("Enrollments");
+        }
     }
 }

@@ -1,0 +1,155 @@
+@model TuitionCenter.Models.EnrollmentConfirmationViewModel
+
+@{
+    ViewData["Title"] = "Enrollment Submitted";
+    Layout = "_EnrollmentLayout";
+    ViewData["ShowSidebar"] = false;
+}
+
+<style>
+    .confirm-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 70vh;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    .confirm-anim {
+        width: 100px; height: 100px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 28px;
+        box-shadow: 0 12px 40px rgba(79,70,229,.4);
+        animation: popIn .5s cubic-bezier(.175,.885,.32,1.275) both;
+    }
+    @@keyframes popIn {
+        0% { transform: scale(0); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+    }
+    .confirm-anim i { font-size: 46px; color: #fff; }
+    .confirm-title {
+        font-size: 28px; font-weight: 900; color: #1e1b4b;
+        margin: 0 0 8px;
+        animation: fadeUp .5s .2s both;
+    }
+    .confirm-subtitle {
+        font-size: 15px; color: #64748b; margin: 0 0 32px;
+        animation: fadeUp .5s .3s both;
+    }
+    @@keyframes fadeUp {
+        0% { transform: translateY(16px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+    .confirm-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        padding: 28px 36px;
+        max-width: 480px; width: 100%;
+        margin: 0 auto 28px;
+        box-shadow: 0 8px 40px rgba(0,0,0,.06);
+        animation: fadeUp .5s .4s both;
+    }
+    .confirm-row {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-row-label { color: #64748b; font-weight: 600; }
+    .confirm-row-value { color: #1e1b4b; font-weight: 800; }
+    .confirm-enroll-num {
+        background: linear-gradient(135deg, #f0f0ff, #ede9fe);
+        border: 2px solid #c7d2fe;
+        border-radius: 10px;
+        padding: 6px 14px;
+        font-size: 14px;
+        font-weight: 900;
+        color: #4f46e5;
+        letter-spacing: .5px;
+    }
+    .confirm-status-pill {
+        background: #fef9c3; border: 1px solid #fde68a;
+        color: #92400e; font-size: 12px; font-weight: 700;
+        border-radius: 999px; padding: 4px 12px;
+    }
+    .confirm-actions {
+        display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
+        animation: fadeUp .5s .5s both;
+    }
+    .confirm-btn-primary {
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #fff; text-decoration: none;
+        padding: 14px 28px; border-radius: 14px; font-size: 15px; font-weight: 800;
+        display: inline-flex; align-items: center; gap: 8px;
+        box-shadow: 0 6px 20px rgba(79,70,229,.35);
+        transition: all .18s ease;
+    }
+    .confirm-btn-primary:hover { transform: translateY(-2px); color: #fff; box-shadow: 0 10px 28px rgba(79,70,229,.45); }
+    .confirm-btn-outline {
+        background: #fff; color: #4f46e5; text-decoration: none;
+        padding: 14px 28px; border-radius: 14px; font-size: 15px; font-weight: 700;
+        display: inline-flex; align-items: center; gap: 8px;
+        border: 2px solid #c7d2fe; transition: all .18s ease;
+    }
+    .confirm-btn-outline:hover { background: #f0f0ff; }
+    .confirm-note {
+        max-width: 480px; margin: 0 auto 0;
+        background: #f0fdf4; border: 1px solid #bbf7d0;
+        border-radius: 14px; padding: 14px 18px;
+        display: flex; gap: 10px; align-items: flex-start;
+        animation: fadeUp .5s .5s both;
+    }
+    .confirm-note i { color: #16a34a; flex-shrink: 0; margin-top: 1px; }
+    .confirm-note p { font-size: 13px; color: #14532d; margin: 0; }
+</style>
+
+<div class="confirm-wrapper">
+
+    <div class="confirm-anim">
+        <i class="bi bi-check-lg"></i>
+    </div>
+
+    <h1 class="confirm-title">Enrollment Submitted!</h1>
+    <p class="confirm-subtitle">Your application is under review. You'll be notified once it's approved by the admin.</p>
+
+    <div class="confirm-card">
+        <div class="confirm-row">
+            <span class="confirm-row-label">Enrollment No.</span>
+            <span class="confirm-enroll-num">@Model.EnrollmentNumber</span>
+        </div>
+        <div class="confirm-row">
+            <span class="confirm-row-label">Class</span>
+            <span class="confirm-row-value">@Model.ClassName</span>
+        </div>
+        <div class="confirm-row">
+            <span class="confirm-row-label">Amount</span>
+            <span class="confirm-row-value">Rs @Model.Total</span>
+        </div>
+        <div class="confirm-row">
+            <span class="confirm-row-label">Status</span>
+            <span class="confirm-status-pill"><i class="bi bi-clock me-1"></i>Pending Review</span>
+        </div>
+    </div>
+
+    <div class="confirm-note" style="margin-bottom: 24px;">
+        <i class="bi bi-info-circle-fill"></i>
+        <p>
+            Our team will review your payment and activate your enrollment within <strong>1–2 business days</strong>.
+            Check your <strong>My Classes</strong> page for status updates.
+        </p>
+    </div>
+
+    <div class="confirm-actions">
+        <a href="/Student/Dashboard" class="confirm-btn-primary">
+            <i class="bi bi-house-door-fill"></i> Go to Dashboard
+        </a>
+        <a href="/Student/EnrollClass" class="confirm-btn-outline">
+            <i class="bi bi-mortarboard"></i> My Classes
+        </a>
+    </div>
+</div>

@@ -538,6 +538,36 @@ namespace TuitionCenter.Controllers
         }
 
         // ============================================================
+        // Enroll: Intake POST
+        // ============================================================
+
+        [HttpPost]
+        [ActionName("Intake")]
+        public IActionResult IntakeSave(int classId, int courseTypeId, int preferredTimeSlotId,
+            string? intakeMonth, Dictionary<int, int>? selectedBatches)
+        {
+            if (courseTypeId == 0 || preferredTimeSlotId == 0)
+            {
+                TempData["EnrollError"] = "Please select a plan and time slot.";
+                return RedirectToAction("Intake", new { classId });
+            }
+
+            HttpContext.Session.SetInt32($"EnrollCourseType_{classId}", courseTypeId);
+            HttpContext.Session.SetInt32($"EnrollTimeSlot_{classId}", preferredTimeSlotId);
+
+            if (!string.IsNullOrEmpty(intakeMonth))
+                HttpContext.Session.SetString($"EnrollIntakeMonth_{classId}", intakeMonth);
+
+            if (selectedBatches != null && selectedBatches.Count > 0)
+            {
+                var json = JsonSerializer.Serialize(selectedBatches);
+                HttpContext.Session.SetString($"EnrollBatches_{classId}", json);
+            }
+
+            return RedirectToAction("Pricing", new { classId });
+        }
+
+        // ============================================================
         // Enroll: Pricing
         // ============================================================
 
@@ -632,20 +662,206 @@ namespace TuitionCenter.Controllers
         }
 
         // ============================================================
-        // Timing / Payments (not built yet - simple placeholders)
+        // Enroll: Payments (GET) — Summary + payment form
         // ============================================================
-
-        [HttpGet]
-        public IActionResult Timing(int classId = 0)
-        {
-            return Content($"Timing step for class {classId} - coming soon.");
-        }
 
         [HttpGet]
         public IActionResult Payments(int classId = 0)
         {
-            return Content($"Payments step for class {classId} - coming soon.");
+            var resolvedClassId = ResolveClassId(classId);
+            if (resolvedClassId == null)
+            {
+                TempData["EnrollError"] = "Please select a class first.";
+                return RedirectToAction("EnrollClass");
+            }
+            classId = resolvedClassId.Value;
+
+            var selectedSubjectIds = GetSelectedSubjectIds(classId);
+            if (selectedSubjectIds.Count == 0)
+                return RedirectToAction("Subject", new { classId });
+
+            var (courseTypeId, timeSlotId, batches) = GetIntakeSelections(classId);
+            if (courseTypeId == null || timeSlotId == null)
+                return RedirectToAction("Intake", new { classId });
+
+            var classEntity = _context.Classes.FirstOrDefault(c => c.ClassId == classId);
+            if (classEntity == null) return NotFound();
+
+            var courseType = _context.CourseTypes.FirstOrDefault(ct => ct.CourseTypeId == courseTypeId);
+
+            var subjects = _context.Subjects
+                .Where(s => selectedSubjectIds.Contains(s.SubjectId))
+                .ToList();
+
+            var totalStr = HttpContext.Session.GetString($"EnrollTotal_{classId}");
+            decimal total = 0;
+            if (!string.IsNullOrEmpty(totalStr))
+                decimal.TryParse(totalStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out total);
+
+            if (total == 0)
+            {
+                var fees = _context.CourseFees
+                    .Where(f => f.ClassId == classId && f.CourseTypeId == courseTypeId && selectedSubjectIds.Contains(f.SubjectId) && f.IsActive)
+                    .ToList();
+                total = fees.Sum(f => f.Amount);
+            }
+
+            var model = new PaymentsViewModel
+            {
+                ClassId = classId,
+                ClassName = classEntity.ClassName,
+                CourseTypeName = courseType?.TypeName ?? "",
+                SubjectsSummary = string.Join(", ", subjects.Select(s => s.SubjectName)),
+                Total = total
+            };
+
+            return View(model);
         }
+
+        // ============================================================
+        // Enroll: Payments (POST) — Save enrollment to DB
+        // ============================================================
+
+        [HttpPost]
+        [ActionName("Payments")]
+        public async Task<IActionResult> PaymentsSubmit(int classId, string paymentMethod,
+            string? transactionId, IFormFile? screenshotFile)
+        {
+            var studentId = GetCurrentUserId();
+            if (studentId == null) return RedirectToAction("Login", "Account");
+
+            var selectedSubjectIds = GetSelectedSubjectIds(classId);
+            if (selectedSubjectIds.Count == 0)
+                return RedirectToAction("Subject", new { classId });
+
+            var (courseTypeId, timeSlotId, batches) = GetIntakeSelections(classId);
+            if (courseTypeId == null || timeSlotId == null)
+                return RedirectToAction("Intake", new { classId });
+
+            // Guard: prevent duplicate active enrollment in same class
+            var duplicate = _context.Enrollments.FirstOrDefault(e =>
+                e.StudentId == studentId && e.ClassId == classId &&
+                (e.Status == "Pending" || e.Status == "Approved"));
+            if (duplicate != null)
+            {
+                TempData["EnrollError"] = "You already have an active or pending enrollment for this class.";
+                return RedirectToAction("EnrollClass");
+            }
+
+            // Resolve total
+            var totalStr = HttpContext.Session.GetString($"EnrollTotal_{classId}");
+            decimal total = 0;
+            if (!string.IsNullOrEmpty(totalStr))
+                decimal.TryParse(totalStr, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture, out total);
+
+            if (total == 0)
+            {
+                var fees = _context.CourseFees
+                    .Where(f => f.ClassId == classId && f.CourseTypeId == courseTypeId &&
+                                selectedSubjectIds.Contains(f.SubjectId) && f.IsActive)
+                    .ToList();
+                total = fees.Sum(f => f.Amount);
+            }
+
+            // Generate enrollment number
+            var enrollmentNumber = $"ENR-{DateTime.Now:yyyyMMdd}-{new Random().Next(1000, 9999)}";
+
+            var enrollment = new Enrollment
+            {
+                EnrollmentNumber = enrollmentNumber,
+                StudentId = studentId.Value,
+                ClassId = classId,
+                CourseTypeId = courseTypeId.Value,
+                PreferredTimeSlotId = timeSlotId.Value,
+                ExpectedAmount = total,
+                Status = "Pending",
+                EnrolledDate = DateTime.Now
+            };
+
+            _context.Enrollments.Add(enrollment);
+            await _context.SaveChangesAsync();
+
+            // Add enrollment subjects
+            foreach (var subjectId in selectedSubjectIds)
+            {
+                batches.TryGetValue(subjectId, out var batchId);
+                _context.EnrollmentSubjects.Add(new EnrollmentSubject
+                {
+                    EnrollmentId = enrollment.EnrollmentId,
+                    SubjectId = subjectId,
+                    AssignedBatchId = batchId > 0 ? batchId : null
+                });
+            }
+
+            // Handle screenshot upload
+            string? screenshotPath = null;
+            if (screenshotFile != null && screenshotFile.Length > 0)
+            {
+                var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "payments");
+                Directory.CreateDirectory(uploadsFolder);
+                var ext = Path.GetExtension(screenshotFile.FileName).ToLower();
+                if (string.IsNullOrEmpty(ext)) ext = ".jpg";
+                var fileName = $"pay_{enrollment.EnrollmentId}_{DateTime.Now:yyyyMMddHHmmss}{ext}";
+                var filePath = Path.Combine(uploadsFolder, fileName);
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                    await screenshotFile.CopyToAsync(stream);
+                screenshotPath = $"/uploads/payments/{fileName}";
+            }
+
+            // Create payment record
+            _context.Payments.Add(new Payment
+            {
+                EnrollmentId = enrollment.EnrollmentId,
+                Amount = total,
+                Method = string.IsNullOrWhiteSpace(paymentMethod) ? "Unknown" : paymentMethod,
+                TransactionId = transactionId,
+                ScreenshotPath = screenshotPath,
+                Status = "Pending",
+                PaymentDate = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+
+            // Clear session for this enrollment flow
+            var classKey = classId.ToString();
+            HttpContext.Session.Remove($"EnrollSubjects_{classKey}");
+            HttpContext.Session.Remove($"EnrollCourseType_{classKey}");
+            HttpContext.Session.Remove($"EnrollTimeSlot_{classKey}");
+            HttpContext.Session.Remove($"EnrollBatches_{classKey}");
+            HttpContext.Session.Remove($"EnrollIntakeMonth_{classKey}");
+            HttpContext.Session.Remove($"EnrollTotal_{classKey}");
+
+            // Fetch class name for confirmation
+            var classEntity = _context.Classes.FirstOrDefault(c => c.ClassId == classId);
+
+            TempData["ConfirmEnrollmentNumber"] = enrollmentNumber;
+            TempData["ConfirmClassName"] = classEntity?.ClassName ?? "";
+            TempData["ConfirmTotal"] = total.ToString("N0");
+
+            return RedirectToAction("Confirmation");
+        }
+
+        // ============================================================
+        // Enroll: Confirmation
+        // ============================================================
+
+        [HttpGet]
+        public IActionResult Confirmation()
+        {
+            var enrollmentNumber = TempData["ConfirmEnrollmentNumber"] as string;
+            if (string.IsNullOrEmpty(enrollmentNumber))
+                return RedirectToAction("Dashboard");
+
+            var model = new EnrollmentConfirmationViewModel
+            {
+                EnrollmentNumber = enrollmentNumber,
+                ClassName = TempData["ConfirmClassName"] as string ?? "",
+                Total = TempData["ConfirmTotal"] as string ?? "0"
+            };
+
+            return View(model);
+        }
+
 
         // ============================================================
         // Private helpers

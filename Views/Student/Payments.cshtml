@@ -1,42 +1,221 @@
-﻿@{
-    ViewData["Title"] = "Payments";
+@model TuitionCenter.Models.PaymentsViewModel
+
+@{
+    ViewData["Title"] = "Payment";
+    Layout = "_EnrollmentLayout";
+    ViewData["ActiveStep"] = "Payments";
 }
 
-<div class="page-container">
+@if (TempData["EnrollError"] != null)
+{
+    <div class="enroll-alert" style="background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:12px;font-weight:600;margin-bottom:20px;">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["EnrollError"]
+    </div>
+}
 
-    <div class="page-header">
-        <h2>Payment</h2>
-        <p>Complete your enrollment payment.</p>
+<style>
+    .pay-page { max-width: 680px; }
+    .pay-summary-card {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        border-radius: 20px;
+        padding: 28px 32px;
+        color: #fff;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+    .pay-summary-card::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 160px; height: 160px;
+        background: rgba(255,255,255,.08);
+        border-radius: 50%;
+    }
+    .pay-summary-label { font-size: 11px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; opacity: .75; }
+    .pay-summary-class { font-size: 22px; font-weight: 800; margin: 4px 0 2px; }
+    .pay-summary-subjects { font-size: 13px; opacity: .85; margin-bottom: 20px; }
+    .pay-amount-box {
+        background: rgba(255,255,255,.15);
+        border-radius: 14px;
+        padding: 16px 20px;
+        display: flex; justify-content: space-between; align-items: center;
+    }
+    .pay-amount-label { font-size: 12px; font-weight: 700; opacity: .8; }
+    .pay-amount-value { font-size: 28px; font-weight: 900; letter-spacing: -.5px; }
+
+    .pay-form-card {
+        background: #fff;
+        border-radius: 20px;
+        border: 1px solid #e2e8f0;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 24px rgba(0,0,0,.04);
+    }
+    .pay-section-title {
+        font-size: 13px; font-weight: 800; color: #4f46e5;
+        text-transform: uppercase; letter-spacing: 1px;
+        margin: 0 0 16px;
+    }
+    .pay-methods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 24px; }
+    .pay-method-label {
+        display: flex; align-items: center; gap: 12px;
+        border: 2px solid #e2e8f0; border-radius: 14px;
+        padding: 14px 16px; cursor: pointer;
+        transition: all .18s ease; position: relative;
+        font-weight: 600; font-size: 14px; color: #1e293b;
+        background: #f8fafc;
+    }
+    .pay-method-label:hover { border-color: #a5b4fc; background: #f0f0ff; }
+    .pay-method-label input[type=radio] { display: none; }
+    .pay-method-label.active {
+        border-color: #4f46e5;
+        background: linear-gradient(135deg, #f0f0ff, #ede9fe);
+        box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+    }
+    .pay-method-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; flex-shrink: 0;
+    }
+    .mi-bank { background: #eff6ff; color: #2563eb; }
+    .mi-esewa { background: #f0fdf4; color: #16a34a; }
+    .mi-khalti { background: #faf5ff; color: #7c3aed; }
+    .mi-cash { background: #fff7ed; color: #ea580c; }
+    .pay-method-check {
+        position: absolute; top: 8px; right: 8px; width: 18px; height: 18px;
+        border-radius: 50%; background: #4f46e5; display: none;
+        align-items: center; justify-content: center; color: #fff; font-size: 10px;
+    }
+    .pay-method-label.active .pay-method-check { display: flex; }
+
+    .pay-field { margin-bottom: 18px; }
+    .pay-field label { display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .5px; }
+    .pay-field input[type=text], .pay-field input[type=file] {
+        width: 100%; padding: 12px 14px; border: 2px solid #e2e8f0; border-radius: 12px;
+        font-size: 14px; color: #1e293b; background: #f8fafc;
+        transition: border-color .18s ease; outline: none; box-sizing: border-box;
+    }
+    .pay-field input[type=text]:focus, .pay-field input:focus { border-color: #4f46e5; background: #fff; }
+    .pay-file-hint { font-size: 11px; color: #94a3b8; margin-top: 5px; }
+
+    .pay-info-box {
+        background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 12px;
+        padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px;
+    }
+    .pay-info-box i { color: #0284c7; flex-shrink: 0; margin-top: 2px; }
+    .pay-info-box p { font-size: 13px; color: #075985; margin: 0; }
+
+    .pay-submit-btn {
+        width: 100%; padding: 16px; border: none; border-radius: 14px;
+        background: linear-gradient(135deg, #4f46e5, #7c3aed);
+        color: #fff; font-size: 16px; font-weight: 800; cursor: pointer;
+        display: flex; align-items: center; justify-content: center; gap: 10px;
+        transition: all .18s ease; box-shadow: 0 6px 20px rgba(79,70,229,.35);
+    }
+    .pay-submit-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(79,70,229,.45); }
+    .pay-submit-btn:active { transform: translateY(0); }
+    .pay-submit-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+</style>
+
+<div class="pay-page">
+
+    <!-- Summary Card -->
+    <div class="pay-summary-card">
+        <div class="pay-summary-label">Enrollment Summary</div>
+        <div class="pay-summary-class">@Model.ClassName <span style="opacity:.7;font-size:14px;">— @Model.CourseTypeName</span></div>
+        <div class="pay-summary-subjects"><i class="bi bi-book me-1"></i> @Model.SubjectsSummary</div>
+        <div class="pay-amount-box">
+            <div>
+                <div class="pay-amount-label">Total Amount Due</div>
+                <div class="pay-amount-value">Rs @Model.Total.ToString("N0")</div>
+            </div>
+            <i class="bi bi-receipt-cutoff" style="font-size:36px;opacity:.4;"></i>
+        </div>
     </div>
 
-    <div class="option-card">
+    <!-- Payment Form -->
+    <form asp-action="Payments" method="post" enctype="multipart/form-data" id="payForm">
+        <input type="hidden" name="classId" value="@Model.ClassId" />
 
-        <h4>Payment Summary</h4>
+        <div class="pay-form-card">
+            <div class="pay-section-title">Choose payment method</div>
 
-        <hr />
+            <div class="pay-methods">
+                <label class="pay-method-label" id="method-bank" onclick="selectMethod('Bank Transfer', this)">
+                    <input type="radio" name="paymentMethod" value="Bank Transfer" />
+                    <div class="pay-method-icon mi-bank"><i class="bi bi-bank2"></i></div>
+                    <span>Bank Transfer</span>
+                    <div class="pay-method-check"><i class="bi bi-check-lg"></i></div>
+                </label>
+                <label class="pay-method-label" id="method-esewa" onclick="selectMethod('eSewa', this)">
+                    <input type="radio" name="paymentMethod" value="eSewa" />
+                    <div class="pay-method-icon mi-esewa"><i class="bi bi-phone-fill"></i></div>
+                    <span>eSewa</span>
+                    <div class="pay-method-check"><i class="bi bi-check-lg"></i></div>
+                </label>
+                <label class="pay-method-label" id="method-khalti" onclick="selectMethod('Khalti', this)">
+                    <input type="radio" name="paymentMethod" value="Khalti" />
+                    <div class="pay-method-icon mi-khalti"><i class="bi bi-wallet2"></i></div>
+                    <span>Khalti</span>
+                    <div class="pay-method-check"><i class="bi bi-check-lg"></i></div>
+                </label>
+                <label class="pay-method-label" id="method-cash" onclick="selectMethod('Cash', this)">
+                    <input type="radio" name="paymentMethod" value="Cash" />
+                    <div class="pay-method-icon mi-cash"><i class="bi bi-cash-coin"></i></div>
+                    <span>Cash (Office)</span>
+                    <div class="pay-method-check"><i class="bi bi-check-lg"></i></div>
+                </label>
+            </div>
 
-        <p><strong>Course Fee:</strong> Rs. 7,000</p>
-        <p><strong>Registration Fee:</strong> Rs. 500</p>
+            <div class="pay-info-box" id="payInfoBox">
+                <i class="bi bi-info-circle-fill"></i>
+                <p id="payInfoText">Select a payment method above to see transfer instructions.</p>
+            </div>
 
-        <hr />
+            <div class="pay-field">
+                <label for="transactionId">Transaction ID / Reference Number</label>
+                <input type="text" id="transactionId" name="transactionId" placeholder="e.g. TXN12345678 or receipt number" />
+            </div>
 
-        <h3>Total: Rs. 7,500</h3>
+            <div class="pay-field">
+                <label for="screenshotFile">Payment Screenshot / Receipt <span style="color:#94a3b8;font-weight:400;">(optional)</span></label>
+                <input type="file" id="screenshotFile" name="screenshotFile" accept="image/*,.pdf" />
+                <div class="pay-file-hint"><i class="bi bi-paperclip me-1"></i>Upload a screenshot of your payment confirmation. Accepted: JPG, PNG, PDF (max 5MB)</div>
+            </div>
+        </div>
 
-    </div>
-
-    <div class="navigation-buttons">
-
-        <a asp-controller="Student"
-           asp-action="Timing"
-           class="btn-back">
-            <i class="bi bi-arrow-left"></i>
-            Back
-        </a>
-
-        <button class="btn-next">
-            Confirm Payment
-        </button>
-
-    </div>
-
+        @section FooterActions {
+            <button type="submit" class="pay-submit-btn" id="submitBtn">
+                <i class="bi bi-check-circle-fill"></i> Submit Enrollment
+            </button>
+        }
+    </form>
 </div>
+
+<script>
+    var payInstructions = {
+        'Bank Transfer': 'Transfer to: <strong>Study Point Pvt. Ltd.</strong> | Bank: NIC Asia Bank | A/C: 0100-0087654321 | Enter your transaction ID above.',
+        'eSewa': 'Send payment to eSewa ID: <strong>9801234567</strong> (Study Point). Enter the eSewa transaction ID above.',
+        'Khalti': 'Pay via Khalti to: <strong>9801234567</strong> (Study Point Tuition). Enter the Khalti transaction reference above.',
+        'Cash': 'Visit our office with <strong>Rs @Model.Total.ToString("N0")</strong> in cash. Our staff will provide a receipt. Enter the receipt number above after payment.'
+    };
+
+    function selectMethod(method, el) {
+        document.querySelectorAll('.pay-method-label').forEach(function(l) {
+            l.classList.remove('active');
+        });
+        el.classList.add('active');
+        el.querySelector('input[type=radio]').checked = true;
+        var infoText = document.getElementById('payInfoText');
+        if (infoText && payInstructions[method]) {
+            infoText.innerHTML = payInstructions[method];
+        }
+    }
+
+    document.getElementById('payForm').addEventListener('submit', function() {
+        var btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Submitting...';
+    });
+</script>
