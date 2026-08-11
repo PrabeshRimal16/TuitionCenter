@@ -1,13 +1,156 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "TuitionCenter — Expert Tutoring Made Simple";
+    ViewData["BodyClass"] = "landing-page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- HERO -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-eyebrow">Trusted by students across Nepal</div>
+        <h1 class="hero-title">
+            Learn Better With<br />
+            <span class="accent">Expert Tutors</span>
+        </h1>
+        <p class="hero-subtitle">
+            Connect with qualified teachers, join structured courses, and track your
+            academic progress — all in one place.
+        </p>
+        <div class="hero-actions">
+            <a asp-controller="Account" asp-action="Register" class="btn-primary-solid" id="heroRegisterBtn">
+                Get started free
+            </a>
+            <a asp-controller="Account" asp-action="Login" class="btn-outline-solid" id="heroLoginBtn">
+                Sign in
+            </a>
+        </div>
+    </div>
+</section>
 
+<!-- STATS -->
+<section class="stats-section">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-number" data-target="1200">1200+</div>
+                <div class="stat-label">Active Students</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-target="85">85+</div>
+                <div class="stat-label">Expert Teachers</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-target="240">240+</div>
+                <div class="stat-label">Courses Available</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" data-target="98">98%</div>
+                <div class="stat-label">Satisfaction Rate</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURES -->
+<section class="landing-section features-section">
+    <div class="container">
+        <div class="mb-5">
+            <div class="section-label">Why TuitionCenter</div>
+            <h2 class="section-heading">Everything you need to succeed</h2>
+            <p class="section-body">
+                A platform built around students — giving you the tools and teachers
+                you need to hit your academic goals.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🎓</div>
+                <h3 class="feature-title">Qualified Teachers</h3>
+                <p class="feature-desc">Learn from experienced educators who are passionate about helping you understand and grow.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📅</div>
+                <h3 class="feature-title">Flexible Scheduling</h3>
+                <p class="feature-desc">Book sessions that fit your timetable. Study at a pace that works for you.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Progress Tracking</h3>
+                <p class="feature-desc">Monitor attendance, assignments, and performance with a clear personal dashboard.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📚</div>
+                <h3 class="feature-title">Structured Courses</h3>
+                <p class="feature-desc">Well-organized materials and assessments designed to keep you on track.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💬</div>
+                <h3 class="feature-title">Direct Feedback</h3>
+                <p class="feature-desc">Stay in touch with your teacher and get timely answers when you need them most.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🏆</div>
+                <h3 class="feature-title">Earn Certificates</h3>
+                <p class="feature-desc">Receive certificates upon course completion to recognize your achievements.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="landing-section how-section">
+    <div class="container">
+        <div class="mb-5">
+            <div class="section-label">How it works</div>
+            <h2 class="section-heading">Up and running in minutes</h2>
+        </div>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <div class="step-title">Create an account</div>
+                    <p class="step-desc">Sign up as a student or teacher — it's free and takes less than a minute.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <div class="step-title">Enroll in courses</div>
+                    <p class="step-desc">Browse available subjects and enroll in the ones that match your goals.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <div class="step-title">Start learning</div>
+                    <p class="step-desc">Attend classes, complete work, and watch your results improve over time.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+    <div class="container">
+        <div class="cta-box">
+            <h2>Start learning today</h2>
+            <p>Join over 1,200 students already growing with TuitionCenter.</p>
+            <div class="hero-actions" style="justify-content:center;">
+                <a asp-controller="Account" asp-action="Register" class="btn-cta-white" id="ctaRegisterBtn">
+                    Create free account
+                </a>
+                <a asp-controller="Account" asp-action="Login" class="btn-cta-ghost" id="ctaLoginBtn">
+                    Sign in
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="landing-footer">
+    <div class="container">
+        <div class="footer-brand">TuitionCenter</div>
+        <div>&copy; @DateTime.Now.Year TuitionCenter. All rights reserved.</div>
+    </div>
+</footer>

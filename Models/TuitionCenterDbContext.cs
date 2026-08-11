@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,6 +42,7 @@ public partial class TuitionCenterDbContext : DbContext
     public virtual DbSet<TimeSlot> TimeSlots { get; set; }
 
     public virtual DbSet<User> Users { get; set; }
+
     public virtual DbSet<Attendance> Attendances { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -328,6 +329,7 @@ public partial class TuitionCenterDbContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.ProfileImage).HasMaxLength(255);
             entity.Property(e => e.Role).HasMaxLength(20);
         });
 

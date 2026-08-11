@@ -5,10 +5,6 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<head>
-    <link rel="stylesheet" href="~/css/Admin/TeacherManagement.css" />
-</head>
-
 <div class="admin-page">
 
     <div class="page-header">
@@ -28,6 +24,15 @@
         <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
             <i class="bi bi-check-circle me-2"></i>
             @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            @TempData["Error"]
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
     }
@@ -188,6 +193,13 @@
                                                 }
                                             </button>
                                         </form>
+
+                                        <button type="button"
+                                                class="action-btn delete"
+                                                title="Delete Teacher"
+                                                onclick="confirmDelete(@teacher.UserId, '@Html.Raw(teacher.FullName.Replace("'","\\\'"))')">
+                                            <i class="bi bi-trash3"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -218,20 +230,51 @@
 
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:16px; border:none; overflow:hidden;">
+            <div class="modal-body text-center p-5">
+                <div style="width:72px;height:72px;border-radius:50%;background:rgba(239,68,68,.12);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size:2rem;color:#ef4444;"></i>
+                </div>
+                <h4 style="font-weight:700;margin-bottom:8px;">Delete Teacher?</h4>
+                <p class="text-muted" id="deleteModalBody">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer justify-content-center border-0 pb-4 gap-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn rounded-pill px-4" style="background:#ef4444;color:#fff;font-weight:600;">
+                        <i class="bi bi-trash3 me-1"></i> Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         document.addEventListener("DOMContentLoaded", function () {
+            // Live search
             const searchInput = document.getElementById("teacherSearch");
             if (searchInput) {
                 searchInput.addEventListener("keyup", function () {
                     const searchValue = this.value.toLowerCase();
                     const rows = document.querySelectorAll("#teacherTable tbody tr");
-
                     rows.forEach(row => {
                         row.style.display = row.innerText.toLowerCase().includes(searchValue) ? "" : "none";
                     });
                 });
             }
         });
+
+        function confirmDelete(id, name) {
+            document.getElementById('deleteModalBody').textContent =
+                'Are you sure you want to permanently delete "' + name + '"? This action cannot be undone.';
+            document.getElementById('deleteForm').action = '/Admin/Teachers/Delete/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
     </script>
 }

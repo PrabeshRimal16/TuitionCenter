@@ -1,0 +1,241 @@
+/* ============================================================
+   auth.css — TuitionCenter Login & Register (Clean & Simple)
+   ============================================================ */
+
+:root {
+    --auth-primary: #2563eb;
+    --auth-primary-dark: #1d4ed8;
+    --auth-primary-light: #eff6ff;
+    --auth-text: #111827;
+    --auth-secondary: #6b7280;
+    --auth-light: #9ca3af;
+    --auth-border: #e5e7eb;
+    --auth-bg: #f9fafb;
+    --auth-white: #ffffff;
+    --auth-input-bg: #ffffff;
+    --auth-radius: 10px;
+    --auth-transition: 0.2s ease;
+}
+
+body.auth-page {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--auth-bg);
+    color: var(--auth-text);
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* Hide layout elements on auth pages */
+body.auth-page .site-navbar,
+body.auth-page footer {
+    display: none;
+}
+body.auth-page > div > main {
+    padding: 0;
+}
+
+/* ── Full page layout ── */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 16px;
+}
+
+/* ── Auth card ── */
+.auth-card {
+    background: var(--auth-white);
+    border: 1px solid var(--auth-border);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+    width: 100%;
+    max-width: 440px;
+    padding: 40px 40px;
+}
+
+/* ── Logo at top ── */
+.auth-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    margin-bottom: 32px;
+}
+.auth-logo-mark {
+    width: 36px;
+    height: 36px;
+    background: var(--auth-primary);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+.auth-logo-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--auth-text);
+    letter-spacing: -0.01em;
+}
+
+/* ── Form header ── */
+.auth-header {
+    margin-bottom: 28px;
+}
+.auth-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--auth-text);
+    margin-bottom: 6px;
+}
+.auth-subtitle {
+    font-size: 0.9rem;
+    color: var(--auth-secondary);
+    line-height: 1.5;
+}
+
+/* ── Form fields ── */
+.auth-form .form-group {
+    margin-bottom: 18px;
+}
+.auth-form label {
+    display: block;
+    font-size: 0.83rem;
+    font-weight: 600;
+    color: var(--auth-text);
+    margin-bottom: 6px;
+}
+.auth-input-wrap {
+    position: relative;
+}
+.auth-form .form-control,
+.auth-form .form-select {
+    width: 100%;
+    background: var(--auth-input-bg);
+    border: 1px solid var(--auth-border);
+    border-radius: var(--auth-radius);
+    padding: 10px 14px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    color: var(--auth-text);
+    transition: border-color var(--auth-transition), box-shadow var(--auth-transition);
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+    box-sizing: border-box;
+}
+.auth-form .form-control::placeholder {
+    color: var(--auth-light);
+}
+.auth-form .form-control:focus,
+.auth-form .form-select:focus {
+    border-color: var(--auth-primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Password input with toggle */
+.auth-form .form-control.has-toggle {
+    padding-right: 44px;
+}
+.auth-pw-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: var(--auth-light);
+    cursor: pointer;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    transition: color var(--auth-transition);
+}
+.auth-pw-toggle:hover {
+    color: var(--auth-secondary);
+}
+
+/* Select arrow */
+.auth-form .form-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath fill='%239ca3af' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 36px;
+}
+
+/* ── Validation ── */
+.auth-form .text-danger {
+    color: #dc2626 !important;
+    font-size: 0.78rem;
+    margin-top: 5px;
+    display: block;
+}
+.auth-form .validation-summary {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: var(--auth-radius);
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    color: #b91c1c;
+    font-size: 0.85rem;
+}
+
+/* ── Submit button ── */
+.auth-submit-btn {
+    width: 100%;
+    background: var(--auth-primary);
+    color: #fff;
+    border: none;
+    border-radius: var(--auth-radius);
+    padding: 11px 20px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background var(--auth-transition), transform var(--auth-transition);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.auth-submit-btn:hover {
+    background: var(--auth-primary-dark);
+    transform: translateY(-1px);
+}
+.auth-submit-btn:active {
+    transform: translateY(0);
+}
+
+/* ── Divider ── */
+.auth-divider {
+    border: none;
+    border-top: 1px solid var(--auth-border);
+    margin: 24px 0;
+}
+
+/* ── Switch link ── */
+.auth-switch {
+    text-align: center;
+    font-size: 0.88rem;
+    color: var(--auth-secondary);
+    margin-top: 20px;
+}
+.auth-switch a {
+    color: var(--auth-primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+.auth-switch a:hover {
+    text-decoration: underline;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    .auth-card {
+        padding: 28px 20px;
+    }
+}

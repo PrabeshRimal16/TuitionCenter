@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -122,7 +122,7 @@ namespace TuitionCenter.Controllers
 
                 List<Claim> claims = new()
                 {
-                    /*new Claim(ClaimTypes.Name, user.FullName),*/
+                    new Claim(ClaimTypes.Name, user.FullName),
                     new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
                     new Claim(ClaimTypes.Role, user.Role),
                     new Claim("Email", user.Email),

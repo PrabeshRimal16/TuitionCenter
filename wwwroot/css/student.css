@@ -1,5 +1,5 @@
-﻿/* ======================================================
-   student.css  –  supplemental styles only
+/* ======================================================
+   student.css  �  supplemental styles only
    Layout / sidebar / navbar are now handled by Tailwind
    in _StudentLayout.cshtml
    ====================================================== */
@@ -25,10 +25,10 @@
 }
 .dash-stat-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.07); transform: translateY(-2px); }
 .dash-stat-card .icon { width:46px;height:46px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
-.dash-stat-card .icon.blue { background:#e0e7ff;color:#4f46e5; }
+.dash-stat-card .icon.blue { background:#dbeafe;color:#2563eb; }
 .dash-stat-card h2 { font-size:28px;font-weight:800;margin:4px 0 2px;color:#1f2937; }
 .dash-stat-card p { font-size:12px;color:#6b7280;margin:0;font-weight:600;text-transform:uppercase;letter-spacing:.4px; }
-.dash-stat-card small.link { font-size:12px;color:#4f46e5; }
+.dash-stat-card small.link { font-size:12px;color:#2563eb; }
 .dash-stat-card small.ok   { font-size:12px;color:#16a34a; }
 .dash-stat-card small.warn { font-size:12px;color:#ca8a04; }
 
@@ -43,16 +43,16 @@
 .class-card:hover { box-shadow:0 6px 24px rgba(0,0,0,.07); }
 .class-card-main { flex:1;min-width:200px; }
 .class-badges { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px; }
-.badge-subject  { background:#e0e7ff;color:#4f46e5;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px; }
+.badge-subject  { background:#dbeafe;color:#2563eb;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px; }
 .badge-classnum { background:#fef3c7;color:#b45309;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px; }
 .badge-status   { background:#dcfce7;color:#15803d;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px; }
 .class-card h3  { font-size:15px;font-weight:700;color:#1f2937;margin:0 0 8px; }
 .class-teacher  { display:flex;align-items:center;gap:10px; }
-.teacher-initial { width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0; }
+.teacher-initial { width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0; }
 .class-teacher p.name { font-size:13px;font-weight:600;color:#374151;margin:0; }
 .class-card-meta { display:flex;flex-direction:column;gap:4px;font-size:13px;color:#6b7280; }
 .class-card-actions { display:flex;flex-direction:column;align-items:flex-end;gap:10px; }
-.start-in { font-size:12px;font-weight:600;color:#4f46e5; }
+.start-in { font-size:12px;font-weight:600;color:#2563eb; }
 
 /* Announcement items */
 .announcement-item { display:flex;gap:14px;align-items:flex-start;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #f1f5f9; }
@@ -68,7 +68,7 @@
 
 /* Course progress */
 .mini-progress { height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden; }
-.mini-progress span { display:block;height:100%;background:linear-gradient(90deg,#4f46e5,#7c3aed);border-radius:999px; }
+.mini-progress span { display:block;height:100%;background:linear-gradient(90deg,#2563eb,#3b82f6);border-radius:999px; }
 .course-progress-label,.myclass-progress-label { display:flex;justify-content:space-between;font-size:12px;color:#6b7280;margin-bottom:4px; }
 
 /* 2-col grid */
@@ -78,7 +78,7 @@
 /* Enroll button */
 .btn-enroll {
     display:inline-flex;align-items:center;gap:8px;
-    background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;
     padding:13px 26px;border-radius:12px;font-weight:700;font-size:14px;
     text-decoration:none;transition:.2s;
     box-shadow:0 4px 14px rgba(79,70,229,.25);
@@ -92,7 +92,7 @@
 }
 
 .btn-next {
-    background:linear-gradient(135deg,#4f46e5,#7c3aed);color:#fff;border:none;
+    background:linear-gradient(135deg,#2563eb,#3b82f6);color:#fff;border:none;
     padding:12px 28px;border-radius:12px;font-weight:700;font-size:14px;
     cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:8px;
     box-shadow:0 4px 14px rgba(79,70,229,.25);
@@ -115,7 +115,7 @@
 .overview-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px; }
 .overview-card { background:#fff;border-radius:14px;border:1px solid #e5e7eb;padding:18px 20px;display:flex;gap:14px;align-items:center;box-shadow:0 2px 8px rgba(0,0,0,.03); }
 .overview-icon { width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0; }
-.overview-icon.blue   { background:#e0e7ff;color:#4f46e5; }
+.overview-icon.blue   { background:#dbeafe;color:#2563eb; }
 .overview-icon.green  { background:#dcfce7;color:#16a34a; }
 .overview-icon.amber  { background:#fef3c7;color:#b45309; }
 .overview-card p { font-size:12px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin:0; }

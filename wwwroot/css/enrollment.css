@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Enrollment flow: Class -> Subject -> Intake -> Pricing -> Payments
    ============================================================ */
 
@@ -18,7 +18,7 @@
 }
 
     .enroll-sidebar h2 {
-        color: #4f46e5;
+        color: #2563eb;
         font-size: 20px;
         font-weight: 800;
         margin: 0 0 30px;
@@ -45,7 +45,7 @@
     }
 
     .enroll-steps li.active a {
-        background: #4f46e5;
+        background: #2563eb;
         color: #fff;
     }
 
@@ -85,7 +85,7 @@
 }
 
     .enroll-topbar .logo {
-        color: #4f46e5;
+        color: #2563eb;
         font-size: 20px;
         font-weight: 800;
     }
@@ -162,8 +162,8 @@
 }
 
 .class-tile-count {
-    background: #eef2ff;
-    color: #4f46e5;
+    background: #eff6ff;
+    color: #2563eb;
     padding: 5px 12px;
     border-radius: 999px;
     font-size: 12px;
@@ -172,11 +172,11 @@
 }
 
 .class-tile.my-enrolled {
-    border: 2px solid #4f46e5;
+    border: 2px solid #2563eb;
 }
 
 .class-tile-mystatus {
-    color: #4f46e5;
+    color: #2563eb;
     font-weight: 700;
     font-size: 13px;
     margin: 8px 0 0;
@@ -214,8 +214,8 @@
 }
 
 .class-tile-num {
-    background: #eef2ff;
-    color: #4f46e5;
+    background: #eff6ff;
+    color: #2563eb;
     font-weight: 800;
     font-size: 20px;
     border-radius: 12px;
@@ -273,7 +273,7 @@
     }
 
     .subject-card.selected {
-        border-color: #4f46e5;
+        border-color: #2563eb;
         box-shadow: 0 4px 14px rgba(79,70,229,.15);
     }
 
@@ -294,8 +294,8 @@
     width: 46px;
     height: 46px;
     border-radius: 12px;
-    background: #eef2ff;
-    color: #4f46e5;
+    background: #eff6ff;
+    color: #2563eb;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -316,8 +316,8 @@
 }
 
 .subject-card.selected .checkmark {
-    background: #4f46e5;
-    border-color: #4f46e5;
+    background: #2563eb;
+    border-color: #2563eb;
     color: #fff;
 }
 
@@ -341,7 +341,7 @@
 }
 
 .subject-card-footer .seats-num {
-    color: #4f46e5;
+    color: #2563eb;
     font-weight: 800;
     font-size: 17px;
 }
@@ -399,7 +399,7 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: #eef2ff;
+    background: #eff6ff;
     color: #2563eb;
     display: flex;
     align-items: center;
@@ -512,8 +512,8 @@
 }
 
     .course-type-card:has(input:checked) {
-        border-color: #4f46e5;
-        background: #eef2ff;
+        border-color: #2563eb;
+        background: #eff6ff;
     }
 
 .intake-select {
@@ -557,8 +557,8 @@
 }
 
     .batch-option:has(input:checked) {
-        border-color: #4f46e5;
-        background: #eef2ff;
+        border-color: #2563eb;
+        background: #eff6ff;
     }
 
     .batch-option div {
@@ -575,7 +575,7 @@
 
 .batch-seats {
     font-weight: 700;
-    color: #4f46e5 !important;
+    color: #2563eb !important;
     white-space: nowrap;
 }
 
@@ -637,7 +637,7 @@
 }
 
 .btn-next {
-    background: #4f46e5;
+    background: #2563eb;
     color: #fff;
     border: none;
     border-radius: 999px;
@@ -737,8 +737,8 @@
 }
 
     .overview-icon.blue {
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
     }
 
     .overview-icon.green {
@@ -752,8 +752,8 @@
     }
 
     .overview-icon.indigo {
-        background: #eef2ff;
-        color: #4f46e5;
+        background: #eff6ff;
+        color: #2563eb;
     }
 
 .overview-card p {
@@ -810,7 +810,7 @@
 
 .roster-attendance {
     font-weight: 700;
-    color: #4f46e5;
+    color: #2563eb;
 }
 
 .roster-attendance-detail {

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace TuitionCenter.Models;
 
@@ -21,6 +22,8 @@ public partial class User
 
     public DateTime? CreatedDate { get; set; }
 
+    public string? ProfileImage { get; set; }
+
     public virtual ICollection<Announcement> Announcements { get; set; } = new List<Announcement>();
 
     public virtual ICollection<Batch> Batches { get; set; } = new List<Batch>();
@@ -36,4 +39,29 @@ public partial class User
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
     public virtual StudentProfile? StudentProfile { get; set; }
+
+    [NotMapped]
+    public string? ProfilePictureUrl
+    {
+        get
+        {
+            if (!string.IsNullOrEmpty(ProfileImage))
+            {
+                return ProfileImage;
+            }
+
+            var baseDir = System.IO.Directory.GetCurrentDirectory();
+            var extensions = new[] { ".jpg", ".jpeg", ".png", ".webp", ".gif" };
+            foreach (var ext in extensions)
+            {
+                var relativePath = $"/uploads/profiles/user_{UserId}{ext}";
+                var fullPath = System.IO.Path.Combine(baseDir, "wwwroot", "uploads", "profiles", $"user_{UserId}{ext}");
+                if (System.IO.File.Exists(fullPath))
+                {
+                    return relativePath;
+                }
+            }
+            return null;
+        }
+    }
 }

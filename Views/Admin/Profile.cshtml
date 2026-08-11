@@ -1,0 +1,82 @@
+@model TuitionCenter.Models.User
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Admin Settings & Profile";
+    var profileImg = Model.ProfilePictureUrl;
+    var nameParts = Model.FullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var avatarInitials = nameParts.Length > 1 ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpper() : (nameParts.Length == 1 ? nameParts[0][0].ToString().ToUpper() : "A");
+}
+
+<div class="container-fluid py-4">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success d-flex align-items-center gap-2 mb-4">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            <div>@TempData["SuccessMessage"]</div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card text-center p-4">
+                <div class="position-relative d-inline-block mx-auto mb-3">
+                    @if (!string.IsNullOrEmpty(profileImg))
+                    {
+                        <img src="@profileImg" alt="@Model.FullName" class="rounded-circle shadow-sm" style="width: 100px; height: 100px; object-fit: cover; border: 3px solid #2563eb;" />
+                    }
+                    else
+                    {
+                        <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold fs-2 mx-auto" style="width: 100px; height: 100px; background: linear-gradient(135deg, #2563eb, #3b82f6); border: 3px solid #2563eb;">
+                            @avatarInitials
+                        </div>
+                    }
+                </div>
+                <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                <p class="text-muted small mb-2"><i class="bi bi-envelope me-1"></i> @Model.Email</p>
+                <span class="badge bg-primary px-3 py-2 text-uppercase tracking-wider mx-auto">Administrator</span>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card p-4">
+                <h5 class="fw-bold mb-3">System Profile Settings</h5>
+                <p class="text-muted small mb-4">Update your administrator name, phone number, and uploaded profile image.</p>
+
+                <form method="post" asp-controller="Admin" asp-action="Profile" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold small text-uppercase">Profile Picture</label>
+                        <input type="file" name="photoFile" accept="image/*" class="form-control" />
+                        <div class="form-text">Upload a photo to feature on your administrator avatar across top navigation.</div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Full Name (Real Name)</label>
+                            <input type="text" name="fullName" value="@Model.FullName" required class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Email Address</label>
+                            <input type="email" value="@Model.Email" readonly class="form-control bg-light" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Phone Number</label>
+                            <input type="tel" name="phone" value="@Model.Phone" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-uppercase">Role</label>
+                            <input type="text" value="Administrator" readonly class="form-control bg-light" />
+                        </div>
+                    </div>
+
+                    <div class="mt-4 text-end">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-save me-1"></i> Save Profile Settings
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

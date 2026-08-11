@@ -1,67 +1,121 @@
-﻿@model TuitionCenter.Models.UserListEdit
+@model TuitionCenter.Models.UserListEdit
 
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Create Account — TuitionCenter";
+    ViewData["BodyClass"] = "auth-page";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <h3 class="card-title mb-4 text-center">Create an Account</h3>
+<div class="auth-wrapper">
+    <div class="auth-card">
 
-                <form asp-controller="Account" asp-action="Register" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+        <!-- Logo -->
+        <a class="auth-logo" asp-controller="Home" asp-action="Index">
+            <div class="auth-logo-mark">🎓</div>
+            <span class="auth-logo-name">TuitionCenter</span>
+        </a>
 
-                    <div class="mb-3">
-                        <label asp-for="FullName" class="form-label"></label>
-                        <input asp-for="FullName" class="form-control" placeholder="Enter your full name" />
-                        <span asp-validation-for="FullName" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" placeholder="Enter your email" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Phone" class="form-label"></label>
-                        <input asp-for="Phone" class="form-control" placeholder="Enter your phone number" />
-                        <span asp-validation-for="Phone" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="PasswordHash" class="form-label">Password</label>
-                        <input asp-for="PasswordHash" class="form-control" placeholder="Create a password" />
-                        <span asp-validation-for="PasswordHash" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3">
-                        <label asp-for="Role" class="form-label"></label>
-                        <select asp-for="Role" class="form-select">
-                            <option value="">-- Select Role --</option>
-                            <option value="Student">Student</option>
-                            <option value="Teacher">Teacher</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                        <span asp-validation-for="Role" class="text-danger"></span>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">Register</button>
-
-                    <p class="text-center mt-3 mb-0">
-                        Already have an account?
-                        <a asp-controller="Account" asp-action="Login">Login here</a>
-                    </p>
-                </form>
-            </div>
+        <!-- Header -->
+        <div class="auth-header">
+            <h1 class="auth-title">Create an account</h1>
+            <p class="auth-subtitle">Sign up for free and start learning today</p>
         </div>
+
+        <!-- Form -->
+        <form asp-controller="Account" asp-action="Register" method="post" class="auth-form" id="registerForm">
+
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="form-group">
+                <label asp-for="FullName">Full name</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="FullName"
+                           class="form-control"
+                           placeholder="Your full name"
+                           autocomplete="name"
+                           id="regFullName" />
+                </div>
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email address</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="Email"
+                           class="form-control"
+                           placeholder="you@example.com"
+                           autocomplete="email"
+                           id="regEmail" />
+                </div>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Phone">Phone number</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="Phone"
+                           class="form-control"
+                           placeholder="98XXXXXXXX"
+                           autocomplete="tel"
+                           id="regPhone" />
+                </div>
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PasswordHash">Password</label>
+                <div class="auth-input-wrap">
+                    <input asp-for="PasswordHash"
+                           class="form-control has-toggle"
+                           placeholder="Create a password"
+                           type="password"
+                           autocomplete="new-password"
+                           id="regPassword" />
+                    <button type="button" class="auth-pw-toggle" onclick="togglePw('regPassword', this)" aria-label="Show password" id="regPwBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                    </button>
+                </div>
+                <span asp-validation-for="PasswordHash" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Role">I am a</label>
+                <div class="auth-input-wrap">
+                    <select asp-for="Role" class="form-select" id="regRole">
+                        <option value="">Select your role</option>
+                        <option value="Student">Student</option>
+                        <option value="Teacher">Teacher</option>
+                        <option value="Admin">Admin</option>
+                    </select>
+                </div>
+                <span asp-validation-for="Role" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="auth-submit-btn" id="registerSubmitBtn">
+                Create account
+            </button>
+
+        </form>
+
+        <hr class="auth-divider" />
+
+        <div class="auth-switch">
+            Already have an account?
+            <a asp-controller="Account" asp-action="Login" id="goToLogin">Sign in</a>
+        </div>
+
     </div>
 </div>
 
 @section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    <script>
+        function togglePw(id, btn) {
+            const inp = document.getElementById(id);
+            const show = inp.type === 'password';
+            inp.type = show ? 'text' : 'password';
+            btn.innerHTML = show
+                ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>'
+                : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        }
+    </script>
 }

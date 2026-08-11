@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Text.Json;
 using TuitionCenter.Models;
 
@@ -14,6 +17,7 @@ namespace TuitionCenter.Controllers
         {
             _context = context;
         }
+        
 
         // ============================================================
         // Dashboard
@@ -676,6 +680,79 @@ namespace TuitionCenter.Controllers
                 : JsonSerializer.Deserialize<Dictionary<int, int>>(raw) ?? new();
 
             return (courseTypeId, timeSlotId, batches);
+        }
+
+        [HttpGet]
+        public IActionResult Profile()
+        {
+            var userId = GetCurrentUserId();
+            var student = _context.Users
+                .Include(u => u.StudentProfile)
+                .FirstOrDefault(u => u.UserId == userId);
+
+            if (student == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View(student);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Profile(string fullName, string phone, IFormFile? photoFile)
+        {
+            var userId = GetCurrentUserId();
+            var student = _context.Users.FirstOrDefault(u => u.UserId == userId);
+
+            if (student != null)
+            {
+                if (!string.IsNullOrWhiteSpace(fullName))
+                {
+                    student.FullName = fullName;
+                }
+                student.Phone = phone ?? student.Phone;
+
+                if (photoFile != null && photoFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var extension = Path.GetExtension(photoFile.FileName).ToLower();
+                    if (string.IsNullOrEmpty(extension) || (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".gif" && extension != ".webp"))
+                    {
+                        extension = ".jpg";
+                    }
+
+                    var filePath = Path.Combine(uploadsFolder, $"user_{student.UserId}{extension}");
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photoFile.CopyToAsync(stream);
+                    }
+
+                    student.ProfileImage = $"/uploads/profiles/user_{student.UserId}{extension}";
+                }
+
+                _context.SaveChanges();
+
+                // Refresh authentication claims
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, student.FullName),
+                    new Claim(ClaimTypes.NameIdentifier, student.UserId.ToString()),
+                    new Claim(ClaimTypes.Role, student.Role),
+                    new Claim("Email", student.Email),
+                    new Claim("Phone", student.Phone ?? "")
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+                TempData["SuccessMessage"] = "Your profile details have been successfully updated!";
+            }
+
+            return RedirectToAction("Profile");
         }
 
         private int? GetCurrentUserId()

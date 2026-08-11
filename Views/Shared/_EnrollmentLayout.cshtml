@@ -1,4 +1,4 @@
-﻿@{
+@{
     var showSidebar = ViewData["ShowSidebar"] as bool? ?? true;
     var activeStep = ViewData["ActiveStep"] as string ?? "Class";
     string StepClass(string name) => name == activeStep ? "active" : "";
@@ -34,11 +34,14 @@
 
             @if (showSidebar)
             {
-                <div class="enroll-topbar">
-                    <span class="logo">Study <strong>Point</strong></span>
-                    <div class="right-icons">
-                        <i class="bi bi-question-circle"></i>
-                        <i class="bi bi-person-circle"></i>
+                <div class="enroll-topbar" style="border-bottom: 1px solid #e2e8f0;">
+                    <a href="/Student/Dashboard" class="logo" style="text-decoration:none; color:#2563eb; font-weight:800; font-size:20px;">
+                        Study<span style="color:#0f172a;">Point</span>
+                    </a>
+                    <div class="right-icons" style="display:flex; align-items:center; gap:16px;">
+                        <a href="/Student/Profile" title="Profile Settings" style="color:#475569; font-size:18px; text-decoration:none;">
+                            <i class="bi bi-person-circle"></i>
+                        </a>
                     </div>
                 </div>
             }

@@ -1,16 +1,31 @@
-﻿@{
+@using System.Security.Claims
+@inject TuitionCenter.Models.TuitionCenterDbContext DbContext
+
+@{
     string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
     string NavClass(string action) =>
         string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
-            ? "bg-indigo-50 text-indigo-700 border-r-[3px] border-indigo-600 font-semibold shadow-sm"
-            : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600";
+            ? "bg-blue-50 text-blue-700 border-r-[3px] border-blue-600 font-semibold shadow-sm"
+            : "text-slate-500 hover:bg-slate-50 hover:text-blue-600";
     string NavIcon(string action) =>
         string.Equals(currentAction, action, StringComparison.OrdinalIgnoreCase)
-            ? "text-indigo-600"
-            : "text-slate-400 group-hover:text-indigo-500";
+            ? "text-blue-600"
+            : "text-slate-400 group-hover:text-blue-500";
 
-    var studentName = User.Identity?.Name ?? "Student";
-    var initial = string.IsNullOrWhiteSpace(studentName) ? "S" : studentName.Trim()[0].ToString().ToUpper();
+    var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    int.TryParse(userIdClaim, out int loggedInUserId);
+
+    var loggedInUser = loggedInUserId > 0 
+        ? DbContext.Users.FirstOrDefault(u => u.UserId == loggedInUserId) 
+        : null;
+
+    var studentName = loggedInUser?.FullName ?? User.Identity?.Name ?? "Student";
+    var profileImg = loggedInUser?.ProfilePictureUrl;
+    
+    var nameParts = studentName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+    var initial = nameParts.Length > 1 
+        ? $"{nameParts[0][0]}{nameParts[1][0]}".ToUpper() 
+        : (nameParts.Length == 1 ? nameParts[0][0].ToString().ToUpper() : "S");
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -27,9 +42,9 @@
                 extend: {
                     fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
-                        primary: '#4F46E5',
-                        primaryHover: '#4338CA',
-                        secondary: '#818CF8',
+                        primary: '#2563EB',
+                        primaryHover: '#1D4ED8',
+                        secondary: '#60A5FA',
                         bgMain: '#F8FAFC',
                     }
                 }
@@ -40,8 +55,8 @@
         body { font-family: 'Inter', sans-serif; background-color: #F8FAFC; }
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c7d2fe; border-radius: 9999px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #a5b4fc; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 9999px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #60a5fa; }
         .sidebar-transition { transition: transform 0.3s ease-in-out; }
         .footer-actions {
             position: sticky; bottom: 0; background: #fff;
@@ -58,19 +73,18 @@
     <!-- SIDEBAR -->
     <aside id="sidebar"
            class="w-64 bg-white border-r border-slate-100 flex flex-col flex-shrink-0
-                  fixed md:static inset-y-0 left-0 z-50 sidebar-transition
-                  -translate-x-full md:translate-x-0 shadow-xl md:shadow-none">
+                  fixed md:static inset-y-0 left-0 z-50 -translate-x-full md:translate-x-0
+                  sidebar-transition shadow-lg md:shadow-none">
 
-        <!-- Logo -->
-        <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
+        <!-- Brand Header -->
+        <div class="h-[68px] px-6 border-b border-slate-100 flex items-center justify-between">
             <a href="@Url.Action("Dashboard", "Student")" class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500
-                            flex items-center justify-center text-white font-extrabold text-base shadow-md shadow-indigo-500/25">
-                    S
+                <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-base shadow-sm">
+                    <i class="fas fa-graduation-cap"></i>
                 </div>
                 <div>
-                    <h1 class="text-[18px] font-extrabold text-indigo-700 leading-none tracking-tight">
-                        Study <span class="text-violet-500">Point</span>
+                    <h1 class="text-[18px] font-extrabold text-blue-700 leading-none tracking-tight">
+                        Study <span class="text-blue-500">Point</span>
                     </h1>
                     <p class="text-[10px] font-semibold text-slate-400 tracking-widest uppercase mt-0.5">Student Portal</p>
                 </div>
@@ -81,18 +95,24 @@
         </div>
 
         <!-- Student Profile Card -->
-        <div class="px-5 py-4 border-b border-slate-100">
-            <div class="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
-                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
-                            flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                    @initial
-                </div>
+        <a href="@Url.Action("Profile", "Student")" class="block px-5 py-4 border-b border-slate-100 hover:bg-slate-50 transition-colors">
+            <div class="flex items-center gap-3 p-3 bg-blue-50/70 rounded-xl">
+                @if (!string.IsNullOrEmpty(profileImg))
+                {
+                    <img src="@profileImg" alt="@studentName" class="w-9 h-9 rounded-full object-cover border border-blue-200 flex-shrink-0" />
+                }
+                else
+                {
+                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                        @initial
+                    </div>
+                }
                 <div class="min-w-0">
                     <p class="text-sm font-semibold text-slate-800 truncate">@studentName</p>
-                    <p class="text-[10px] font-medium text-indigo-500 uppercase tracking-wider">Student</p>
+                    <p class="text-[10px] font-medium text-blue-600 uppercase tracking-wider">My Profile</p>
                 </div>
             </div>
-        </div>
+        </a>
 
         <!-- Navigation -->
         <nav class="flex-1 overflow-y-auto px-4 py-5 space-y-6 custom-scrollbar">
@@ -107,6 +127,11 @@
                    class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("EnrollClass")">
                     <i class="fas fa-graduation-cap w-4 text-base transition-transform group-hover:scale-110 @NavIcon("EnrollClass")"></i>
                     My Classes
+                </a>
+                <a href="@Url.Action("Profile", "Student")"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-150 group @NavClass("Profile")">
+                    <i class="fas fa-user-circle w-4 text-base transition-transform group-hover:scale-110 @NavIcon("Profile")"></i>
+                    Profile & Settings
                 </a>
             </div>
             <div class="space-y-1">
@@ -150,12 +175,12 @@
 
         <!-- Top Navbar -->
         <header class="h-[68px] bg-white border-b border-slate-100 flex items-center px-6 gap-4 flex-shrink-0 shadow-sm">
-            <button id="openSidebarBtn" class="md:hidden text-slate-400 hover:text-indigo-600 mr-1 transition-colors">
+            <button id="openSidebarBtn" class="md:hidden text-slate-400 hover:text-blue-600 mr-1 transition-colors">
                 <i class="fas fa-bars text-lg"></i>
             </button>
             <h2 class="text-xl font-bold text-slate-800 min-w-0 truncate">@ViewData["Title"]</h2>
             <div class="hidden md:flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl
-                        px-4 py-2 w-72 ml-2 transition-all focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100">
+                        px-4 py-2 w-72 ml-2 transition-all focus-within:border-blue-300 focus-within:ring-2 focus-within:ring-blue-100">
                 <i class="fas fa-search text-slate-400 text-sm"></i>
                 <input type="text" placeholder="Search courses or materials…"
                        class="bg-transparent border-none outline-none text-sm text-slate-600 placeholder:text-slate-400 w-full" />
@@ -163,20 +188,27 @@
             <div class="ml-auto flex items-center gap-3">
                 <button class="relative w-9 h-9 rounded-xl bg-slate-50 border border-slate-200
                                flex items-center justify-center text-slate-500
-                               hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all duration-150">
+                               hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all duration-150">
                     <i class="fas fa-bell text-sm"></i>
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-indigo-500 rounded-full border-2 border-white"></span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-blue-500 rounded-full border-2 border-white"></span>
                 </button>
-                <div class="flex items-center gap-2.5 pl-3 border-l border-slate-200">
-                    <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600
-                                flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-indigo-300/40">
-                        @initial
-                    </div>
+                <a href="@Url.Action("Profile", "Student")" class="flex items-center gap-2.5 pl-3 border-l border-slate-200 hover:opacity-85 transition-opacity">
+                    @if (!string.IsNullOrEmpty(profileImg))
+                    {
+                        <img src="@profileImg" alt="@studentName" class="w-9 h-9 rounded-full object-cover border border-blue-200 shadow-sm" />
+                    }
+                    else
+                    {
+                        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-blue-500
+                                    flex items-center justify-center text-white font-bold text-sm shadow-sm shadow-blue-300/40">
+                            @initial
+                        </div>
+                    }
                     <div class="hidden md:block">
                         <p class="text-sm font-semibold text-slate-800 leading-none">@studentName</p>
-                        <p class="text-[11px] text-indigo-500 font-medium mt-0.5">Student</p>
+                        <p class="text-[11px] text-blue-600 font-medium mt-0.5">Student</p>
                     </div>
-                </div>
+                </a>
             </div>
         </header>
 

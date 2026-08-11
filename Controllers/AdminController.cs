@@ -1,7 +1,10 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using TuitionCenter.Models;
 using TuitionCenter.Models.ViewModels.Admin;
 
@@ -48,7 +51,7 @@ namespace TuitionCenter.Controllers
             int totalCourses = await _context.Subjects.CountAsync();
             decimal totalRevenue = await _context.Payments
                 .Where(p => p.Status == "Approved" || p.Status == "Completed")
-                .SumAsync(p => (decimal?)p.Amount) ?? 54200m;
+                .SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
             var recentEnrollments = await _context.Enrollments
                 .Include(e => e.Student)
@@ -1181,9 +1184,79 @@ namespace TuitionCenter.Controllers
             return Json(batches);
         }
 
+        [HttpGet]
+        [Route("Profile")]
+        public async Task<IActionResult> Profile()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdClaim, out int loggedInUserId);
 
-        //Payment
+            var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserId == loggedInUserId);
+            if (admin == null)
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
+            return View(admin);
+        }
 
+        [HttpPost]
+        [Route("Profile")]
+        public async Task<IActionResult> Profile(string fullName, string phone, IFormFile? photoFile)
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            int.TryParse(userIdClaim, out int loggedInUserId);
+
+            var admin = await _context.Users.FirstOrDefaultAsync(u => u.UserId == loggedInUserId);
+            if (admin != null)
+            {
+                if (!string.IsNullOrWhiteSpace(fullName))
+                {
+                    admin.FullName = fullName;
+                }
+                admin.Phone = phone ?? admin.Phone;
+
+                if (photoFile != null && photoFile.Length > 0)
+                {
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    if (!Directory.Exists(uploadsFolder))
+                    {
+                        Directory.CreateDirectory(uploadsFolder);
+                    }
+
+                    var extension = Path.GetExtension(photoFile.FileName).ToLower();
+                    if (string.IsNullOrEmpty(extension) || (extension != ".jpg" && extension != ".jpeg" && extension != ".png" && extension != ".gif" && extension != ".webp"))
+                    {
+                        extension = ".jpg";
+                    }
+
+                    var filePath = Path.Combine(uploadsFolder, $"user_{admin.UserId}{extension}");
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await photoFile.CopyToAsync(stream);
+                    }
+
+                    admin.ProfileImage = $"/uploads/profiles/user_{admin.UserId}{extension}";
+                }
+
+                await _context.SaveChangesAsync();
+
+                // Refresh authentication claims
+                var claims = new List<Claim>
+                {
+                    new Claim(ClaimTypes.Name, admin.FullName),
+                    new Claim(ClaimTypes.NameIdentifier, admin.UserId.ToString()),
+                    new Claim(ClaimTypes.Role, admin.Role),
+                    new Claim("Email", admin.Email),
+                    new Claim("Phone", admin.Phone ?? "")
+                };
+                var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+                await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
+
+                TempData["SuccessMessage"] = "Admin profile details updated successfully!";
+            }
+
+            return RedirectToAction("Profile");
+        }
     }
 }
