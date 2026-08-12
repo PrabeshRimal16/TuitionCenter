@@ -82,11 +82,11 @@ namespace TuitionCenter.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(UserListEdit u)
         {
-/*            if (!ModelState.IsValid)
-            {
-                return View(u);
-            }
-*/
+            /*            if (!ModelState.IsValid)
+                        {
+                            return View(u);
+                        }
+            */
             try
             {
                 var user = _context.Users

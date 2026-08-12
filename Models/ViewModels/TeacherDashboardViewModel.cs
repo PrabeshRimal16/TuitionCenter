@@ -11,7 +11,7 @@ namespace TuitionCenter.Models.ViewModels
         public int ActiveClasses { get; set; }
         public double AverageAttendance { get; set; }
         public string CurrentAcademicYear { get; set; } = null!;
-        
+
         public UpcomingClassViewModel? NextClass { get; set; }
         public List<UpcomingClassViewModel> UpcomingClasses { get; set; } = new();
     }
