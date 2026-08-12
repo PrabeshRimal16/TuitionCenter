@@ -445,8 +445,8 @@ namespace TuitionCenter.Controllers
                 .Select(cs => cs.SessionId)
                 .ToList();
 
-            var attendanceRecords = teacherSessionIds.Any() 
-                ? _context.Attendances.Where(a => teacherSessionIds.Contains(a.SessionId)).ToList() 
+            var attendanceRecords = teacherSessionIds.Any()
+                ? _context.Attendances.Where(a => teacherSessionIds.Contains(a.SessionId)).ToList()
                 : new List<Attendance>();
 
             var studentsList = enrolledItems

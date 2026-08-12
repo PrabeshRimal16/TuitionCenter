@@ -590,7 +590,7 @@ namespace TuitionCenter.Controllers
 
             return RedirectToAction(nameof(TeacherIndex));
         }
-        
+
         // =====================================================
         // COURSE & SCHEDULE MANAGEMENT
         // =====================================================
@@ -1278,10 +1278,10 @@ namespace TuitionCenter.Controllers
 
             var filtered = filter switch
             {
-                "Pending"  => query.Where(e => e.Status == "Pending"),
+                "Pending" => query.Where(e => e.Status == "Pending"),
                 "Approved" => query.Where(e => e.Status == "Approved"),
                 "Rejected" => query.Where(e => e.Status == "Rejected"),
-                _          => query
+                _ => query
             };
 
             var all = await query.ToListAsync();
@@ -1289,31 +1289,31 @@ namespace TuitionCenter.Controllers
 
             var vm = new EnrollmentsListVM
             {
-                ActiveFilter   = filter,
-                TotalCount    = all.Count,
-                PendingCount  = all.Count(e => e.Status == "Pending"),
+                ActiveFilter = filter,
+                TotalCount = all.Count,
+                PendingCount = all.Count(e => e.Status == "Pending"),
                 ApprovedCount = all.Count(e => e.Status == "Approved"),
                 RejectedCount = all.Count(e => e.Status == "Rejected"),
-                Enrollments   = list.Select(e => new StudentEnrollmentVM
+                Enrollments = list.Select(e => new StudentEnrollmentVM
                 {
-                    EnrollmentId      = e.EnrollmentId,
-                    EnrollmentNumber  = e.EnrollmentNumber,
-                    StudentName       = e.Student.FullName,
-                    StudentEmail      = e.Student.Email,
-                    ClassName         = e.Class.ClassName,
-                    SubjectsSummary   = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
-                    CourseType        = e.CourseType.TypeName,
-                    TimeSlotLabel     = e.PreferredTimeSlot != null
+                    EnrollmentId = e.EnrollmentId,
+                    EnrollmentNumber = e.EnrollmentNumber,
+                    StudentName = e.Student.FullName,
+                    StudentEmail = e.Student.Email,
+                    ClassName = e.Class.ClassName,
+                    SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
+                    CourseType = e.CourseType.TypeName,
+                    TimeSlotLabel = e.PreferredTimeSlot != null
                         ? $"{e.PreferredTimeSlot.Days}, {e.PreferredTimeSlot.StartTime:h:mm tt}"
                         : "–",
-                    Amount            = e.ExpectedAmount,
-                    EnrollmentStatus  = e.Status,
-                    PaymentStatus     = e.Payments.FirstOrDefault()?.Status ?? "–",
-                    PaymentMethod     = e.Payments.FirstOrDefault()?.Method,
-                    TransactionId     = e.Payments.FirstOrDefault()?.TransactionId,
-                    ScreenshotPath    = e.Payments.FirstOrDefault()?.ScreenshotPath,
-                    RejectionReason   = e.RejectionReason,
-                    EnrollmentDate    = e.EnrolledDate
+                    Amount = e.ExpectedAmount,
+                    EnrollmentStatus = e.Status,
+                    PaymentStatus = e.Payments.FirstOrDefault()?.Status ?? "–",
+                    PaymentMethod = e.Payments.FirstOrDefault()?.Method,
+                    TransactionId = e.Payments.FirstOrDefault()?.TransactionId,
+                    ScreenshotPath = e.Payments.FirstOrDefault()?.ScreenshotPath,
+                    RejectionReason = e.RejectionReason,
+                    EnrollmentDate = e.EnrolledDate
                 }).ToList()
             };
 
@@ -1338,24 +1338,24 @@ namespace TuitionCenter.Controllers
 
             var vm = new StudentEnrollmentVM
             {
-                EnrollmentId      = e.EnrollmentId,
-                EnrollmentNumber  = e.EnrollmentNumber,
-                StudentName       = e.Student.FullName,
-                StudentEmail      = e.Student.Email,
-                ClassName         = e.Class.ClassName,
-                SubjectsSummary   = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
-                CourseType        = e.CourseType.TypeName,
-                TimeSlotLabel     = e.PreferredTimeSlot != null
+                EnrollmentId = e.EnrollmentId,
+                EnrollmentNumber = e.EnrollmentNumber,
+                StudentName = e.Student.FullName,
+                StudentEmail = e.Student.Email,
+                ClassName = e.Class.ClassName,
+                SubjectsSummary = string.Join(", ", e.EnrollmentSubjects.Select(es => es.Subject.SubjectName)),
+                CourseType = e.CourseType.TypeName,
+                TimeSlotLabel = e.PreferredTimeSlot != null
                     ? $"{e.PreferredTimeSlot.Days}, {e.PreferredTimeSlot.StartTime:h:mm tt} – {e.PreferredTimeSlot.EndTime:h:mm tt}"
                     : "–",
-                Amount            = e.ExpectedAmount,
-                EnrollmentStatus  = e.Status,
-                PaymentStatus     = e.Payments.FirstOrDefault()?.Status ?? "–",
-                PaymentMethod     = e.Payments.FirstOrDefault()?.Method,
-                TransactionId     = e.Payments.FirstOrDefault()?.TransactionId,
-                ScreenshotPath    = e.Payments.FirstOrDefault()?.ScreenshotPath,
-                RejectionReason   = e.RejectionReason,
-                EnrollmentDate    = e.EnrolledDate
+                Amount = e.ExpectedAmount,
+                EnrollmentStatus = e.Status,
+                PaymentStatus = e.Payments.FirstOrDefault()?.Status ?? "–",
+                PaymentMethod = e.Payments.FirstOrDefault()?.Method,
+                TransactionId = e.Payments.FirstOrDefault()?.TransactionId,
+                ScreenshotPath = e.Payments.FirstOrDefault()?.ScreenshotPath,
+                RejectionReason = e.RejectionReason,
+                EnrollmentDate = e.EnrolledDate
             };
 
             return View("~/Views/Admin/EnrollmentDetails.cshtml", vm);
@@ -1375,8 +1375,8 @@ namespace TuitionCenter.Controllers
             var adminIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
             int.TryParse(adminIdClaim, out var adminId);
 
-            enrollment.Status      = "Approved";
-            enrollment.ApprovedBy  = adminId > 0 ? adminId : null;
+            enrollment.Status = "Approved";
+            enrollment.ApprovedBy = adminId > 0 ? adminId : null;
             enrollment.ApprovalDate = DateTime.Now;
 
             foreach (var payment in enrollment.Payments)
@@ -1399,7 +1399,7 @@ namespace TuitionCenter.Controllers
 
             if (enrollment == null) return NotFound();
 
-            enrollment.Status          = "Rejected";
+            enrollment.Status = "Rejected";
             enrollment.RejectionReason = rejectionReason;
 
             foreach (var payment in enrollment.Payments)
